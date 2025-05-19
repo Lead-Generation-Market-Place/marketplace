@@ -3,7 +3,7 @@ import React from 'react'
 const page = () => {
   return (
     <div>
-      Main Page Revised
+      Main Page Revised 2025
     </div>
   )
 }
