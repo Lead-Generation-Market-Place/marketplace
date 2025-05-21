@@ -8,6 +8,8 @@ type User = {
   // Add any other fields you have in your users table
 };
 
+
+
 export default async function UsersPage() {
   const { data: users, error } = await createClient()
     .from('users')
