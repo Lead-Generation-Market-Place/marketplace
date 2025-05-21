@@ -78,7 +78,7 @@ export default function HeroForm(){
         <>
         {/* carousel */}
         <p className="text-center mt-4">
-            <span className="p-2 font-bold rounded-full bg-blue-500 text-white">US-C</span>
+            <span className="p-2 font-bold rounded-full bg-[#0077B6] text-white">US-C</span>
         </p>
          <div className="relative w-full h-20 flex items-center justify-center">
             <p
@@ -88,7 +88,7 @@ export default function HeroForm(){
             {slides[index]}
             </p>
         </div>
-        <p className="font-bold text-blue-500 font-bold text-center uppercase">Simplifying Home Services</p>
+        <p className="font-bold text-[#0077B6] font-bold text-center uppercase">Simplifying Home Services</p>
         {/* carousel */}
         <div className="flex items-start justify-center pt-10">
             <div className="w-2/3 border">
@@ -110,7 +110,7 @@ export default function HeroForm(){
                     className="outline-none border-none p-3 flex-1"
                     placeholder="Zip Code"
                 />
-                <button type="submit" className="px-4 py-3 bg-blue-500 text-white font-semibold shadow flex-1">
+                <button type="submit" className="px-4 py-3 bg-[#0077B6] hover:bg-[#0096C7]  text-white font-semibold shadow flex-1">
                     Search
                 </button>
                 </form>
@@ -135,7 +135,7 @@ export default function HeroForm(){
                     ))}
                     <button
                     type="submit"
-                    className="bg-blue-500 px-4 py-3 text-white font-semibold mt-4"
+                    className="bg-[#0077B6] hover:bg-[#0096C7] px-4 py-3 text-white font-semibold mt-4"
                     >
                     Next
                     </button>
