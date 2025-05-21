@@ -93,7 +93,7 @@ export function SignUp() {
             )}
           </div>
 
-                    <div>
+          <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
               Confirm Password
             </label>
@@ -111,7 +111,6 @@ export function SignUp() {
               </ul>
             )}
           </div>
-
 
           {/* Remember me and Forgot password */}
           <div className="flex items-center justify-between">
