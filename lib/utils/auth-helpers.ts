@@ -35,6 +35,8 @@ export async function logout()
 
 
 
+
+
 export async function updatePassword(password: string)
 {
  const supabase = createClient();
@@ -45,3 +47,6 @@ export async function updatePassword(password: string)
      throw new Error(error.message);
     }
 }
+
+
+/// get data from user table
