@@ -24,7 +24,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+        <nav className="hidden md:flex items-center space-x-6 text-sm  relative z-50">
           {Object.entries(dropdownData).map(([label, items]) => (
             <DropdownMenu key={label} label={label} items={items} />
           ))}
@@ -36,7 +36,7 @@ export default function Navbar() {
           <Link href="/about" className="hover:text-[#023E8A]">Contact Sales</Link>
           <Link
             href="/get-started"
-            className="bg-[#0077B6] hover:bg-[#0096C7] text-white px-4 py-2 rounded-[4px] transition"
+            className="bg-[#0077B6] hover:bg-[#0096C7] text-white font-semibold px-4 py-2 rounded-[4px] transition"
           >
             Get started — Join as Pro
           </Link>

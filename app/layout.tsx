@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Importing Roboto font with multiple weights (400, 500, 600, 700)
+const roboto = Roboto({
+  variable: "--font-roboto",
+  weight: ["400", "500", "600", "700"],  // Regular (400), Medium (500), Semi-Bold (600), Bold (700)
+  style: ["normal"],    // Only normal style (you can add italic if you need it)
+  subsets: ["latin"],   // You can add other subsets like latin-ext if needed
 });
 
 export const metadata: Metadata = {
@@ -25,11 +23,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${roboto.variable} antialiased`}>
         <Navbar />
-
         {children}
       </body>
     </html>
