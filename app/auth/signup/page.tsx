@@ -52,7 +52,7 @@ export function SignUp() {
    
       <div className="w-full max-w-md bg-white rounded-[8px] px-8 py-8 shadow-md">
            <div className="flex flex-col items-center mb-4">
-        <h2 className=" text-2xl font-bold text-center text-gray-900">Sign in to your account</h2>
+        <h2 className=" text-2xl font-bold text-center text-gray-900">Create an account</h2>
       </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-[14px]">
           {/* Email */}
@@ -128,7 +128,7 @@ export function SignUp() {
             disabled={isLoading}
             className=" bg-[#0077B6] hover:bg-[#0096C7] w-full py-2 text-white font-semibold rounded-[4px] transition disabled:opacity-50"
           >
-            {isLoading ? "Signing up..." : "Sign in"}
+            {isLoading ? "Signing up..." : "Sign up"}
           </button>
 
           {/* Divider */}

@@ -1,5 +1,6 @@
 
 
+import HeroForm from '@/components/Home/heroform'
 import React from 'react'
 
 const page = () => {
