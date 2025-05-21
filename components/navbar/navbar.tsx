@@ -35,7 +35,7 @@ export default function Navbar() {
           <Link href="/auth/login" className="hover:text-[#023E8A]">Login</Link>
           <Link href="/about" className="hover:text-[#023E8A]">Contact Sales</Link>
           <Link
-            href="/get-started"
+            href="/auth/signup"
             className="bg-[#0077B6] hover:bg-[#0096C7] text-white font-semibold px-4 py-2 rounded-[4px] transition"
           >
             Get started — Join as Pro
