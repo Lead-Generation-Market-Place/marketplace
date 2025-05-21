@@ -1,12 +1,18 @@
 import { createClient } from "@/utils/supabase/client";
 
-
-
-export async function verifyOtp()
-{
-
+export async function verifyOtp(email: string, otp: string) {
+    const supabase = createClient();
+    const IsPasswordReset = sessionStorage.getItem("IsPasswordReset") === "true";
+    const { data, error } = await supabase.auth.verifyOtp({
+        token: otp,
+        email,
+        type: IsPasswordReset ? "recovery" : "email", 
+    });
+    if (error) {
+        throw new Error(error.message);
+    }
+    return data;
 }
-
 
 export async function login(email: string, password: string)
 {
@@ -21,8 +27,6 @@ export async function login(email: string, password: string)
     return data;
 }
 
-
-
 export async function logout()
 {
     const supabase = createClient();
@@ -31,11 +35,6 @@ export async function logout()
         throw new Error(error.message);
     }
 }
-
-
-
-
-
 
 export async function updatePassword(password: string)
 {
@@ -47,6 +46,5 @@ export async function updatePassword(password: string)
      throw new Error(error.message);
     }
 }
-
 
 /// get data from user table
