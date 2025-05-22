@@ -26,9 +26,8 @@
     "react-icons": "^5.5.0",
     "resend": "^4.5.1",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.17"
-    "string-similarity": "^4.0.4",
-    "tailwind-merge": "^3.3.0"
+    "zod": "^3.25.17",
+    "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

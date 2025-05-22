@@ -9,8 +9,11 @@ import { z } from "zod";
 import { createClient } from "@/utils/supabase/client";
 import { Github } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
+
+
 type FormData = z.infer<typeof RulesValidation>;
-export function SignUp() {
+
+export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -161,5 +164,3 @@ export function SignUp() {
     </div>
   );
 }
-
-export default SignUp;

@@ -7,7 +7,6 @@ const page = () => {
     <div>
       <div className="p-5">
     
-        <HeroForm/>
       </div>
     </div>
   )
