@@ -99,7 +99,7 @@ export default function ServicePage() {
     <div className="p-6 lg:mx-50 xl:mx-50 md:mx-30 sm:mx-10 my-3">
       <form action="#" className="flex flex-col gap-4">
         <h1 className="text-xl font-bold mb-4 text-center">
-          Here's what we found that best matches your search.
+          Here&apos;s what we found that best matches your search.
         </h1>
 
         {bestMatch ? (
