@@ -41,6 +41,7 @@ export default function ServicePage() {
       searchKey.toLowerCase(),
       names
     );
+    console.log('Best match:', ratings);
 
     const bestMatchCat = categories.find(
       (cat) => cat.name.toLowerCase() === best.target
