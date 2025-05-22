@@ -54,10 +54,10 @@ export default function MobileMenu({
             </div>
           ))}
           <div className="pt-4 border-t space-y-2 text-sm">
-            <Link href="/login" onClick={() => setIsOpen(false)} className="block">Login</Link>
+            <Link href="/auth/sign-in" onClick={() => setIsOpen(false)} className="block">Login</Link>
             <Link href="/about" onClick={() => setIsOpen(false)} className="block">Contact Sales</Link>
             <Link
-              href="/auth/signup"
+              href="/auth/sign-up"
               className="block bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-2 rounded-md"
               onClick={() => setIsOpen(false)}
             >

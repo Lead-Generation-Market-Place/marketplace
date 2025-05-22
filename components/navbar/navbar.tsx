@@ -32,10 +32,10 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4 text-sm">
-          <Link href="/auth/login" className="hover:text-[#023E8A]">Login</Link>
+          <Link href="/auth/sign-in" className="hover:text-[#023E8A]">Login</Link>
           <Link href="/about" className="hover:text-[#023E8A]">Contact Sales</Link>
           <Link
-            href="/auth/signup"
+            href="/auth/sign-up"
             className="bg-[#0077B6] hover:bg-[#0096C7] text-white font-semibold px-4 py-2 rounded-[4px] transition"
           >
             Get started — Join as Pro
