@@ -21,7 +21,7 @@ export default function HeroForm() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent page reload
-    router.push(`/service?searchKey=${encodeURIComponent(searchKey)}&zipCode=${encodeURIComponent(zipCode)}`);
+    // router.push(`/service?searchKey=${encodeURIComponent(searchKey)}&zipCode=${encodeURIComponent(zipCode)}`);
     // Now you have access to searchKey and zipCode
     console.log("Search Key:", searchKey);
     console.log("Zip Code:", zipCode);
