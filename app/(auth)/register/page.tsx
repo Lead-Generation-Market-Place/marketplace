@@ -4,13 +4,12 @@ import React from "react";
 
 const SignUp = async () => {
   return (
-    <div className="w-full flex mt-20 justify-center">
+    <div className="w-full flex justify-center">
       <section className="flex flex-col w-[400px]">
-        <h1 className="text-3xl w-full text-center font-bold mb-6">Sign Up</h1>
         <SignUpForm />
-        <div className="mt-2 flex items-center">
-          <h1>Already have an account?</h1>
-          <Link className="font-bold ml-2" href="/login">
+        <div className="mt-2 flex items-center justify-center">
+          <p className="text-[14px] ">Already have an account?</p>
+          <Link className="font-bold ml-2 text-[14px]" href="/login">
             Sign In
           </Link>
         </div>

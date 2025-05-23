@@ -12,14 +12,17 @@ const LoginGithub = () => {
     });
   };
   return (
-    <div
-      onClick={handleGithubLogin}
-      className="w-full gap-4 hover:cursor-pointer mt-6 h-12 bg-gray-800 rounded-md p-4 flex justify-center items-center"
-    >
-      <FaGithub className="text-white" />
-      <p className="text-white">
-        {isPending ? "Redirecting..." : "Login with Github"}
-      </p>
+    <div className=" my-2 mx-2">
+      <div
+        onClick={handleGithubLogin}
+        className="w-full rounded-[4px] px-12 py-2.5 text-sm font-medium flex items-center justify-center  bg-white text-[#0077B6]   cursor-pointer transition-colors hover:bg-[#0096C7] hover:text-white"
+        style={{ minHeight: 40 }}
+      >
+        <FaGithub className=" text-xl mr-2 group-hover:text-white transition-colors" />
+        <span className="font-semibold">
+          {isPending ? "Redirecting..." : "Login with Github"}
+        </span>
+      </div>
     </div>
   );
 };
