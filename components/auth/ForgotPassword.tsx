@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import AuthButton from "./AuthButton";
+import AuthButton from "@/components/auth/AuthButton";
 
 const ForgotPassword = () => {
   const [error, setError] = useState<string | null>(null);

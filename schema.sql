@@ -4,8 +4,7 @@
 New Files
 CREATE TABLE users (
     id UUID PRIMARY KEY,  -- Unique identifier for each user
-    first_name TEXT,  -- User's first name (e.g., "John")
-    last_name TEXT,  -- User's last name (e.g., "Doe")
+    username TEXT,  -- User's first name (e.g., "John")
     email TEXT UNIQUE,  -- Unique email for authentication (e.g., "john@example.com")
     phone_number TEXT,  -- User's contact number (e.g., "+1234567890")
     status TEXT CHECK (status IN ('active', 'suspended')),  -- Account state

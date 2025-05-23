@@ -2,7 +2,7 @@ import Link from "next/link";
 import MobileMenu from "./mobileMenu";
 import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
-import Logout from "../Logout";
+import Logout from "../auth/Logout";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],

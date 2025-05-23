@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import AuthButton from "./AuthButton";
+import AuthButton from "@/components/auth/AuthButton";
 import { signIn } from "@/actions/auth";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +16,7 @@ const LoginForm = () => {
     const formData = new FormData(event.currentTarget);
     const result = await signIn(formData);
     if (result.status === "success") {
-      router.push("/");
+      router.push("/home");
     } else {
       setError(result.status);
     }
