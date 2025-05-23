@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
@@ -9,7 +9,7 @@ export default function HeroForm() {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
 
-  const router = useRouter(); // ✅ Hook at the top level
+//   const router = useRouter(); // ✅ Hook at the top level
 
   const slides = [
     "Your Home, Our Priority",
