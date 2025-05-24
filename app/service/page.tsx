@@ -1,11 +1,12 @@
 "use client";
-export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import stringSimilarity from 'string-similarity';
-import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
+import SearchButton from '@/components/elements/SearchButton';
+import useCategories from '@/hooks/useCategory';
+import TextPlaceholder from '@/components/elements/TextPlaceholder';
 
 type Category = {
   id: number;
@@ -13,77 +14,71 @@ type Category = {
 };
 
 export default function ServicePage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories, error } = useCategories();
   const [bestMatch, setBestMatch] = useState<Category | null>(null);
   const [otherMatches, setOtherMatches] = useState<Category[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(true);
 
   const searchParams = useSearchParams();
-  const searchKey = searchParams.get('searchKey') || '';
+  const search = searchParams.get('search') || '';
+  const zipcode = searchParams.get('zipcode') || '';
+  
 
   useEffect(() => {
-    async function fetchCategories() {
-      const client = createClient();
-      const { data, error } = await client.from('category').select('*');
-      if (error) {
-        console.error('Error fetching categories:', error.message);
+    // Start loading when categories or search change
+    setLoading(true);
+
+    if (categories.length > 0 && search.trim()) {
+      const names = categories.map((c) => c.name.toLowerCase());
+      const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(
+        search.toLowerCase(),
+        names
+      );
+      console.log("Ratiing: ", ratings);
+      const bestMatchCat = categories.find(
+        (cat) => cat.name.toLowerCase() === best.target
+      );
+
+      const isValidBestMatch = best.rating > 0.3 && bestMatchCat;
+
+      setBestMatch(isValidBestMatch ? bestMatchCat! : null);
+
+      const others = categories
+        .filter((cat) => {
+          const similarity = stringSimilarity.compareTwoStrings(
+            cat.name.toLowerCase(),
+            search.toLowerCase()
+          );
+          return (
+            similarity > 0.3 &&
+            similarity <= 0.7 &&
+            (!isValidBestMatch || cat.id !== bestMatchCat!.id)
+          );
+        })
+        .filter(
+          (cat, index, self) =>
+            index === self.findIndex((c) => c.name.toLowerCase() === cat.name.toLowerCase())
+        );
+
+      setOtherMatches(others);
+
+      if (isValidBestMatch) {
+        setSelectedIds(new Set([bestMatchCat!.id]));
       } else {
-        setCategories(data ?? []);
+        setSelectedIds(new Set());
       }
-    }
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-  if (categories.length > 0 && searchKey.trim()) {
-    const names = categories.map((c) => c.name.toLowerCase());
-    const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(
-      searchKey.toLowerCase(),
-      names
-    );
-    console.log('Best match:', ratings);
-
-    const bestMatchCat = categories.find(
-      (cat) => cat.name.toLowerCase() === best.target
-    );
-
-    const isValidBestMatch = best.rating > 0.3 && bestMatchCat;
-
-    setBestMatch(isValidBestMatch ? bestMatchCat! : null);
-
-    const others = categories
-    .filter((cat) => {
-        const similarity = stringSimilarity.compareTwoStrings(
-        cat.name.toLowerCase(),
-        searchKey.toLowerCase()
-        );
-        return (
-        similarity > 0.3 &&
-        similarity <= 0.7 &&
-        (!isValidBestMatch || cat.id !== bestMatchCat!.id)
-        );
-    })
-    // ✅ Deduplicate by name
-    .filter((cat, index, self) =>
-        index === self.findIndex((c) => c.name.toLowerCase() === cat.name.toLowerCase())
-    );
-
-
-    setOtherMatches(others);
-
-    if (isValidBestMatch) {
-      setSelectedIds(new Set([bestMatchCat!.id]));
     } else {
+      setBestMatch(null);
+      setOtherMatches([]);
       setSelectedIds(new Set());
+      console.log("No search term provided", error);
     }
-  } else {
-    setBestMatch(null);
-    setOtherMatches([]);
-    setSelectedIds(new Set());
-  }
-}, [categories, searchKey]);
 
+    // Stop loading after processing
+    setLoading(false);
+    console.log("zip code: ", zipcode);
+  }, [categories, search]);
 
   function toggleSelect(id: number) {
     setSelectedIds((prev) => {
@@ -95,6 +90,13 @@ export default function ServicePage() {
       }
       return newSet;
     });
+  }
+
+  // Spinner while loading
+  if (loading) {
+    return (
+        <TextPlaceholder/>
+    );
   }
 
   return (
@@ -122,7 +124,7 @@ export default function ServicePage() {
             </ul>
           </div>
         ) : (
-          <p className="text-gray-500 italic">No best match found.</p>
+          <p className="text-gray-500 italic"></p>
         )}
 
         {otherMatches.length > 0 && (
@@ -151,7 +153,7 @@ export default function ServicePage() {
         )}
 
         {!bestMatch && otherMatches.length === 0 && (
-          <p className="text-gray-500 italic">No matching categories found.</p>
+          <p className="text-gray-500 italic"></p>
         )}
 
         <p className="font-extralight text-sm my-2">
@@ -160,13 +162,7 @@ export default function ServicePage() {
             Edit your search
           </Link>
         </p>
-
-        <button
-          type="submit"
-          className="px-4 py-3 bg-[#0077B6] hover:bg-[#0096C7] text-white font-semibold shadow w-full"
-        >
-          Next
-        </button>
+        <SearchButton type="Next" loading={false} />
       </form>
     </div>
   );
