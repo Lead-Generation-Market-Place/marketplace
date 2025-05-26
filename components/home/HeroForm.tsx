@@ -36,7 +36,10 @@ export default function HeroForm() {
             formData[key] = value.toString();
         }
         }
-
+        // ✅ Add locationInfo to formData if it exists
+        if (locationInfo) {
+            formData["locationInfo"] = locationInfo;
+        }
         startTransition(() => {
         router.push("/service?" + new URLSearchParams(formData).toString());
         });

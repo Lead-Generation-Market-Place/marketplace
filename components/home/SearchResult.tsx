@@ -11,14 +11,21 @@ type Category = {
   name: string;
 };
 
-type Props = {
+interface SearchResultProps {
   categories: Category[];
   search: string;
   zipcode: string;
+  location: string;
   fetchError: string | null;
-};
+}
 
-export default function SearchResult({ categories, search, zipcode, fetchError }: Props) {
+export default function SearchResult({
+  categories,
+  search,
+  zipcode,
+  location,
+  fetchError,
+}: SearchResultProps) {
   const [bestMatch, setBestMatch] = useState<Category | null>(null);
   const [otherMatches, setOtherMatches] = useState<Category[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -26,19 +33,20 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
 
   useEffect(() => {
     setLoading(true);
-    console.log('Zipcode:', zipcode);
     if (categories.length > 0 && search.trim()) {
+      const lowerSearch = search.toLowerCase();
       const names = categories.map((c) => c.name.toLowerCase());
+
       const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(
-        search.toLowerCase(),
+        lowerSearch,
         names
       );
-      console.log('ratings:', ratings);
+      console.log("ratings", ratings);
       const bestMatchCat = categories.find(
         (cat) => cat.name.toLowerCase() === best.target
       );
 
-      const isValidBestMatch = best.rating > 0.3 && bestMatchCat;
+      const isValidBestMatch = best.rating > 0.3 && !!bestMatchCat;
 
       setBestMatch(isValidBestMatch ? bestMatchCat! : null);
 
@@ -46,7 +54,7 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
         .filter((cat) => {
           const similarity = stringSimilarity.compareTwoStrings(
             cat.name.toLowerCase(),
-            search.toLowerCase()
+            lowerSearch
           );
           return (
             similarity > 0.3 &&
@@ -65,12 +73,13 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
       setBestMatch(null);
       setOtherMatches([]);
       setSelectedIds(new Set());
+      console.log('No valid search input or categories available');
     }
 
     setLoading(false);
   }, [categories, search]);
 
-  function toggleSelect(id: number) {
+  const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -80,10 +89,10 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
       }
       return newSet;
     });
-  }
+  };
 
   if (loading) return <TextPlaceholder />;
-  if (fetchError) return <p className="text-red-500 text-center">Error loading categories: {fetchError}</p>;
+  if (fetchError) return <p className="text-red-500 text-center">Error: {fetchError}</p>;
 
   return (
     <div className="p-6 lg:mx-50 xl:mx-50 md:mx-30 sm:mx-10 my-3">
@@ -91,7 +100,10 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
         <h1 className="text-xl font-bold mb-4 text-center">
           Here&apos;s what we found that best matches your search.
         </h1>
-
+        <p className="text-gray-400 text-sm">
+            Zip Code: {zipcode} | {location}
+        </p>
+     
         {bestMatch && (
           <ul>
             <li className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-300 rounded shadow-sm">
@@ -135,11 +147,11 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
         )}
 
         {!bestMatch && otherMatches.length === 0 && (
-          <p className="text-gray-500 italic">No results matched your search.</p>
+          <p className="text-gray-500 italic text-center">No results matched your search.</p>
         )}
 
-        <p className="font-extralight text-sm my-2">
-          Not what you are looking for?{" "}
+        <p className="font-extralight text-sm my-2 text-center">
+          Not what you are looking for?{' '}
           <Link className="text-[#0077B6]" href="/">
             Edit your search
           </Link>
