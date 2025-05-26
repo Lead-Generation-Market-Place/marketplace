@@ -20,6 +20,7 @@ export default function ServicePage() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
 
+  
   const searchParams = useSearchParams();
   const search = searchParams.get('search') || '';
   const zipcode = searchParams.get('zipcode') || '';
