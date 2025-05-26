@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
 import { UnPassword } from "@/actions/auth";
+import { toast } from "sonner"; // ✅ Use Sonner toast
 
 const ForgotPassword = () => {
   const [error, setError] = useState<string | null>(null);
@@ -12,11 +13,14 @@ const ForgotPassword = () => {
     setError(null);
     const formData = new FormData(event.currentTarget)
     const result = await UnPassword(formData)
-    if(result.status ==='success')
-      {
-        alert("Reset Password Send Successfully!")
-      }
-
+    if(result.status ==='success') {
+        toast.success("Reset Password Sent Successfully!");
+    } else {
+        toast.error("Failed to send reset link", {
+          description: result.status || "Unknown error"
+        });
+        setError(result.status || "Unknown error");
+    }
     setLoading(false);
   };
 return (
@@ -27,7 +31,7 @@ return (
           Forgot Password
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Enter your email and we'll send you a reset link.
+          Enter your email and we will send you a reset link.
         </p>
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">

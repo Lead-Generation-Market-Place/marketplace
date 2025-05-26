@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/app/(dashboard)/context/ThemeContext";
 import { SidebarProvider } from "@/app/(dashboard)/context/SidebarContext";
+import { Toaster } from "react-hot-toast";
 
 // Importing Roboto font with multiple weights (400, 500, 600, 700)
 const roboto = Roboto({
@@ -28,6 +29,7 @@ export default function RootLayout({
           <ThemeProvider>
           <SidebarProvider>{children}</SidebarProvider>
         </ThemeProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );
