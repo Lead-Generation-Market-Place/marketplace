@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
 import { signIn } from "@/actions/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const LoginForm = () => {
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +44,7 @@ const LoginForm = () => {
               <div className="flex items-center justify-between">
                 <label className="block text-sm/6 font-medium text-gray-900">Password</label>
                 <div className="text-sm">
-                  <a href="#" className="font-semibold text-[#0077B6] hover:text-[#0096C7]">Forgot password?</a>
+                  <Link href="/forgot-password" className="font-semibold text-[#0077B6] hover:text-[#0096C7]">Forgot password?</Link>
                 </div>
               </div>
               <div className="mt-2">
