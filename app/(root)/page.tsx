@@ -1,4 +1,5 @@
-import HeroForm from '@/components/heroform'
+
+import HeroForm from '@/components/home/heroform'
 import React from 'react'
 
 const page = () => {

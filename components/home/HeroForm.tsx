@@ -1,44 +1,45 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useTransition } from "react";
 import { useRouter } from "next/navigation";
-import SearchButton from "./elements/SearchButton";
+import SearchButton from "../elements/SearchButton";
 
 
 
 export default function HeroForm() {
     const router = useRouter();
 
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isPending, startTransition] = useTransition();
     const [waiting, setWaiting] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [index, setIndex] = useState(0);
     const [fade, setFade] = useState(true);
     const [locationInfo, setLocationInfo] = useState<string | null>(null);
-    
+    const loading = isPending;
 
-  const slides = [
-    "Your Home, Our Priority",
-    "Fix It Fast",
-    "On-Demand Experts",
-    "Service at Your Doorstep",
-    "From Mess to Fresh",
-  ];
+    const slides = [
+        "Your Home, Our Priority",
+        "Fix It Fast",
+        "On-Demand Experts",
+        "Service at Your Doorstep",
+        "From Mess to Fresh",
+    ];
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); 
-    setLoading(true);
-    setError(null);
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
 
-    const form = new FormData(e.currentTarget);
+        const form = new FormData(e.currentTarget);
+        const formData: Record<string, string> = {};
 
-    // Convert FormData to Record<string, string>
-    const formData: Record<string, string> = {};
-    for (const [key, value] of form.entries()) {
-        formData[key] = value.toString(); // ensure value is string
-    }
+        for (const [key, value] of form.entries()) {
+        if (value.toString().trim() !== "") {
+            formData[key] = value.toString();
+        }
+        }
 
-    router.push('/service?' + new URLSearchParams(formData).toString());
-    setLoading(false);
+        startTransition(() => {
+        router.push("/service?" + new URLSearchParams(formData).toString());
+        });
     };
 
     // fetch api for state and city
