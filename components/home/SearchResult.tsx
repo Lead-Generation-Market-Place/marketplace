@@ -26,14 +26,14 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
 
   useEffect(() => {
     setLoading(true);
-
+    console.log('Zipcode:', zipcode);
     if (categories.length > 0 && search.trim()) {
       const names = categories.map((c) => c.name.toLowerCase());
       const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(
         search.toLowerCase(),
         names
       );
-
+      console.log('ratings:', ratings);
       const bestMatchCat = categories.find(
         (cat) => cat.name.toLowerCase() === best.target
       );
@@ -89,7 +89,7 @@ export default function SearchResult({ categories, search, zipcode, fetchError }
     <div className="p-6 lg:mx-50 xl:mx-50 md:mx-30 sm:mx-10 my-3">
       <form className="flex flex-col gap-4">
         <h1 className="text-xl font-bold mb-4 text-center">
-          Here's what we found that best matches your search.
+          Here&apos;s what we found that best matches your search.
         </h1>
 
         {bestMatch && (
