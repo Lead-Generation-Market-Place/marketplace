@@ -31,6 +31,7 @@ return (
           Forgot Password
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
+
           Enter your email and we will send you a reset link.
         </p>
       </div>
