@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import AuthButton from "./AuthButton";
+import AuthButton from "../auth/AuthButton";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/actions/auth";
 
