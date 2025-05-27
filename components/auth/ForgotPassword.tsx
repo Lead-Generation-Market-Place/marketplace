@@ -32,6 +32,7 @@ return (
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Enter your email and we will send you a reset link.
+          Enter your email and we&apos;ll send you a reset link.
         </p>
       </div>
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
