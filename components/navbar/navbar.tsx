@@ -52,6 +52,7 @@ const Navbar = async () => {
               >
                 Get started — Join as Pro
               </Link>
+              
             </>
           ) : (
             <>

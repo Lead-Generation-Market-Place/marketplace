@@ -9,7 +9,6 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
   const { data: categories, error } = await supabase
     .from('category')
     .select('*');
-
   const params = await searchParams;
   const searchKey = params.search || '';
   const zipCode = params.zipcode || '';
