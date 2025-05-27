@@ -1,8 +1,8 @@
-//import { getUserSession } from "@/actions/auth";
+import { getUserSession } from "@/actions/auth";
 import Navbar from "@/components/navbar/navbar";
 import { Toaster } from "@/components/ui/sonner"; // Your custom Sonner wrapper
 
-//import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default async function AuthLayout({
   children,
@@ -10,10 +10,10 @@ export default async function AuthLayout({
   children: React.ReactNode;
 }>)
 {
- // const response = await getUserSession();
-//if (response?.user) {
- // redirect("/home");
-//}
+ const response = await getUserSession();
+if (response?.user) {
+ redirect("/home");
+}
   return (
     <>
       <Navbar />
