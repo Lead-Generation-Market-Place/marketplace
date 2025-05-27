@@ -1,7 +1,6 @@
-'use client'
 import React from 'react'
 
-function Home(){
+const page = () => {
   return (
     <div>
       <h2>Home Page</h2>
@@ -9,4 +8,4 @@ function Home(){
   )
 }
 
-export default Home
+export default page

@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} antialiased`}>
+      <body className={`${roboto.variable} antialiased bg-white text-black dark:bg-gray-900 dark:text-white`}>
           <ThemeProvider>
           <SidebarProvider>{children}</SidebarProvider>
         </ThemeProvider>
