@@ -1,6 +1,7 @@
+'use client'
 import React from 'react'
 
-const HomePage = () => {
+function Home(){
   return (
     <div>
       <h2>Home Page</h2>
@@ -8,4 +9,4 @@ const HomePage = () => {
   )
 }
 
-export default HomePage
+export default Home
