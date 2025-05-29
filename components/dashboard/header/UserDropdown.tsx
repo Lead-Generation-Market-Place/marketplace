@@ -71,6 +71,7 @@ export default function UserDropdown() {
   }
   return (
     <div className="relative">
+      
       {profile ? (
         <button
           onClick={toggleDropdown}
