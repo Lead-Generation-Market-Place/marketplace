@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import stringSimilarity from 'string-similarity';
+import ServiceQuestion from '@/components/question/ServiceQuestion';
 import Link from 'next/link';
 import SearchButton from '@/components/elements/SearchButton';
+import ResetButton from '@/components/elements/ResetButton';
 import TextPlaceholder from '@/components/elements/TextPlaceholder';
+import { ArrowLeft, X } from 'lucide-react';
 
 type Category = {
   id: number;
@@ -15,6 +18,7 @@ interface SearchResultProps {
   categories: Category[];
   search: string;
   zipcode: string;
+  exactMatch: Category[] | null;
   location: string;
   fetchError: string | null;
 }
@@ -23,12 +27,14 @@ export default function SearchResult({
   categories,
   search,
   zipcode,
+  exactMatch,
   location,
   fetchError,
 }: SearchResultProps) {
   const [bestMatch, setBestMatch] = useState<Category | null>(null);
   const [otherMatches, setOtherMatches] = useState<Category[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,16 +43,12 @@ export default function SearchResult({
       const lowerSearch = search.toLowerCase();
       const names = categories.map((c) => c.name.toLowerCase());
 
-      const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(
-        lowerSearch,
-        names
-      );
-      console.log("ratings", ratings);
+      const { bestMatch: best, ratings } = stringSimilarity.findBestMatch(lowerSearch, names);
       const bestMatchCat = categories.find(
         (cat) => cat.name.toLowerCase() === best.target
       );
-
-      const isValidBestMatch = best.rating > 0.3 && !!bestMatchCat;
+      console.log("search ratings", ratings);
+      const isValidBestMatch = best.rating > 0.1 && !!bestMatchCat;
 
       setBestMatch(isValidBestMatch ? bestMatchCat! : null);
 
@@ -68,97 +70,161 @@ export default function SearchResult({
         );
 
       setOtherMatches(others);
-      setSelectedIds(isValidBestMatch ? new Set([bestMatchCat!.id]) : new Set());
+      setSelectedCategory(isValidBestMatch ? bestMatchCat! : null);
     } else {
       setBestMatch(null);
       setOtherMatches([]);
-      setSelectedIds(new Set());
-      console.log('No valid search input or categories available');
+      setSelectedCategory(null);
     }
 
     setLoading(false);
   }, [categories, search]);
 
   const toggleSelect = (id: number) => {
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+    const category = [...(otherMatches ?? []), bestMatch]
+      .find((cat) => cat && cat.id === id) || null;
+    setSelectedCategory(category);
   };
+
+  const submitAnswer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategory) {
+      alert('Please select a category before continuing.');
+      return;
+    }
+    setSubmitted(true);
+  };
+
+  // Handle early returns after all hooks
+  if (exactMatch && exactMatch.length > 0) {
+    return <>
+    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+      <p
+        className="cursor-pointer hover:text-[#0096C7]"
+        onClick={() => window.history.back()}>
+        <ArrowLeft />
+      </p>
+      <p
+        className="cursor-pointer hover:text-red-600"
+        onClick={() => (window.location.href = '/')}>
+        <X />
+      </p>
+    </div>
+    <ServiceQuestion exactMatch={exactMatch} />
+    </>;
+  }
+
+  if (submitted && selectedCategory) {
+    return <>
+    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+      <p
+        className="cursor-pointer hover:text-[#0096C7]"
+        onClick={() => window.history.back()}>
+        <ArrowLeft />
+      </p>
+      <p
+        className="cursor-pointer hover:text-red-600"
+        onClick={() => (window.location.href = '/')}>
+        <X />
+      </p>
+    </div>
+    <ServiceQuestion exactMatch={[selectedCategory]} />
+    </>;
+  }
 
   if (loading) return <TextPlaceholder />;
   if (fetchError) return <p className="text-red-500 text-center">Error: {fetchError}</p>;
 
   return (
-    <div className="p-6 lg:mx-50 xl:mx-50 md:mx-30 sm:mx-10 my-3">
-      <form className="flex flex-col gap-4">
-        <h1 className="text-xl font-bold mb-4 text-center">
-          Here&apos;s what we found that best matches your search.
-        </h1>
-        <p className="text-gray-400 text-sm">
+        <>
+        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+          <p
+            className="cursor-pointer hover:text-[#0096C7]"
+            onClick={() => window.history.back()}>
+            <ArrowLeft />
+          </p>
+          <p
+            className="cursor-pointer hover:text-red-600"
+            onClick={() => (window.location.href = '/')}>
+            <X />
+          </p>
+        </div>
+        <form className="flex flex-col gap-4" onSubmit={submitAnswer}>
+          <h1 className="text-xl font-bold mb-4 text-center">
+            Here&apos;s what we found that best matches your search.
+          </h1>
+          <p className="text-gray-400 text-sm">
             Zip Code: {zipcode} | {location}
-        </p>
-     
-        {bestMatch && (
-          <ul>
-            <li className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-300 rounded shadow-sm">
-              <input
-                type="checkbox"
-                checked={selectedIds.has(bestMatch.id)}
-                onChange={() => toggleSelect(bestMatch.id)}
-                className="form-checkbox h-5 w-5 text-blue-600"
-                id={`cat-${bestMatch.id}`}
-              />
-              <label htmlFor={`cat-${bestMatch.id}`} className="font-light text-gray-800 cursor-pointer">
-                {bestMatch.name}
-              </label>
-            </li>
-          </ul>
-        )}
+          </p>
 
-        {otherMatches.length > 0 && (
-          <>
-            <h2 className="text-md font-bold text-gray-700">Other Possible Matches</h2>
-            <ul className="space-y-3">
-              {otherMatches.map((cat) => (
-                <li
-                  key={cat.id}
-                  className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-md shadow-sm hover:shadow transition-shadow"
+          {bestMatch && (
+            <ul>
+              <li className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-300 rounded shadow-sm">
+                <input
+                  type="radio"
+                  name="answer"
+                  checked={selectedCategory?.id === bestMatch.id}
+                  onChange={() => toggleSelect(bestMatch.id)}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                  id={`cat-${bestMatch.id}`}
+                />
+                <label
+                  htmlFor={`cat-${bestMatch.id}`}
+                  className="font-light text-gray-800 cursor-pointer"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(cat.id)}
-                    onChange={() => toggleSelect(cat.id)}
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    id={`cat-${cat.id}`}
-                  />
-                  <label htmlFor={`cat-${cat.id}`} className="font-light text-gray-800 cursor-pointer">
-                    {cat.name}
-                  </label>
-                </li>
-              ))}
+                  {bestMatch.name}
+                </label>
+              </li>
             </ul>
-          </>
-        )}
+          )}
 
-        {!bestMatch && otherMatches.length === 0 && (
-          <p className="text-gray-500 italic text-center">No results matched your search.</p>
-        )}
+          {otherMatches.length > 0 && (
+            <>
+              <h2 className="text-md font-bold text-gray-700">Other Possible Matches</h2>
+              <ul className="space-y-3">
+                {otherMatches.map((cat) => (
+                  <li
+                    key={cat.id}
+                    className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-md shadow-sm hover:shadow transition-shadow"
+                  >
+                    <input
+                      type="radio"
+                      name="answer"
+                      checked={selectedCategory?.id === cat.id}
+                      onChange={() => toggleSelect(cat.id)}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                      id={`cat-${cat.id}`}
+                    />
+                    <label
+                      htmlFor={`cat-${cat.id}`}
+                      className="font-light text-gray-800 cursor-pointer"
+                    >
+                      {cat.name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
-        <p className="font-extralight text-sm my-2 text-center">
-          Not what you are looking for?{' '}
-          <Link className="text-[#0077B6]" href="/">
-            Edit your search
-          </Link>
-        </p>
+          {!bestMatch && otherMatches.length === 0 && (
+            <p className="text-gray-500 italic text-center">
+              No results matched your search.
+            </p>
+          )}
 
-        <SearchButton type="Next" loading={false} />
-      </form>
-    </div>
+          <p className="font-extralight text-sm my-2 text-center">
+            Not what you are looking for?{' '}
+            <Link className="text-[#0077B6]" href="/">
+              Edit your search
+            </Link>
+          </p>
+
+          <div className="flex flex-row mx-auto w-[50%] gap-2">
+            <ResetButton type="Skip" loading={false} />
+            <SearchButton type="Next" loading={false} />
+          </div>
+        </form>
+     </>
   );
 }
