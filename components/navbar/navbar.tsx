@@ -3,6 +3,7 @@ import MobileMenu from "./mobileMenu";
 import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
 import Logout from "../auth/Logout";
+import Image from "next/image";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],
@@ -21,7 +22,7 @@ const Navbar = async () => {
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-semibold">
-          Connector
+          <Image src="/us-connector.png" alt="US Connector Logo" width={60} height={8} />
         </Link>
 
         {/* Mobile Menu (Client Component) */}
