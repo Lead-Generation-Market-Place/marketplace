@@ -98,7 +98,7 @@ export default function SearchResult({
   // Handle early returns after all hooks
   if (exactMatch && exactMatch.length > 0) {
     return <>
-    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
       <p
         className="cursor-pointer hover:text-[#0096C7]"
         onClick={() => window.history.back()}>
@@ -116,7 +116,7 @@ export default function SearchResult({
 
   if (submitted && selectedCategory) {
     return <>
-    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
       <p
         className="cursor-pointer hover:text-[#0096C7]"
         onClick={() => window.history.back()}>
@@ -137,7 +137,7 @@ export default function SearchResult({
 
   return (
         <>
-        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 text-sm">
+        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
           <p
             className="cursor-pointer hover:text-[#0096C7]"
             onClick={() => window.history.back()}>
@@ -159,7 +159,7 @@ export default function SearchResult({
 
           {bestMatch && (
             <ul>
-              <li className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-300 rounded shadow-sm">
+              <li className="flex items-center gap-3 p-4 bg-[#0096C7]/10 border border-[#0096C7] rounded shadow-sm">
                 <input
                   type="radio"
                   name="answer"
@@ -170,7 +170,7 @@ export default function SearchResult({
                 />
                 <label
                   htmlFor={`cat-${bestMatch.id}`}
-                  className="font-light text-gray-800 cursor-pointer"
+                  className="text-gray-800 cursor-pointer"
                 >
                   {bestMatch.name}
                 </label>

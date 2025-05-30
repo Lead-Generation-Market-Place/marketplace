@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
+import TextPlaceholder from "../elements/TextPlaceholder";
 
 // Supabase models
 interface Answer {
@@ -98,8 +99,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold mb-4">Service Questions</h1>
-        <p>Loading...</p>
+        <TextPlaceholder/>
       </div>
     );
   }
@@ -198,6 +198,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
       <div className="mt-4 text-xs text-gray-400">
         Question {currentQuestion + 1} of {questions.length}
       </div>
+   
     </div>
   );
 }

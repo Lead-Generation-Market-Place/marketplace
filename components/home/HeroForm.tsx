@@ -2,6 +2,8 @@
 import { useEffect, useState,useTransition } from "react";
 import { useRouter } from "next/navigation";
 import SearchButton from "../elements/SearchButton";
+import Image from "next/image";
+
 
 
 
@@ -99,10 +101,10 @@ export default function HeroForm() {
     return (
         <>
         {/* carousel */}
-        <p className="text-center mt-4">
-            <span className="p-2 font-bold rounded-full bg-[#0077B6] text-white">US-C</span>
+        <p className="flex justify-center items-center my-3">
+            <Image src="/us-connector.png" alt="US Connector Logo" width={100} height={40} />
         </p>
-         <div className="relative w-full h-20 flex items-center justify-center">
+         <div className="relative w-full h-20 flex items-center mb-2 mt-1 justify-center">
             <p
             className={`text-4xl font-black text-center transition-opacity duration-1000 font- ${
                 fade ? "opacity-100" : "opacity-0"
@@ -110,34 +112,36 @@ export default function HeroForm() {
             {slides[index]}
             </p>
         </div>
-        <p className="font-bold text-[#0077B6] font-bold text-center uppercase">Simplifying Home Services</p>
+        <p className="text-[#0077B6] text-xl text-center font-black">Smarter Home Services</p>
         {/* carousel */}
         <div className="lg:mx-50 xl:mx-50 md:mx-30 sm:mx-10 my-3">
-            <form action="#" onSubmit={handleSubmit}
-            className="flex flex-row flex-nowrap border border-gray-200 shadow p-3">
-                <div className="flex-[70%]">
-                    <input
-                    type="search"
-                    name="search"
-                    id="search"
-                    className="outline-none placeholder:font-normal font-bold p-3 m-0 w-full border-r border-gray-200"
-                    placeholder="What brings you here?  Share a bit about it..."
-                    />
-                </div>
-                <div className="flex-[20%]">
-                    <input
-                    type="number"
-                    name="zipcode"
-                    id="zipcode"
-                    className="outline-none placeholder:font-normal font-bold p-3 m-0 w-full"
-                    placeholder="Zip Code"
-                    onChange={async (e) => {
+            <form
+            action="#"
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row border border-gray-200 shadow p-2 gap-2 sm:gap-0"
+            >
+            <div className="sm:flex-[70%] w-full sm:w-auto">
+                <input
+                type="search"
+                name="search"
+                id="search"
+                className="w-full p-3 m-0 font-bold outline-none placeholder:font-normal border rounded-sm sm:border-none sm:rounded-none sm:border-r sm:border-gray-200"
+                placeholder="What brings you here?  Share a bit about it..."
+                />
+            </div>
+            <div className="sm:flex-[20%] w-full sm:w-auto">
+                <input
+                type="number"
+                name="zipcode"
+                id="zipcode"
+                className="w-full p-3 m-0 font-bold outline-none placeholder:font-normal border rounded-sm sm:border-none sm:rounded-none"
+                placeholder="Zip Code"
+                onChange={async (e) => {
                     const zip = e.target.value;
                     if (zip.length === 5) {
                     const location = await fetchCityState(zip);
                     if (location) {
                         setLocationInfo("Location: " + location.state + ", " + location.city);
-                       
                     } else {
                         setLocationInfo(null);
                     }
@@ -145,13 +149,15 @@ export default function HeroForm() {
                     setLocationInfo(null);
                     }
                 }}
-                    />
-                    
-                </div>
-                <div className="flex-[10%]">
-                    <SearchButton type="Search" loading={loading}/>
-                </div>
+                />
+            </div>
+            <div className="sm:flex-[10%] w-full sm:w-auto">
+                <SearchButton type="Search" loading={loading} />
+            </div>
             </form>
+            <div className="text-center text-sm">
+                <p className="pt-3">Join 4.5 million+ users <span className="text-green-600">• 4.9-star</span> rating with 300k+ App Store reviews</p>
+            </div>
             {waiting ? (
                 
                 <div role="status">
