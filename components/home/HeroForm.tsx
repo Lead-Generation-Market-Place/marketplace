@@ -99,7 +99,7 @@ export default function HeroForm() {
     }, [index]);
   
     return (
-        <>
+        <div className="h-[70vh]">
         {/* carousel */}
         <p className="flex justify-center items-center my-3">
             <Image src="/us-connector.png" alt="US Connector Logo" width={100} height={40} />
@@ -174,6 +174,6 @@ export default function HeroForm() {
           
             <small className="text-red">{error}</small>
         </div>
-        </>
+        </div>
     );
 }
