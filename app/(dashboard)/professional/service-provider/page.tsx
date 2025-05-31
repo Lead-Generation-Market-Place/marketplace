@@ -24,35 +24,38 @@ const SearchServices = () => {
 
   const [serviceSuggestions, setServiceSuggestions] = useState<string[]>([]);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
-  const [ignoreServiceSuggestionFetch, setIgnoreServiceSuggestionFetch] =
-    useState(false);
+  const [ignoreServiceSuggestionFetch, setIgnoreServiceSuggestionFetch] = useState(false);
 
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [ignoreLocationSuggestionFetch, setIgnoreLocationSuggestionFetch] =
-    useState(false);
+  const [ignoreLocationSuggestionFetch, setIgnoreLocationSuggestionFetch] = useState(false);
 
   const [results, setResults] = useState<ServiceResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [currentStage, setCurrentStage] = useState(1);
 
+  // Faster debounce time: 150ms
   useEffect(() => {
     if (ignoreServiceSuggestionFetch) return;
     const timeout = setTimeout(async () => {
       if (service.length > 1) {
         try {
           const res = await SearchServiceSuggestions(service);
-          setServiceSuggestions(res || []);
+          if (res && res.length > 0) {
+            setServiceSuggestions(res);
+          } else {
+            setServiceSuggestions([]);
+          }
           setShowServiceSuggestions(true);
         } catch {
           setServiceSuggestions([]);
-          setShowServiceSuggestions(false);
+          setShowServiceSuggestions(true);
         }
       } else {
         setServiceSuggestions([]);
         setShowServiceSuggestions(false);
       }
-    }, 300);
+    }, 150);
     return () => clearTimeout(timeout);
   }, [service, ignoreServiceSuggestionFetch]);
 
@@ -62,17 +65,21 @@ const SearchServices = () => {
       if (location.length > 1) {
         try {
           const res = await SearchLocationSuggestions(location);
-          setLocationSuggestions(res || []);
+          if (res && res.length > 0) {
+            setLocationSuggestions(res);
+          } else {
+            setLocationSuggestions([]);
+          }
           setShowLocationSuggestions(true);
         } catch {
           setLocationSuggestions([]);
-          setShowLocationSuggestions(false);
+          setShowLocationSuggestions(true);
         }
       } else {
         setLocationSuggestions([]);
         setShowLocationSuggestions(false);
       }
-    }, 300);
+    }, 150);
     return () => clearTimeout(timeout);
   }, [location, ignoreLocationSuggestionFetch]);
 
@@ -97,8 +104,11 @@ const SearchServices = () => {
           setResults(result.data);
           setCurrentStage(2);
 
-          // Redirect here
-          router.push("/professional/services");
+          router.push(
+            `/professional/services?service=${encodeURIComponent(
+              service
+            )}&location=${encodeURIComponent(location)}`
+          );
         }
       } else {
         toast.error("Search Failed", {
@@ -147,8 +157,8 @@ const SearchServices = () => {
   if (currentStage !== 1) return null;
 
   return (
-    <div className="flex justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-2xl mt-4">
+    <div className="flex justify-center px-4">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-2xl mt-4 shadow-md">
         <h1 className="text-2xl font-bold text-center text-gray-900">
           Find Services in Your Area
         </h1>
@@ -157,7 +167,8 @@ const SearchServices = () => {
           searching daily.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6 relative">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6 relative" autoComplete="off">
+          {/* Service Input */}
           <div>
             <label
               htmlFor="service"
@@ -174,15 +185,13 @@ const SearchServices = () => {
                 value={service}
                 onChange={handleServiceChange}
                 placeholder="e.g. Home Cleaning"
-                autoComplete="off"
                 required
                 className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm"
               />
-              {showServiceSuggestions &&
-                serviceSuggestions.length > 0 &&
-                !serviceSuggestions.includes(service) && (
-                  <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-[4px] max-h-48 overflow-y-auto">
-                    {serviceSuggestions.map((item, i) => (
+              {showServiceSuggestions && (
+                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-[4px] max-h-48 overflow-y-auto">
+                  {serviceSuggestions.length > 0 ? (
+                    serviceSuggestions.map((item, i) => (
                       <li
                         key={i}
                         className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50"
@@ -190,12 +199,18 @@ const SearchServices = () => {
                       >
                         {item}
                       </li>
-                    ))}
-                  </ul>
-                )}
+                    ))
+                  ) : (
+                    <li className="px-4 py-2 text-sm text-gray-500 italic select-none">
+                      No suggestions
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
 
+          {/* Location Input */}
           <div>
             <label
               htmlFor="location"
@@ -212,15 +227,13 @@ const SearchServices = () => {
                 value={location}
                 onChange={handleLocationChange}
                 placeholder="e.g. New York"
-                autoComplete="off"
                 required
                 className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm"
               />
-              {showLocationSuggestions &&
-                locationSuggestions.length > 0 &&
-                !locationSuggestions.includes(location) && (
-                  <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-[4px] max-h-48 overflow-y-auto">
-                    {locationSuggestions.map((item, i) => (
+              {showLocationSuggestions && (
+                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-[4px] max-h-48 overflow-y-auto">
+                  {locationSuggestions.length > 0 ? (
+                    locationSuggestions.map((item, i) => (
                       <li
                         key={i}
                         className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50"
@@ -228,12 +241,18 @@ const SearchServices = () => {
                       >
                         {item}
                       </li>
-                    ))}
-                  </ul>
-                )}
+                    ))
+                  ) : (
+                    <li className="px-4 py-2 text-sm text-gray-500 italic select-none">
+                      No suggestions
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
 
+          {/* Submit Button */}
           <div>
             <button
               type="submit"
@@ -245,11 +264,12 @@ const SearchServices = () => {
               }`}
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Search
+              Search Services
             </button>
           </div>
         </form>
 
+        {/* Search Results */}
         <div className="mt-8">
           {results.length > 0 && (
             <ul className="space-y-4 mt-4">
@@ -274,6 +294,7 @@ const SearchServices = () => {
           )}
         </div>
 
+        {/* Help Section */}
         <div className="pt-6 text-center text-sm text-gray-500">
           Need help? Call{" "}
           <a

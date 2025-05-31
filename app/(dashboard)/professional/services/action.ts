@@ -1,29 +1,48 @@
-'use server'
+'use server';
+
 import { createClient } from "@/utils/supabase/server";
 
-
-import { revalidatePath } from 'next/cache'
-
-const allServices = [
-  'TV Mounting',
-  'TV Repair Services',
-  'Home Theater System Installation or Replacement',
-  'Home Theater System Repair or Service',
-  'Satellite Dish Services',
-]
-
-export async function handleServiceSubmit(formData: FormData) {
-  const supabase = await createClient();
-  const selected = allServices.filter(label => {
-    const id = label.toLowerCase().replace(/\s+/g, '_')
-    return formData.get(id) === 'on'
-  })
-
-  const userId = 'user-id-placeholder' // TODO: Replace with actual Supabase user ID
-  const { error } = await supabase
-    .from('user_services')
-    .upsert({ user_id: userId, services: selected })
-
-  if (error) throw new Error('Failed to save services')
-  revalidatePath('/')
+function capitalizeWords(str: string) {
+  if (!str) return str;
+  return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
+export const SearchServices = async () => {
+  const supabase = await createClient();
+  const { data: serviceData, error } = await supabase
+    .from('services')
+    .select('*');
+
+  if (error) {
+    return {
+      status: 'error',
+      message: error.message,
+      data: null,
+    };
+  }
+
+  if (!serviceData || !Array.isArray(serviceData)) {
+    return {
+      status: 'error',
+      message: 'No service data found or data is not an array',
+      data: null,
+    };
+  }
+
+  // Capitalize each word safely
+  const capitalizedData = serviceData.map((service) => {
+    let name = service.name;
+    if (typeof name === 'string') {
+      name = capitalizeWords(name);
+    }
+    return {
+      ...service,
+      name,
+    };
+  });
+
+  return {
+    status: 'success',
+    data: capitalizedData,
+  };
+};
