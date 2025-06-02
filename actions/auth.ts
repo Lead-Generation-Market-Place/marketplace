@@ -139,7 +139,6 @@ export async function signInWithGoogle() {
   // Optionally handle unexpected state here if needed
 }
 
-
 export async function UnPassword(formData: FormData) {
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
@@ -169,8 +168,31 @@ export async function resetLink(formData: FormData, code: string) {
   const { error } = await supabase.auth.updateUser({
     password: formData.get("password") as string,
   });
-    if (error) {
+  if (error) {
     return { status: error?.message };
   }
   return { status: "success" };
+}
+
+export async function VerifyOtp() {
+  const supabase = await createClient();
+
+
+  // Now the user should be signed in, so fetch user info
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      status: userError?.message || 'User not authenticated after verification',
+      user: null,
+    };
+  }
+
+  return {
+    status: 'success',
+    user,
+  };
 }
