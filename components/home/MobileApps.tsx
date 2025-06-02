@@ -1,8 +1,23 @@
-export default function MobileApps() {
+import Image from "next/image";
+
+const MobileApps = () => {
     return (
-        <div className="flex flex-row h-[75vh] overflow-hidden bg-[#0077B6]/20 p-10">
+        <div className="flex my-15 flex-row h-[60vh] overflow-hidden bg-sky-500 p-10 rounded-lg">
             <div className="flex-[50%]">
-                <div className="w-3/4 mx-auto my-10 flex flex-col justify-center items-start">
+                <div className="w-3/4 mx-auto my-10 text-white flex flex-col justify-center items-start">
+                    <div className="flex flex-row gap-4">
+                        <p className="text-xs">Available On</p>
+                        <Image
+                        src="/apple.svg"
+                        width={15}
+                        height={15}
+                        alt="Professional Image"/>
+                        <Image
+                        src="/google.svg"
+                        width={15}
+                        height={15}
+                        alt="Professional Image"/>
+                    </div>
                     <h1 className="font-semibold mb-4">
                         <p className="text-4xl font-dark">
                             The only app you need to stay on <span className="text-[#0077B6]">top of everything.</span>
@@ -28,8 +43,10 @@ export default function MobileApps() {
 
             </div>
             <div className="">
-                <img src="/mobile.svg" alt="mobile" width={500} height={450} />
+                <img src="/mobile.svg" alt="mobile" width={300} height={250} />
             </div>
         </div>
     );
 }
+
+export default MobileApps;

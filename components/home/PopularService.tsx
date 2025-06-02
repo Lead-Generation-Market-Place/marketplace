@@ -1,8 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import Image from "next/image";
+
 
 type Service = {
   id: number;
@@ -19,7 +21,7 @@ export default function PopularService() {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .limit(8);
+        .limit(4);
 
       if (error) {
         console.error("Error fetching services:", error);
@@ -32,32 +34,35 @@ export default function PopularService() {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen my-10 px-4">
-      <div className="mb-6">
-        <Image
-          src="/service.svg"
-          alt="Landing Image"
-          width={600}
-          height={150}
-        />
+    <div className="my-20"> 
+      <div className="flex justify-between">
+          <h2 className="text-lg font-semibold">
+            Services people love in{" "}
+            <span className="text-sky-500">Your Area</span>
+          </h2>
+           <Link  href="#" className="underline hover:text-sky-500 text-xs font-semibold">All Services</Link>
       </div>
-
-      <h1 className="text-xl font-semibold mb-6 text-center">
-        Services people love in{" "}
-        <span className="text-[#0077B6]">Your Area</span>
-      </h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-6xl">
-        {services?.map((service) => (
-          <div
-            key={service.id}
-            className="bg-white shadow-sm hover:shadow-md transition w-full p-4 rounded-lg border border-gray-200 flex flex-col justify-center items-center text-center"
-          >
-            <h2 className="font-semibold text-lg capitalize mb-2">
-              {service.name}
-            </h2>
-            <p className="text-gray-500 text-sm">{service.description}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-6xl">
+        {services?.map((service, idx) => (
+          // card start
+          <div key={service.id} className="bg-gray-100/50 flex flex-row">
+              <div className="flex-2 p-3">
+                  <div className="">
+                      <h2 className="font-semibold text-sm">
+                          {service.name}
+                      </h2>
+                      <p className="text-sm">{service.description}</p>
+                  </div>
+              </div>
+              <Image
+              src={`/services/service${idx + 1}.png`} 
+              width={80}
+              height={80}
+              alt="Professional Image"
+              className="w-60 h-30 object-cover flex-1"/>
           </div>
+          // card end
+          
         )) || <p>Loading services...</p>}
       </div>
     </div>
