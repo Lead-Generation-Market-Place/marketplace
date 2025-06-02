@@ -55,7 +55,7 @@ export default function PopularService() {
                   </div>
               </div>
               <Image
-              src={`/services/service${idx + 1}.png`} 
+              src={`/services/serv${idx + 1}.png`} 
               width={80}
               height={80}
               alt="Professional Image"
