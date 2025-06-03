@@ -34,15 +34,15 @@ export default function PopularService() {
   }, []);
 
   return (
-    <div className="my-20"> 
+    <div className="my-20 w-full max-w-6xl mx-auto px-2"> 
       <div className="flex justify-between">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold py-1">
             Services people love in{" "}
             <span className="text-sky-500">Your Area</span>
           </h2>
-           <Link  href="#" className="underline hover:text-sky-500 text-xs font-semibold">All Services</Link>
+           <Link  href="#" className="underline hover:text-sky-500 text-xs font-500">All Services</Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-6xl">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center">
         {services?.map((service, idx) => (
           // card start
           <div key={service.id} className="bg-gray-100/50 flex flex-row">

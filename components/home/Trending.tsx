@@ -40,11 +40,11 @@ const Trending = () => {
   },
 ];
   return (
-     <div className="">
-        <h2 className="text-xl font-semibold">
+     <div className="w-full max-w-6xl mx-auto px-2">
+        <h2 className="text-xl font-semibold py-1">
             Trending Services of US-Connector
         </h2>
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center w-full max-w-6xl mx-auto px-2">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center">
                 {services.map((service, idx) => (
                 <div
                     key={idx}

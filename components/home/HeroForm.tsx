@@ -99,7 +99,7 @@ export default function HeroForm() {
     }, [index]);
   
     return (
-        <div className="h-[100vh] sm:h-[100vh] md:h-[80vh] lg:h-[70vh] xl:h-[70vh]">
+        <div className="h-[80vh] sm:h-[80vh] md:h-[75vh] lg:h-[70vh] xl:h-[70vh]">
         {/* carousel */}
         <p className="flex justify-center items-center my-3">
             <Image src="/us-connector.png" alt="US Connector Logo" width={100} height={40} />
@@ -156,7 +156,7 @@ export default function HeroForm() {
             </div>
             </form>
             <div className="text-center text-sm">
-                <p className="pt-3">Join 4.5 million+ users <span className="text-green-600">• 4.9-star</span> rating with 300k+ App Store reviews</p>
+                <p className="pt-3">Join 4.5 million+ users <span className="text-green-600">• 4.9 &#9733;</span> rating with 300k+ App Store reviews</p>
             </div>
             {waiting ? (
                 

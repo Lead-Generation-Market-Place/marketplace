@@ -15,7 +15,6 @@ const page = () => {
       <div className="">
        <HeroForm />
        {/* Homepage content start */}
-        <div className="mx-4 sm:mx-8 md:mx-16 lg:mx-24 xl:mx-32">
           <Promotion />
           <PopularService/>
           <TopPick />
@@ -23,7 +22,6 @@ const page = () => {
           <Trending />
           <NewService />
           <MobileApps />
-        </div>
         {/* Homepage content end */}
       </div>
     </div>
