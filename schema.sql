@@ -53,10 +53,11 @@ CREATE TABLE professional_profiles (
 CREATE TABLE service_providers (
     provider_id UUID PRIMARY KEY,  -- Unique provider ID
     user_id UUID REFERENCES users(id),  -- Link to user account
-    business_roles TEXT,  -- Services they offer (e.g., "Cleaner") 
-    introduction TEXT,  -- Bio or about (e.g., "35+ years of experience...")
+    //business_roles TEXT,  -- Services they offer (e.g., "Cleaner") 
+    //introduction TEXT,  -- Bio or about (e.g., "35+ years of experience...")
     years_in_business INT,  -- Business experience
     employees_count INT,  -- Size of business team
+    business_types TEXT CHECK (background_check_status IN ('handyman', 'company'))
     background_check_status TEXT CHECK (background_check_status IN ('pending', 'approved')), -- Background check status
     guarantee BOOLEAN,  -- Offers service guarantee? --Pro
     visibility_level TEXT CHECK (visibility_level IN ('standard', 'featured')) DEFAULT 'standard',
