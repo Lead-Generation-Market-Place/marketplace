@@ -1,23 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
+import React, { useState, useEffect, useTransition } from "react";
 import { Loader2, MapPin, Search } from "lucide-react";
-import {
-  ProfessionalServices,
-  SearchServiceSuggestions,
-  SearchLocationSuggestions,
-} from "@/actions/service";
+import { toast } from "sonner";
+import { SearchServiceSuggestions, SearchLocationSuggestions } from "@/actions/service";
 import { useRouter } from "next/navigation";
 
-interface ServiceResult {
-  id: string;
-  name: string;
-  location?: string;
-}
-
 const SearchServices = () => {
-  const [loading, setLoading] = useState(false);
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
   const router = useRouter();
@@ -30,9 +19,7 @@ const SearchServices = () => {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [ignoreLocationSuggestionFetch, setIgnoreLocationSuggestionFetch] = useState(false);
 
-  const [results, setResults] = useState<ServiceResult[]>([]);
-  const [searched, setSearched] = useState(false);
-  const [currentStage, setCurrentStage] = useState(1);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (ignoreServiceSuggestionFetch) return;
@@ -74,61 +61,30 @@ const SearchServices = () => {
     return () => clearTimeout(timeout);
   }, [location, ignoreLocationSuggestionFetch]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    setSearched(false);
 
-    const formData = new FormData();
-    formData.append("service", service);
-    formData.append("location", location);
-
-    try {
-      const result = await ProfessionalServices(formData);
-      setSearched(true);
-
-      if (result.status === "success") {
-        if (!Array.isArray(result.data) || result.data.length === 0) {
-          toast.error("No services found for your search.");
-          setResults([]);
-        } else {
-          setResults(result.data);
-          setCurrentStage(2);
-
-          router.push(
-            `/professional/services?service=${encodeURIComponent(service)}&location=${encodeURIComponent(location)}`
-          );
-        }
-      } else {
-        toast.error("Search Failed", {
-          description: result.message || "Something went wrong.",
-        });
-        setResults([]);
-      }
-    } catch {
-      toast.error("Search Failed", {
-        description: "Something went wrong.",
-      });
-      setResults([]);
+    if (!service || !location) {
+      toast.error("Please enter both service and location.");
+      return;
     }
-
-    setLoading(false);
-    setShowServiceSuggestions(false);
-    setShowLocationSuggestions(false);
+    startTransition(() => {
+      router.push(
+        `/professional/services?service=${encodeURIComponent(service)}&location=${encodeURIComponent(location)}`
+      );
+    });
   };
 
-  const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setService(e.target.value);
-    if (ignoreServiceSuggestionFetch) setIgnoreServiceSuggestionFetch(false);
-    setResults([]);
-    setSearched(false);
-  };
+const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setService(e.target.value);
+  if (ignoreServiceSuggestionFetch && e.target.value !== service) {
+    setIgnoreServiceSuggestionFetch(false);
+  }
+};
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
     if (ignoreLocationSuggestionFetch) setIgnoreLocationSuggestionFetch(false);
-    setResults([]);
-    setSearched(false);
   };
 
   const handleServiceSuggestionClick = (text: string) => {
@@ -142,8 +98,6 @@ const SearchServices = () => {
     setShowLocationSuggestions(false);
     setIgnoreLocationSuggestionFetch(true);
   };
-
-  if (currentStage !== 1) return null;
 
   return (
     <div className="flex justify-center px-4">
@@ -236,54 +190,29 @@ const SearchServices = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className={`w-full flex justify-center items-center gap-2 py-3 rounded-md font-semibold text-sm text-white transition ${
-                loading
+                isPending
                   ? "bg-[#0077B6]/70 cursor-not-allowed"
                   : "bg-[#0077B6] hover:bg-[#005f8e]"
               }`}
             >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Search Services
             </button>
           </div>
         </form>
 
-        {/* Search Results */}
-        <div className="mt-8">
-          {results.length > 0 && (
-            <ul className="space-y-4 mt-4">
-              {results.map((res) => (
-                <li
-                  key={res.id}
-                  className="border border-gray-200 dark:border-gray-600 p-4 rounded-lg shadow-sm hover:shadow-md transition"
-                >
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    {res.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{res.location}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {searched && results.length === 0 && (
-            <p className="mt-4 text-center text-red-600 dark:text-red-400 font-semibold">
-              No services found matching your search criteria.
-            </p>
-          )}
-        </div>
-
         {/* Help Section */}
         <div className="pt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          Need help? Call {" "}
+          Need help? Call{" "}
           <a
             href="tel:+12028304424"
             className="text-[#0077B6] font-medium hover:underline"
           >
             +1 (202) 830-4424
           </a>{" "}
-          or {" "}
+          or{" "}
           <a href="#" className="text-[#0077B6] font-medium hover:underline">
             request a call
           </a>

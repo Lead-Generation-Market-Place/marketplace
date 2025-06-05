@@ -1,5 +1,5 @@
 import { SearchServices } from './action';
-import SetupForm from '@/components/dashboard/service/ServiceList';
+import SetupForm from '@/components/dashboard/service-provider/serviceList';
 
 export default async function SetupPage() {
   const result = await SearchServices();

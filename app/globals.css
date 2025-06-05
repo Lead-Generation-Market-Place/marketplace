@@ -123,6 +123,46 @@ body {
   font-family: var(--font-poppins), sans-serif;
 }
 
+/* Override all Sonner toast text colors to black */
+.toaster,
+.toaster * {
+  color: black !important;
+}
+
+/* Also explicitly target title and description */
+.toaster .sonner-toast-title,
+.toaster .sonner-toast-description {
+  color: black !important;
+}
+
+.menu-item {
+  @apply flex items-center text-sm font-medium px-3 py-2 rounded-md transition-all;
+}
+.menu-item-active {
+  @apply bg-brand-100 text-[#0077B6];
+}
+.menu-item-inactive {
+  @apply text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800;
+}
+.menu-dropdown-item {
+  @apply flex items-center text-sm px-3 py-1 rounded-md transition-all;
+}
+.menu-dropdown-item-active {
+  @apply text-brand-600 bg-brand-50 font-semibold;
+}
+.menu-dropdown-item-inactive {
+  @apply text-gray-500 hover:text-gray-900;
+}
+.menu-dropdown-badge {
+  @apply text-xs px-2 py-0.5 rounded-full;
+}
+.menu-dropdown-badge-active {
+  @apply bg-brand-100 text-[#0077B6];
+}
+.menu-dropdown-badge-inactive {
+  @apply bg-gray-200 text-gray-700;
+}
+
 
 
 @layer base {
@@ -176,12 +216,12 @@ body {
   --color-brand-25: #f2f7ff;
   --color-brand-50: #ecf3ff;
   --color-brand-100: #dde9ff;
-  --color-brand-200: #c2d6ff;
+  --color-brand-200: #0077B6;
   --color-brand-300: #9cb9ff;
-  --color-brand-400: #7592ff;
-  --color-brand-500: #465fff;
+  --color-[#0077B6]: #7592ff;
+  --color-[#0077B6]: #465fff;
   --color-brand-600: #3641f5;
-  --color-brand-700: #2a31d8;
+  --color-[#0077B6]: #2a31d8;
   --color-brand-800: #252dae;
   --color-brand-900: #262e89;
   --color-brand-950: #161950;
@@ -332,7 +372,7 @@ body {
 }
 
 @utility menu-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-brand-50 text-[#0077B6] dark:bg-[#0077B6]/[0.12] dark:text-[#0077B6];
 }
 
 @utility menu-item-inactive {
@@ -344,7 +384,7 @@ body {
 }
 
 @utility menu-item-icon-active {
-  @apply text-brand-500 dark:text-brand-400;
+  @apply text-[#0077B6] dark:text-[#0077B6];
 }
 
 @utility menu-item-icon-inactive {
@@ -356,7 +396,7 @@ body {
 }
 
 @utility menu-item-arrow-active {
-  @apply rotate-180 text-brand-500 dark:text-brand-400;
+  @apply rotate-180 text-[#0077B6] dark:text-[#0077B6];
 }
 
 @utility menu-item-arrow-inactive {
@@ -368,7 +408,7 @@ body {
 }
 
 @utility menu-dropdown-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-brand-50 text-[#0077B6] dark:bg-[#0077B6]/[0.12] dark:text-[#0077B6];
 }
 
 @utility menu-dropdown-item-inactive {
@@ -376,15 +416,15 @@ body {
 }
 
 @utility menu-dropdown-badge {
-  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-brand-500 dark:text-brand-400;
+  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-[#0077B6] dark:text-[#0077B6];
 }
 
 @utility menu-dropdown-badge-active {
-  @apply bg-brand-100 dark:bg-brand-500/20;
+  @apply bg-brand-100 dark:bg-[#0077B6]/20;
 }
 
 @utility menu-dropdown-badge-inactive {
-  @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
+  @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-[#0077B6]/15 dark:group-hover:bg-[#0077B6]/20;
 }
 
 @utility no-scrollbar {
@@ -472,7 +512,7 @@ body {
 
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-  @apply stroke-brand-500;
+  @apply stroke-[#0077B6];
 }
 .flatpickr-calendar.arrowTop:before,
 .flatpickr-calendar.arrowTop:after {
@@ -591,7 +631,7 @@ span.flatpickr-weekday,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
   background: #465fff;
-  @apply !border-brand-500 !bg-brand-500 hover:!border-brand-50 hover:!bg-brand-500;
+  @apply !border-[#0077B6] !bg-[#0077B6] hover:!border-brand-50 hover:!bg-[#0077B6];
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
@@ -655,7 +695,7 @@ span.flatpickr-weekday,
   @apply hidden;
 }
 .fc-addEventButton-button {
-  @apply !rounded-lg !border-0 !bg-brand-500 !px-4 !py-2.5 !text-sm !font-medium hover:!bg-brand-600 focus:!shadow-none;
+  @apply !rounded-lg !border-0 !bg-[#0077B6] !px-4 !py-2.5 !text-sm !font-medium hover:!bg-brand-600 focus:!shadow-none;
 }
 .fc-toolbar-title {
   @apply !text-lg !font-medium text-gray-800 dark:text-white/90;
@@ -736,7 +776,7 @@ span.flatpickr-weekday,
   @apply bg-error-500;
 }
 .event-fc-color.fc-bg-primary .fc-daygrid-event-dot {
-  @apply bg-brand-500;
+  @apply bg-[#0077B6];
 }
 .event-fc-color.fc-bg-warning .fc-daygrid-event-dot {
   @apply bg-orange-500;
@@ -835,13 +875,13 @@ span.flatpickr-weekday,
   @apply !bg-gray-50 dark:!bg-gray-900;
 }
 .jvectormap-region.jvectormap-element {
-  @apply !fill-gray-300 hover:!fill-brand-500 dark:!fill-gray-700 dark:hover:!fill-brand-500;
+  @apply !fill-gray-300 hover:!fill-[#0077B6] dark:!fill-gray-700 dark:hover:!fill-[#0077B6];
 }
 .jvectormap-marker.jvectormap-element {
   @apply !stroke-gray-200 dark:!stroke-gray-800;
 }
 .jvectormap-tip {
-  @apply !bg-brand-500 !border-none !px-2 !py-1;
+  @apply !bg-[#0077B6] !border-none !px-2 !py-1;
 }
 .jvectormap-zoomin,
 .jvectormap-zoomout {
@@ -849,17 +889,17 @@ span.flatpickr-weekday,
 }
 
 .form-check-input:checked ~ span {
-  @apply border-[6px] border-brand-500 bg-brand-500 dark:border-brand-500;
+  @apply border-[6px] border-[#0077B6] bg-[#0077B6] dark:border-[#0077B6];
 }
 
 .taskCheckbox:checked ~ .box span {
-  @apply opacity-100 bg-brand-500;
+  @apply opacity-100 bg-[#0077B6];
 }
 .taskCheckbox:checked ~ p {
   @apply text-gray-400 line-through;
 }
 .taskCheckbox:checked ~ .box {
-  @apply border-brand-500 bg-brand-500 dark:border-brand-500;
+  @apply border-[#0077B6] bg-[#0077B6] dark:border-[#0077B6];
 }
 
 .task {

@@ -47,7 +47,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col justify-between min-h-screen">
+    <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col justify-between ">
       <div className="max-w-xl mx-auto py-12 px-4">
         <div className="flex flex-col items-center text-center">
           {/* Step Indicator */}

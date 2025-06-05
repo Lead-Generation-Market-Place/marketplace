@@ -4,8 +4,71 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-//import { headers } from "next/headers";
+import { z } from "zod";
 
+// ──────────────────────────────────────────────
+// 1. Define Zod schemas for all form-based actions
+// ──────────────────────────────────────────────
+
+// Sign-up schema: email, username, password, confirmPassword
+const signUpSchema = z
+  .object({
+    email: z.string().min(1, "Email is required").email("Invalid email"),
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .max(30, "Username cannot exceed 30 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must include an uppercase letter")
+      .regex(/[a-z]/, "Password must include a lowercase letter")
+      .regex(/[^A-Za-z0-9]/, "Password must include a special character"),
+    confirmPassword: z.string().min(1, "Confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
+// Sign-in schema: email & password
+const signInSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+// Forgot-password (UnPassword) schema: email only
+const forgotPasswordSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+});
+
+// Reset-password schema: password & confirmPassword
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must include an uppercase letter")
+      .regex(/[a-z]/, "Password must include a lowercase letter")
+      .regex(/[^A-Za-z0-9]/, "Password must include a special character"),
+  })
+ 
+
+// ──────────────────────────────────────────────
+// 2. Helper to turn FormData into a plain object
+// ──────────────────────────────────────────────
+function formDataToObject(formData: FormData): Record<string, string | File> {
+  const obj: Record<string, string | File> = {};
+  formData.forEach((value, key) => {
+    obj[key] = value;
+  });
+  return obj;
+}
+
+
+// ──────────────────────────────────────────────
+// 3. getUserSession (no change needed)
+// ──────────────────────────────────────────────
 export async function getUserSession() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
@@ -18,29 +81,40 @@ export async function getUserSession() {
   };
 }
 
+// ──────────────────────────────────────────────
+// 4. signUp: validate via Zod, then supabase.auth.signUp
+// ──────────────────────────────────────────────
 export async function signUp(formData: FormData) {
-  const supabase = await createClient();
-  const credentials = {
-    email: formData.get("email") as string,
-    username: formData.get("username") as string,
-    password: formData.get("password") as string,
-  };
+  // 1) Convert FormData ➔ object
+  const payload = formDataToObject(formData);
 
-  const { error, data } = await supabase.auth.signUp({
-    email: credentials.email,
-    password: credentials.password,
-    options: {
-      data: {
-        username: credentials.username,
-      },
-    },
-  });
-  if (error) {
+  // 2) Validate with Zod
+  const parsed = signUpSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0];
     return {
-      status: error?.message,
+      status: firstError.message,
       user: null,
     };
-  } else if (data?.user?.identities?.length === 0) {
+  }
+  const { email, username, password } = parsed.data;
+
+  // 3) Proceed with Supabase sign-up
+  const supabase = await createClient();
+  const { error, data } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username },
+    },
+  });
+
+  if (error) {
+    return {
+      status: error.message,
+      user: null,
+    };
+  } else if (data.user?.identities?.length === 0) {
     return {
       status: "User with this email already exists",
       user: null,
@@ -54,34 +128,61 @@ export async function signUp(formData: FormData) {
   };
 }
 
+// ──────────────────────────────────────────────
+// 5. signIn: validate via Zod, then supabase.auth.signInWithPassword
+// ──────────────────────────────────────────────
 export async function signIn(formData: FormData) {
+  // 1) Convert FormData ➔ object
+  const payload = formDataToObject(formData);
+
+  // 2) Validate with Zod
+  const parsed = signInSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0];
+    return {
+      status: firstError.message,
+      user: null,
+    };
+  }
+  const { email, password } = parsed.data;
+
+  // 3) Proceed with Supabase sign-in
   const supabase = await createClient();
-  const credentials = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
-  const { error, data } = await supabase.auth.signInWithPassword(credentials);
+  const { error, data } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) {
     return {
-      status: error?.message,
+      status: error.message,
       user: null,
     };
   }
 
-  const { data: userExist } = await supabase
+  // 4) Ensure user profile exists in users_profiles
+  const { data: userExist, error: fetchError } = await supabase
     .from("users_profiles")
     .select("*")
-    .eq("email", credentials.email)
+    .eq("email", email)
     .limit(1)
     .single();
+
+  if (fetchError && fetchError.code !== "PGRST116") {
+    // Any error other than “no row found”
+    return {
+      status: fetchError.message,
+      user: null,
+    };
+  }
+
   if (!userExist) {
-    const { error: InserError } = await supabase.from("users_profiles").insert({
-      email: data?.user.email,
-      username: data?.user.user_metadata.username,
+    const { error: insertError } = await supabase.from("users_profiles").insert({
+      email: data.user.email,
+      username: data.user.user_metadata.username,
     });
-    if (InserError) {
+    if (insertError) {
       return {
-        status: InserError?.message,
+        status: insertError.message,
         user: null,
       };
     }
@@ -94,6 +195,9 @@ export async function signIn(formData: FormData) {
   };
 }
 
+// ──────────────────────────────────────────────
+// 6. logOut (no formData to validate)
+// ──────────────────────────────────────────────
 export async function logOut() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();
@@ -104,15 +208,15 @@ export async function logOut() {
   redirect("/login");
 }
 
+// ──────────────────────────────────────────────
+// 7. signInWithGithub (no formData to validate)
+// ──────────────────────────────────────────────
 export async function signInWithGithub() {
-  const origin = (await headers()).get("origin");
-
+  const origin = (await headers()).get("origin") ?? "";
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-    },
+    options: { redirectTo: `${origin}/auth/callback` },
   });
   if (error) {
     redirect("/error");
@@ -121,14 +225,15 @@ export async function signInWithGithub() {
   }
 }
 
+// ──────────────────────────────────────────────
+// 8. signInWithGoogle (no formData to validate)
+// ──────────────────────────────────────────────
 export async function signInWithGoogle() {
-  const origin = (await headers()).get("origin");
+  const origin = (await headers()).get("origin") ?? "";
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-    },
+    options: { redirectTo: `${origin}/auth/callback` },
   });
   if (error) {
     redirect("/error");
@@ -136,49 +241,71 @@ export async function signInWithGoogle() {
   if (data?.url) {
     redirect(data.url);
   }
-  // Optionally handle unexpected state here if needed
 }
 
+// ──────────────────────────────────────────────
+// 9. UnPassword (forgot password): validate email via Zod
+// ──────────────────────────────────────────────
 export async function UnPassword(formData: FormData) {
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-  const { error } = await supabase.auth.resetPasswordForEmail(
-    formData.get("email") as string,
-    {
-      redirectTo: `${origin}/reset-password`,
-    }
-  );
-  if (error) {
-    return {
-      status: error?.message,
-    };
-  }
-  return {
-    status: "success",
-  };
-}
+  // 1) Convert FormData ➔ object
+  const payload = formDataToObject(formData);
 
-export async function resetLink(formData: FormData, code: string) {
-  const supabase = await createClient();
-  const { error: setError } = await supabase.auth.exchangeCodeForSession(code);
-  if (setError) {
-    return { status: setError?.message };
+  // 2) Validate with Zod
+  const parsed = forgotPasswordSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0];
+    return { status: firstError.message };
   }
+  const { email } = parsed.data;
 
-  const { error } = await supabase.auth.updateUser({
-    password: formData.get("password") as string,
+  // 3) Proceed with Supabase password reset
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") ?? "";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
   });
   if (error) {
-    return { status: error?.message };
+    return { status: error.message };
   }
   return { status: "success" };
 }
 
+// ──────────────────────────────────────────────
+// 10. resetLink (reset password): validate new password via Zod
+// ──────────────────────────────────────────────
+export async function resetLink(formData: FormData, code: string) {
+  // 1) Convert FormData ➔ object
+  const payload = formDataToObject(formData);
+
+  // 2) Validate with resetPasswordSchema
+  const parsed = resetPasswordSchema.safeParse(payload);
+  if (!parsed.success) {
+    const firstError = parsed.error.errors[0];
+    return { status: firstError.message };
+  }
+  const { password } = parsed.data;
+
+  // 3) Exchange code for session
+  const supabase = await createClient();
+  const { error: setError } = await supabase.auth.exchangeCodeForSession(code);
+  if (setError) {
+    return { status: setError.message };
+  }
+
+  // 4) Update user password
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { status: error.message };
+  }
+
+  return { status: "success" };
+}
+
+// ──────────────────────────────────────────────
+// 11. VerifyOtp (no formData validation needed here)
+// ──────────────────────────────────────────────
 export async function VerifyOtp() {
   const supabase = await createClient();
-
-
-  // Now the user should be signed in, so fetch user info
   const {
     data: { user },
     error: userError,
@@ -186,13 +313,13 @@ export async function VerifyOtp() {
 
   if (userError || !user) {
     return {
-      status: userError?.message || 'User not authenticated after verification',
+      status: userError?.message || "User not authenticated after verification",
       user: null,
     };
   }
 
   return {
-    status: 'success',
+    status: "success",
     user,
   };
 }

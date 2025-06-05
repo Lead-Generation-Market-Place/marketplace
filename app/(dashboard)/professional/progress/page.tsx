@@ -2,7 +2,7 @@
 
 import React, { Suspense, FC } from "react";
 
-const SearchServices = React.lazy(() => import("@/components/dashboard/service-provider/business-name"));
+const SearchServices = React.lazy(() => import("@/components/dashboard/service-provider/progress"));
 
 const SkeletonLoader: FC = () => (
   <div role="status" aria-live="polite" className="w-full max-w-4xl mx-auto p-6">
@@ -19,7 +19,7 @@ const SkeletonLoader: FC = () => (
 
 const ParentComponent: FC = () => {
   return (
-    <main className="  dark:bg-gray-900 text-gray-900 dark:text-gray-100 ">
+    <main className="  dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6">
       <Suspense fallback={<SkeletonLoader />}>
         <SearchServices />
       </Suspense>
