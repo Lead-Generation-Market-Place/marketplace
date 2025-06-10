@@ -21,8 +21,10 @@ type Service = {
 export default function PopularService() {
   const [services, setServices] = useState<Service[] | null>(null);
   const supabase = createClient();
-  // Specify the type for Embla Carousel instance, or use 'unknown' if you're not sure
   const carouselRef = useRef<HTMLDivElement | null>(null);
+
+  // Track image errors by index
+  const [imageErrors, setImageErrors] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     async function fetchPopularServices() {
@@ -34,9 +36,12 @@ export default function PopularService() {
         setServices(data);
       }
     }
-
     fetchPopularServices();
   }, [supabase]);
+
+  const handleImageError = (idx: number) => {
+    setImageErrors((prev) => ({ ...prev, [idx]: true }));
+  };
 
   return (
     <div className="py-20 border">
@@ -62,11 +67,16 @@ export default function PopularService() {
                     <div className="flex flex-col items-center w-50 h-40 border border-gray-200 rounded pt-2 shadow bg-white">
                       <div>
                         <Image
-                          src={`/services/serv${idx + 1}.png`}
+                          src={
+                            imageErrors[idx]
+                              ? "/services/service-placeholder.svg"
+                              : `/services/serv${idx + 1}.png`
+                          }
                           width={100}
                           height={100}
                           alt="Professional Image"
                           className="w-20 h-25 object-cover"
+                          onError={() => handleImageError(idx)}
                         />
                       </div>
                       <p className="font-semibold text-sm capitalize mb-2 text-center">
