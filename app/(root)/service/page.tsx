@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/client';
-import SearchResult from '@/components/home/SearchResult';
-import SearchFilter from '@/components/home/SearchFilter';
-import ProsList from '@/components/home/ProsList';
+import SearchResult from '@/components/search/SearchResult';
+import SearchFilter from '@/components/search/SearchFilter';
+import ProsList from '@/components/search/ProsList';
 
 
 
@@ -37,7 +37,7 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
       </div>
     </div>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-sm shadow-lg max-w-3xl w-full my-5 px-6 py-5 text-sm">
+  <div className="bg-white rounded-sm shadow-lg max-w-3xl w-full px-6 py-5 text-sm max-h-[90vh] overflow-auto">
     <SearchResult
       categories={categories || []}
       search={searchKey}
@@ -46,8 +46,11 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
       location={locationInfo}
       fetchError={error?.message || null}
     />
-    </div>
-    </div>
+  </div>
+</div>
+
+
+
   </>
   );
 }

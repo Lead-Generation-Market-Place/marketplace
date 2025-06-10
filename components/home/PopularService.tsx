@@ -45,21 +45,16 @@ export default function PopularService() {
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center">
         {services?.map((service, idx) => (
           // card start
-          <div key={service.id} className="bg-gray-100/50 flex flex-row">
-              <div className="flex-2 p-3">
-                  <div className="">
-                      <h2 className="font-semibold text-sm">
-                          {service.name}
-                      </h2>
-                      <p className="text-sm">{service.description}</p>
-                  </div>
-              </div>
+          <div key={idx} className="flex flex-row items-center border border-gray-100 rounded p-2 hover:shadow tranistion-shadow">
+              <p className="font-semibold text-sm capitalize">{service.name}</p>
+              <div className="">
               <Image
-              src={`/services/serv${idx + 1}.png`} 
-              width={80}
-              height={80}
-              alt="Professional Image"
-              className="w-60 h-30 object-cover flex-1"/>
+                  src={`/services/serv${idx + 1}.png`} 
+                  width={100}
+                  height={100}
+                  alt="Professional Image"
+                  className="w-50 h-40 object-cover flex-1"/>
+              </div>
           </div>
           // card end
           
