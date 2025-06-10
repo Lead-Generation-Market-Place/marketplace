@@ -1,6 +1,6 @@
 const Statistics = () => {
   return (
-    <div className="bg-sky-500 p-8 w-full lg:h-80 xl:80 md:h-85 sm:90 my-20 py-10">
+    <div className="bg-sky-500 p-8 w-full lg:h-80 xl:80 md:h-85 sm:90 py-10">
         <div className="text-center p-10 text-white">
             <h2 className="text-2xl font-bold ">1 Billion +</h2>
             <p className="text-xs">Leads Generated On US-Connector</p>

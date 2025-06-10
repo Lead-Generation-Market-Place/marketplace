@@ -8,7 +8,7 @@ interface ServiceCardProps {
 
 const ServiceCard = ({ service }: ServiceCardProps) => {
   return (
-    <div className="bg-white hover:shadow-md border border-gray-100 transition-shadow duration-200 p-2 flex flex-col items-center">
+    <div className="bg-white hover:shadow-md border border-gray-100 rounded-t transition-shadow duration-200 overflow-hidden flex flex-col items-center">
       <div className="relative w-full h-40">
         <Image
           src={service.image}
@@ -19,7 +19,7 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
           priority
         />
       </div>
-      <div className="w-full flex-1 flex flex-col justify-between pt-2">
+      <div className="w-full flex-1 p-2 flex flex-col justify-between pt-2">
         <p className="text-sm font-semibold truncate">{service.serviceName}</p>
         <p className="text-xs text-gray-400 mb-1">
           <span className="text-green-500 font-semibold">{service.rating}&#9733;</span>

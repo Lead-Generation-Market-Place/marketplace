@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const MobileApps = () => {
   return (
-    <div className="flex flex-col md:flex-row my-8 md:my-16 h-auto md:h-[60vh] overflow-hidden bg-sky-500 p-4 md:p-10 items-center">
+    <div className="flex flex-col md:flex-row  h-auto md:h-[60vh] overflow-hidden bg-sky-500 p-4 md:p-10 items-center">
       {/* Left Side */}
       <div className="w-full justify-center">
         <div className="w-full md:w-3/4 mx-auto my-6 md:my-10 text-white flex flex-col justify-center items-start">
