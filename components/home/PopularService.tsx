@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
-
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 type Service = {
   id: number;
@@ -15,13 +21,12 @@ type Service = {
 export default function PopularService() {
   const [services, setServices] = useState<Service[] | null>(null);
   const supabase = createClient();
+  // Specify the type for Embla Carousel instance, or use 'unknown' if you're not sure
+  const carouselRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function fetchPopularServices() {
-      const { data, error } = await supabase
-        .from("services")
-        .select("*")
-        .limit(4);
+      const { data, error } = await supabase.from("services").select("*");
 
       if (error) {
         console.error("Error fetching services:", error);
@@ -31,34 +36,57 @@ export default function PopularService() {
     }
 
     fetchPopularServices();
-  }, []);
+  }, [supabase]);
 
   return (
-    <div className="my-20 w-full max-w-6xl mx-auto px-2"> 
-      <div className="flex justify-between">
+    <div className="py-20 border">
+      <div className="w-full max-w-6xl mx-auto px-2">
+        <div className="flex justify-between">
           <h2 className="text-lg font-semibold py-1">
             Services people love in{" "}
             <span className="text-sky-500">Your Area</span>
           </h2>
-           <Link  href="#" className="underline hover:text-sky-500 text-xs font-500">All Services</Link>
-      </div>
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-center">
-        {services?.map((service, idx) => (
-          // card start
-          <div key={idx} className="flex flex-row items-center border border-gray-100 rounded p-2 hover:shadow tranistion-shadow">
-              <p className="font-semibold text-sm capitalize">{service.name}</p>
-              <div className="">
-              <Image
-                  src={`/services/serv${idx + 1}.png`} 
-                  width={100}
-                  height={100}
-                  alt="Professional Image"
-                  className="w-50 h-40 object-cover flex-1"/>
-              </div>
-          </div>
-          // card end
-          
-        )) || <p>Loading services...</p>}
+          <Link
+            href="#"
+            className="underline hover:text-sky-500 text-xs font-500"
+          >
+            All Services
+          </Link>
+        </div>
+        <div>
+          <Carousel ref={carouselRef}>
+            <CarouselContent>
+              {services?.length ? (
+                services.map((service, idx) => (
+                  <CarouselItem key={idx} className="basis-55">
+                    <div className="flex flex-col items-center w-50 h-40 border border-gray-200 rounded pt-2 shadow bg-white">
+                      <div>
+                        <Image
+                          src={`/services/serv${idx + 1}.png`}
+                          width={100}
+                          height={100}
+                          alt="Professional Image"
+                          className="w-20 h-25 object-cover"
+                        />
+                      </div>
+                      <p className="font-semibold text-sm capitalize mb-2 text-center">
+                        {service.name}
+                      </p>
+                    </div>
+                  </CarouselItem>
+                ))
+              ) : (
+                <CarouselItem className="basis-55">
+                  <div className="flex items-center justify-center h-32 w-full">
+                    <p>Loading services...</p>
+                  </div>
+                </CarouselItem>
+              )}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
       </div>
     </div>
   );

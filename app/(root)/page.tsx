@@ -19,8 +19,8 @@ const page = () => {
           <PopularService/>
           <TopPick />
           <Statistics />
-          <Trending />
           <NewService />
+          <Trending />
           <MobileApps />
         {/* Homepage content end */}
       </div>

@@ -1,66 +1,71 @@
 import Link from "next/link";
 import Image from "next/image";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+const promotionData = [
+  {
+    bg: "bg-[#00B4D8]",
+    img: "/professionals/pro3.png",
+  },
+  {
+    bg: "bg-[#F45D01]",
+    img: "/professionals/pro1.png",
+  },
+  {
+    bg: "bg-teal-500",
+    img: "/professionals/pro2.png",
+  },
+];
 
 const Promotion = () => {
   return (
-    <div className="w-full max-w-6xl mx-auto px-2">
-        <h2 className="text-xl font-semibold py-1">
-            Promotion for Today
-        </h2>
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 justify-center">
-            <div className="bg-[#00B4D8] rounded shadow-md">
-                <div className="p-6 relative overflow-hidden">
-                    <div className="w-50">
+    <div className="bg-gray-100 pt-10 pb-15">
+        <div className="w-full max-w-6xl mx-auto px-2">
+      <h2 className="text-xl font-semibold py-1">Promotion for Today</h2>
+      <div className="relative">
+        <Carousel>
+          <CarouselContent>
+            {promotionData.map((promo, idx) => (
+              <CarouselItem
+                key={idx}
+                className="md:basis-2/3 lg:basis-1/3">
+                <div key={idx} className={`${promo.bg} flex flex-row items-center rounded`}>
+                    <div className="p-2">
                         <p className="text-sm text-[#FFD700]">#PromoToday</p>
                         <h2 className="font-semibold my-3 text-white">
                             Work with our best service providers
                         </h2>
-                        <Link  href="#" className="bg-black text-white px-4 py-2 rounded-sm text-sm">Book Now</Link>
+                        <Link
+                            href="#"
+                            className="bg-black text-white px-4 py-2 rounded-sm text-sm">
+                            Book Now
+                        </Link>
                     </div>
+                    <div className="pr-2">
                     <Image
-                    src="/professionals/pro3.png"
-                    width={100}
-                    height={100}
-                    alt="Professional Image"
-                    className="absolute top-1 right-0 w-40 h-40 left-45 lg:left-45 xl:left-45 md:left-30 sm:left-20 object-cover"/>
-                </div>
-            </div>
-            <div className="bg-[#F45D01] rounded shadow-md">
-                <div className="p-6 relative overflow-hidden">
-                    <div className="w-50">
-                        <p className="text-sm text-[#FFD700]">#PromoToday</p>
-                        <h2 className="font-semibold my-3 text-white">
-                            Work with our best service providers
-                        </h2>
-                        <Link  href="#" className="bg-black text-white px-4 py-2 rounded-sm text-sm">Book Now</Link>
+                        src={promo.img}
+                        width={100}
+                        height={100}
+                        alt="Professional Image"
+                        className="w-30 h-40 object-cover"/>
                     </div>
-                    <Image
-                    src="/professionals/pro1.png"
-                    width={100}
-                    height={100}
-                    alt="Professional Image"
-                    className="absolute top-1 right-0 w-40 h-40 left-40 lg:left-40 xl:left-40 md:left-25 sm:left-15 object-cover"/>
                 </div>
-            </div>
-            <div className="bg-teal-500 rounded shadow-md">
-                <div className="p-6 relative overflow-hidden">
-                    <div className="w-50">
-                        <p className="text-sm text-[#FFD700]">#PromoToday</p>
-                        <h2 className="font-semibold my-3 text-white">
-                            Work with our best service providers
-                        </h2>
-                        <Link  href="#" className="bg-black text-white px-4 py-2 rounded-sm text-sm">Book Now</Link>
-                    </div>
-                    <Image
-                    src="/professionals/pro2.png"
-                    width={100}
-                    height={100}
-                    alt="Professional Image"
-                    className="absolute top-1 right-0 w-40 h-40 left-45 lg:left-45 xl:left-45 md:left-30 sm:left-20 object-cover"/>
-                </div>
-            </div>
-        </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious  />
+          <CarouselNext  />
+        </Carousel>
+      </div>
+    </div>
     </div>
   );
-}
+};
+
 export default Promotion;
