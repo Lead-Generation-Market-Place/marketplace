@@ -2,8 +2,8 @@ import Link from "next/link";
 import MobileMenu from "./mobileMenu";
 import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
-import Logout from "../auth/Logout";
 import Image from "next/image";
+import { ThemeToggleButton } from "../dashboard/Themes/ThemeToggleButton";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],
@@ -32,6 +32,7 @@ const Navbar = async () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+          
           {Object.entries(dropdownData).map(([label, items]) => (
             <DropdownMenu key={label} label={label} items={items} />
           ))}
@@ -39,6 +40,8 @@ const Navbar = async () => {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4 text-sm">
+          <ThemeToggleButton></ThemeToggleButton>
+
           {!user ? (
             <>
               <Link href="/login" className="hover:text-[#023E8A]">
@@ -57,10 +60,6 @@ const Navbar = async () => {
             </>
           ) : (
             <>
-              <Link href="/login" className="hover:text-[#023E8A]">
-                {user.email}
-              </Link>
-              <Logout />
             </>
           )}
         </div>

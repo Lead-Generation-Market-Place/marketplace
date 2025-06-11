@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FaRegStar, FaStar } from 'react-icons/fa';
 
 export default function ReviewRequest() {
+  const searchParams = useSearchParams()
+  const businessName = searchParams.get('businessName') || '';
   const [emails, setEmails] = useState(['']);
-  const [businessOwnerName] = useState(''); // Can be made editable if needed
   const router = useRouter();
-
   // Update a specific email address
   const handleEmailChange = (index: number, value: string) => {
     const updated = [...emails];
@@ -28,16 +28,22 @@ export default function ReviewRequest() {
       return;
     }
     // Placeholder: replace this with actual email sending logic
-    console.log(`Sending review request to: ${email}`);
     alert(`Review request sent to: ${email}`);
+  };
+   const handleNext = () => {
+    router.push(`/professional/ask-reviews?`);
+  };
+
+  const handleBack = () => {
+    router.push(`/professional/progress?`);
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-6 text-gray-800 dark:text-white text-[13px]">
+    <div className=" bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-[13px]">
       <div className="max-w-4xl mx-auto">
     
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border border-gray-200 dark:border-gray-700 rounded-[7px] shadow-sm p-8 md:p-10 bg-white dark:bg-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12  dark:border-gray-700 rounded-[7px] p-8 md:p-10 bg-white dark:bg-gray-900">
           {/* Left Side: Input Emails & Google Review */}
           <div>
             <h2 className="text-2xl font-bold text-[#023E8A] dark:text-white mb-3">
@@ -115,7 +121,7 @@ export default function ReviewRequest() {
 
             {/* Email Preview Section */}
             <div className="bg-white dark:bg-gray-900  dark:border-gray-700 rounded-[4px] p-4">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Email preview</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Email Preview</p>
               <div className="flex items-center mb-3">
                 <img
                   src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
@@ -123,7 +129,7 @@ export default function ReviewRequest() {
                   className="w-8 h-8 rounded-full mr-3"
                 />
                 <h4 className="text-sm font-semibold text-gray-800 dark:text-white">
-                  How would you rate your overall experience with {businessOwnerName}?
+                  How would you rate your overall experience with {businessName}?
                 </h4>
               </div>
               <div className="flex text-[#0096C7] text-sm mb-3">
@@ -131,20 +137,29 @@ export default function ReviewRequest() {
                   <FaStar key={i} className="mr-1" />
                 ))}
               </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-1 text-justify text-[12px]">
                 Thanks for being a valued customer. I just signed up on Thumbtack to find more excellent customers like you, and reviews are a big part of my profile. Can you take a moment to write a couple sentences about working with me? I’d love if my future customers could hear about your experience firsthand.
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Thanks, {businessOwnerName}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2  text-[12px]">Thanks, {businessName}</p>
             </div>
           </div>
         </div>
       </div>
-          <button
-          onClick={() => router.back()}
-          className="mb-6 text-[#023E8A] hover:underline text-sm"
-        >
-          ← Back
-        </button>
+  <div className="fixed bottom-6 right-6 flex gap-4">
+  <button
+    onClick={handleBack}
+    className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold px-6 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+  >
+    Back
+  </button>
+  <button
+    onClick={handleNext}
+    className="bg-[#0077B6] text-white font-semibold px-6 py-2 rounded hover:bg-[#005f91] transition"
+  >
+    Ask it Later
+  </button>
+</div>
+
     </div>
   );
 }

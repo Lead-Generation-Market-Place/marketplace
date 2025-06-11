@@ -8,43 +8,25 @@ export default function Onboarding() {
   const searchParams = useSearchParams();
 
   const [queryData, setQueryData] = useState({
-    email: '',
-    phone: '',
-    services: [] as string[],
-    location: '',
+    businessName: ''
   });
 
   useEffect(() => {
-    const email = searchParams.get('email') || '';
-    const phone = searchParams.get('phone') || '';
-    const location = searchParams.get('location') || '';
-    const servicesParam = searchParams.get('services') || '[]';
+    const businessName = searchParams.get('businessName') || '';
 
-    let parsedServices: string[] = [];
-    try {
-      parsedServices = JSON.parse(servicesParam);
-    } catch {
-      parsedServices = [];
-    }
 
     setQueryData({
-      email,
-      phone,
-      services: parsedServices,
-      location,
+      businessName,
     });
   }, [searchParams]);
 
   const buildQueryString = () =>
     new URLSearchParams({
-      email: queryData.email,
-      phone: queryData.phone,
-      services: JSON.stringify(queryData.services),
-      location: queryData.location,
+      businessName: queryData.businessName,
     }).toString();
 
   const handleNext = () => {
-    router.push(`/professional/preferences?${buildQueryString()}`);
+    router.push(`/professional/ask-reviews?${buildQueryString()}`);
   };
 
   const handleBack = () => {
@@ -52,7 +34,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col min-h-screen justify-between">
+    <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col justify-between">
       <div className="max-w-xl mx-auto py-12 px-4">
         <div className="flex flex-col items-center text-center">
           <div className="text-left w-full">
