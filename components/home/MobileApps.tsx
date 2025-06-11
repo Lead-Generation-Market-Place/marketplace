@@ -7,18 +7,18 @@ const MobileApps = () => {
     <div className="flex flex-col md:flex-row h-auto md:h-[60vh] overflow-hidden bg-sky-500 dark:bg-sky-900 p-4 md:p-10 items-center transition-colors duration-300">
       {/* Left Side */}
       <div className="w-full justify-center">
-        <div className="w-full md:w-3/4 mx-auto my-6 md:my-10 flex flex-col justify-center items-start">
-          <div className="flex flex-row gap-4 items-center">
+        <div className="w-full md:w-3/4 mx-auto my-4 md:my-10 flex flex-col justify-center items-start">
+          {/* <div className="flex flex-row gap-4 items-center">
             <p className="text-xs text-white dark:text-white">Available On</p>
             <Image src="/apple.svg" width={15} height={15} alt="Apple Store" />
             <Image src="/google.svg" width={15} height={15} alt="Google Play" />
-          </div>
-          <h1 className="font-semibold mb-4 text-2xl sm:text-3xl md:text-4xl leading-tight text-white dark:text-white">
+          </div> */}
+          <h1 className="font-semibold mb-4 text-xl sm:text-xl md:text-4xl leading-tight text-white dark:text-white">
             The only app you need to stay on{" "}
             <span className="text-[#0077B6] dark:text-sky-300">top of everything.</span>
           </h1>
-          <p className="mb-4 text-sm md:text-base text-white dark:text-gray-200">
-            From personalized guides to seamless project planning — it’s all in one place, and it’s completely free.
+          <p className="mb-4 text-xs md:text-base text-white dark:text-gray-200">
+            From personalized guides to seamless project planning, it&apos;s all in one place, and it&apos;s completely free.
           </p>
           <div className="">
             <h6 className="pb-2 text-sm text-gray-800 dark:text-gray-200">Follow us on</h6>
@@ -33,7 +33,7 @@ const MobileApps = () => {
         </div>
       </div>
       {/* Right Side (App Download Buttons) */}
-      <div className="w-full md:w-1/2 flex justify-center mt-8 md:mt-0">
+      <div className="w-full md:w-1/2 flex justify-center mt-4 md:mt-0">
         <div className="flex flex-row gap-2 flex-wrap justify-center items-center">
           <fieldset className="border border-gray-100 dark:border-gray-500 rounded flex flex-row gap-2 p-2">
             <legend className="text-xs text-white dark:text-gray-100">Customer&apos;s App</legend>
