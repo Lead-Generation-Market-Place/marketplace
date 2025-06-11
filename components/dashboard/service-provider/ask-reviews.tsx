@@ -6,7 +6,7 @@ import { FaRegStar, FaStar } from 'react-icons/fa';
 
 export default function ReviewRequest() {
   const [emails, setEmails] = useState(['']);
-  const [businessOwnerName] = useState('Liaqat Paindah'); // Can be made editable if needed
+  const [businessOwnerName] = useState(''); // Can be made editable if needed
   const router = useRouter();
 
   // Update a specific email address
@@ -33,7 +33,7 @@ export default function ReviewRequest() {
   };
 
   return (
-    <div className="min-h-screen bg-white mt-10 dark:bg-gray-900 p-6 text-gray-800 dark:text-white text-[13px]">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-6 text-gray-800 dark:text-white text-[13px]">
       <div className="max-w-4xl mx-auto">
     
 
