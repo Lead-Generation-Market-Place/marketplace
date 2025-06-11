@@ -47,7 +47,7 @@ export default function SearchResult({
       const bestMatchCat = categories.find(
         (cat) => cat.name.toLowerCase() === best.target
       );
-      console.log("search ratings", ratings);
+      console.log(ratings);
       const isValidBestMatch = best.rating > 0.1 && !!bestMatchCat;
 
       setBestMatch(isValidBestMatch ? bestMatchCat! : null);
@@ -97,47 +97,9 @@ export default function SearchResult({
 
   // Handle early returns after all hooks
   if (exactMatch && exactMatch.length > 0) {
-    return <>
-    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
-      <p
-        className="cursor-pointer hover:text-[#0096C7]"
-        onClick={() => window.history.back()}>
-        <ArrowLeft />
-      </p>
-      <p
-        className="cursor-pointer hover:text-red-600"
-        onClick={() => (window.location.href = '/')}>
-        <X />
-      </p>
-    </div>
-    <ServiceQuestion exactMatch={exactMatch} />
-    </>;
-  }
-
-  if (submitted && selectedCategory) {
-    return <>
-    <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
-      <p
-        className="cursor-pointer hover:text-[#0096C7]"
-        onClick={() => window.history.back()}>
-        <ArrowLeft />
-      </p>
-      <p
-        className="cursor-pointer hover:text-red-600"
-        onClick={() => (window.location.href = '/')}>
-        <X />
-      </p>
-    </div>
-    <ServiceQuestion exactMatch={[selectedCategory]} />
-    </>;
-  }
-
-  if (loading) return <TextPlaceholder />;
-  if (fetchError) return <p className="text-red-500 text-center">Error: {fetchError}</p>;
-
-  return (
-        <>
-        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500">
+    return (
+      <>
+        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
           <p
             className="cursor-pointer hover:text-[#0096C7]"
             onClick={() => window.history.back()}>
@@ -149,82 +111,124 @@ export default function SearchResult({
             <X />
           </p>
         </div>
-        <form className="flex flex-col gap-4" onSubmit={submitAnswer}>
-          <h1 className="text-xl font-bold mb-4 text-center">
-            Here&apos;s what we found that best matches your search.
-          </h1>
-          <p className="text-gray-400 text-sm">
-            Zip Code: {zipcode} | {location}
-          </p>
+        <ServiceQuestion exactMatch={exactMatch} />
+      </>
+    );
+  }
 
-          {bestMatch && (
-            <ul>
-              <li className="flex items-center gap-3 p-4 bg-[#0096C7]/10 border border-[#0096C7] rounded shadow-sm">
-                <input
-                  type="radio"
-                  name="answer"
-                  checked={selectedCategory?.id === bestMatch.id}
-                  onChange={() => toggleSelect(bestMatch.id)}
-                  className="form-checkbox h-5 w-5 text-blue-600"
-                  id={`cat-${bestMatch.id}`}
-                />
-                <label
-                  htmlFor={`cat-${bestMatch.id}`}
-                  className="text-gray-800 cursor-pointer"
+  if (submitted && selectedCategory) {
+    return (
+      <>
+        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
+          <p
+            className="cursor-pointer hover:text-[#0096C7]"
+            onClick={() => window.history.back()}>
+            <ArrowLeft />
+          </p>
+          <p
+            className="cursor-pointer hover:text-red-600"
+            onClick={() => (window.location.href = '/')}>
+            <X />
+          </p>
+        </div>
+        <ServiceQuestion exactMatch={[selectedCategory]} />
+      </>
+    );
+  }
+
+  if (loading) return <TextPlaceholder />;
+  if (fetchError) return <p className="text-red-500 text-center">Error: {fetchError}</p>;
+
+  return (
+    <>
+      <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
+        <p
+          className="cursor-pointer hover:text-[#0096C7]"
+          onClick={() => window.history.back()}>
+          <ArrowLeft />
+        </p>
+        <p
+          className="cursor-pointer hover:text-red-600"
+          onClick={() => (window.location.href = '/')}>
+          <X />
+        </p>
+      </div>
+      <form className="flex flex-col gap-4" onSubmit={submitAnswer}>
+        <h1 className="text-xl font-bold mb-4 text-center dark:text-gray-100">
+          Here&apos;s what we found that best matches your search.
+        </h1>
+        <p className="text-gray-400 dark:text-gray-400 text-sm">
+          Zip Code: {zipcode} | {location}
+        </p>
+
+        {bestMatch && (
+          <ul>
+            <li className="flex items-center gap-3 p-4 bg-[#0096C7]/10 dark:bg-[#0096C7]/20 border border-[#0096C7] rounded shadow-sm">
+              <input
+                type="radio"
+                name="answer"
+                checked={selectedCategory?.id === bestMatch.id}
+                onChange={() => toggleSelect(bestMatch.id)}
+                className="form-checkbox h-5 w-5 text-blue-600"
+                id={`cat-${bestMatch.id}`}
+              />
+              <label
+                htmlFor={`cat-${bestMatch.id}`}
+                className="text-gray-800 dark:text-gray-100 cursor-pointer"
+              >
+                {bestMatch.name}
+              </label>
+            </li>
+          </ul>
+        )}
+
+        {otherMatches.length > 0 && (
+          <>
+            <h2 className="text-md font-bold text-gray-700 dark:text-gray-200">Other Possible Matches</h2>
+            <ul className="space-y-3">
+              {otherMatches.map((cat) => (
+                <li
+                  key={cat.id}
+                  className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm hover:shadow transition-shadow"
                 >
-                  {bestMatch.name}
-                </label>
-              </li>
-            </ul>
-          )}
-
-          {otherMatches.length > 0 && (
-            <>
-              <h2 className="text-md font-bold text-gray-700">Other Possible Matches</h2>
-              <ul className="space-y-3">
-                {otherMatches.map((cat) => (
-                  <li
-                    key={cat.id}
-                    className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-md shadow-sm hover:shadow transition-shadow"
+                  <input
+                    type="radio"
+                    name="answer"
+                    checked={selectedCategory?.id === cat.id}
+                    onChange={() => toggleSelect(cat.id)}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                    id={`cat-${cat.id}`}
+                  />
+                  <label
+                    htmlFor={`cat-${cat.id}`}
+                    className="font-light text-gray-800 dark:text-gray-100 cursor-pointer"
                   >
-                    <input
-                      type="radio"
-                      name="answer"
-                      checked={selectedCategory?.id === cat.id}
-                      onChange={() => toggleSelect(cat.id)}
-                      className="form-checkbox h-5 w-5 text-blue-600"
-                      id={`cat-${cat.id}`}
-                    />
-                    <label
-                      htmlFor={`cat-${cat.id}`}
-                      className="font-light text-gray-800 cursor-pointer"
-                    >
-                      {cat.name}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+                    {cat.name}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
-          {!bestMatch && otherMatches.length === 0 && (
-            <p className="text-gray-500 italic text-center">
-              No results matched your search.
-            </p>
-          )}
-
-          <p className="font-extralight text-sm my-2 text-center">
-            Not what you are looking for?{' '}
-            <Link className="text-[#0077B6]" href="/">
-              Edit your search
-            </Link>
+        {!bestMatch && otherMatches.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400 italic text-center">
+            No results matched your search.
           </p>
+        )}
 
-          <div className="flex flex-row mx-auto w-[50%] gap-2">
-            <ResetButton type="Skip" loading={false} />
-            <SearchButton type="Next" loading={false} />
-          </div>
-        </form>
-     </>
+        <p className="font-extralight text-sm my-2 text-center dark:text-gray-300">
+          Not what you are looking for?{' '}
+          <Link className="text-[#0077B6] dark:text-sky-400" href="/">
+            Edit your search
+          </Link>
+        </p>
+
+        <div className="flex flex-row mx-auto w-[90%] sm:w-[60%] md:w-[50%] gap-2">
+          <ResetButton type="Skip" loading={false} />
+          <SearchButton type="Next" loading={false} />
+        </div>
+      </form>
+    </>
   );
 }

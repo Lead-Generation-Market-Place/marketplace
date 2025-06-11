@@ -48,26 +48,50 @@ const TopPick = () => {
   ];
 
   return (
-    <div className="bg-gray-100 pt-4 pb-8">
-      <div className="w-full max-w-6xl mx-auto px-2">
-      <h2 className="text-xl font-semibold py-1">Top Picks for You</h2>
-      {/* Carousel */}
-      <Carousel>
-        <CarouselContent>
-          {services.map((service, idx) => (
-            <CarouselItem
-              key={idx}
-              className="basis-65"
-            >
-              <ServiceCard service={service} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-      {/* End Carousel */}
-    </div>
+    <div className="
+      min-h-[30vh]
+      sm:min-h-[30vh]
+      md:min-h-[40vh]
+      lg:min-h-[45vh]
+      xl:min-h-[50vh]
+      bg-white dark:bg-gray-900 
+      transition-colors duration-300">
+      <div className="
+        mx-2            
+        sm:mx-4          
+        md:mx-6          
+        lg:mx-8          
+        xl:mx-12         
+        2xl:mx-16 
+      ">
+        <h2 className="text-xl font-semibold py-1 text-gray-900 dark:text-white transition-colors duration-300">
+          Top Picks for You
+        </h2>
+        {/* Carousel */}
+        <Carousel>
+          <CarouselContent>
+            {services.map((service, idx) => (
+              <CarouselItem
+                key={idx}
+                className="
+                  basis-[90vw]
+                  sm:basis-2/3
+                  md:basis-1/2
+                  lg:basis-1/3
+                  flex-shrink-0
+                  flex-grow
+                  min-w-0
+                "
+              >
+                <ServiceCard service={service} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+        {/* End Carousel */}
+      </div>
     </div>
   );
 };
