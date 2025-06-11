@@ -47,10 +47,17 @@ const NewService = () => {
     },
   ];
   return (
-   <div className="bg-gray-100 pt-10 pb-15">
-     <div className="w-full max-w-6xl mx-auto px-2">
-      <h2 className="text-xl font-semibold py-1">
-        New Services of US-Connector
+   <div className="bg-gray-100 dark:bg-gray-900 pt-10 pb-16 transition-colors duration-300">
+     <div className="
+        mx-2            
+      sm:mx-4          
+      md:mx-6          
+      lg:mx-8          
+      xl:mx-12         
+      2xl:mx-16
+      ">
+      <h2 className="text-xl font-semibold py-1 text-gray-900 dark:text-white transition-colors duration-300">
+        New Services of Yelpax
       </h2>
       <div className="relative">
         <Carousel>
@@ -58,7 +65,15 @@ const NewService = () => {
             {services.map((service, idx) => (
               <CarouselItem
                 key={idx}
-                className="basis-55"
+                className="
+                  basis-[90vw]
+                  sm:basis-2/3
+                  md:basis-1/2
+                  lg:basis-1/3
+                  flex-shrink-0
+                  flex-grow
+                  min-w-0
+                "
               >
                 <ServiceCard service={service} />
               </CarouselItem>

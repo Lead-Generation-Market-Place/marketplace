@@ -11,20 +11,33 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div>
       <div className="">
        <HeroForm />
-       {/* Homepage content start */}
-          <Promotion />
-          <PopularService/>
-          <TopPick />
-          <Statistics />
-          <NewService />
-          <Trending />
-          <MobileApps />
-        {/* Homepage content end */}
+       <div className="w-full
+        max-w-full
+        smmax-w-screen-sm
+        md:m:ax-w-screen-md
+        lg:max-w-screen-lg
+        xl:max-w-screen-xl
+        2xl:max-w-6xl
+        mx-auto
+        px-4
+        py-6
+        bg-white
+        dark:bg-gray-900
+        text-gray-900
+        dark:text-white
+        transition-colors
+        duration-300">
+       <Promotion />
+       <PopularService/> 
+       <TopPick />
+       <Statistics />
+       <NewService />
+       <Trending />
+       <MobileApps />
+       </div>
       </div>
-    </div>
   )
 }
 
