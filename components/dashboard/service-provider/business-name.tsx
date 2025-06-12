@@ -81,7 +81,7 @@ const BusinessName = () => {
           <div className="flex flex-col items-center text-center">
             <div className="w-20 h-20 rounded-full overflow-hidden mb-3 border-2" style={{ borderColor: '#0096C7' }}>
               <Image
-                src="/ServiceProvider/ServiceProfile.jpg"
+                src="/service_profile.jpg"
                 alt="Handyman"
                 className="object-cover w-full h-full"
                 width={80}
