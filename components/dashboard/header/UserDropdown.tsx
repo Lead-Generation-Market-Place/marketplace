@@ -6,6 +6,8 @@ import { createClient } from "@/utils/supabase/client";
 import { Dropdown } from "@/components/dashboard/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/dashboard/ui/dropdown/DropdownItem";
 import { logOut } from "@/actions/auth";
+import {  ChartPie } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 type UserProfile = {
   id: string;
@@ -21,6 +23,13 @@ export default function UserDropdown() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
+
+
+  const pathname = usePathname();
+  const isDashboard = pathname === '/';
+
+  const href = isDashboard ? '/home' : '/';
+  const text = isDashboard ? 'Dashboard' : 'Landing Page';
 
   const handleLogout = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -60,7 +69,7 @@ export default function UserDropdown() {
 
     fetchUserAndProfile();
   }, []);
-
+  console.log(user);
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
     setIsOpen((prev) => !prev);
@@ -77,6 +86,9 @@ export default function UserDropdown() {
           onClick={toggleDropdown}
           className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
         >
+          <span className="bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200 py-1 px-2 mr-1 font-medium text-theme-xs rounded-full">
+            {(profile.username?.[0]?.toUpperCase() || '') + (profile.username?.[1]?.toLowerCase() || '')}
+          </span>
           <span className="block mr-1 font-medium text-theme-sm">
             {profile.username}
           </span>
@@ -88,10 +100,10 @@ export default function UserDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="absolute right-0 mt-[17px] flex w-[260px] flex-col  border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        {user && profile ? (
-          <div>
+        {/* {user && profile ? (
+          <div className="p-2 border-b ">
             <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
               {profile.username}
             </span>
@@ -101,9 +113,20 @@ export default function UserDropdown() {
           </div>
         ) : (
           <p>Loading user...</p>
-        )}
+        )} */}
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+          <li>
+            <DropdownItem
+              onItemClick={closeDropdown}
+              tag="a"
+              href={href}
+              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+            >
+            <ChartPie className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" />
+            {text}
+            </DropdownItem>
+          </li>
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
