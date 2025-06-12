@@ -4,6 +4,7 @@ import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import { ThemeToggleButton } from "../dashboard/Themes/ThemeToggleButton";
+import UserDropdown from "../dashboard/header/UserDropdown";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],
@@ -19,10 +20,10 @@ const Navbar = async () => {
   } = await supabase.auth.getUser();
   return (
     <header className="w-full bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 border-b border-gray-200 dark:border-gray-800 font-sans z-50 relative transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-semibold flex items-center">
-          <Image src="/yelpax.png" alt="US Connector Logo" width={120} height={32} />
+          <Image src="/yelpax.png" alt="US Connector Logo" width={120} height={10} />
         </Link>
 
         {/* Mobile Menu (Client Component) */}
@@ -31,15 +32,33 @@ const Navbar = async () => {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+        {!user ? (
+          <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
           {Object.entries(dropdownData).map(([label, items]) => (
             <DropdownMenu key={label} label={label} items={items} />
           ))}
         </nav>
+        ):(
+          <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
+            Become a Pro
+            </Link>
+            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
+            Team
+            </Link>
+            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
+            Subscription
+            </Link>
+            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
+            Chat
+            </Link>
+          </nav>
+        )}
+        
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center space-x-4 text-sm">
-          <ThemeToggleButton />
+        <div className="hidden md:flex items-center space-x-4 text-sm font-light">
+          
 
           {!user ? (
             <>
@@ -59,8 +78,10 @@ const Navbar = async () => {
           ) : (
             <>
               {/* User actions here */}
+              <UserDropdown/>
             </>
           )}
+          <ThemeToggleButton />
         </div>
       </div>
     </header>

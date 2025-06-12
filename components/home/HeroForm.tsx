@@ -104,7 +104,7 @@ export default function HeroForm() {
             <div className="relative w-full h-20 flex items-center mb-2 mt-1 justify-center">
                 <p
                     className={`
-                        text-2xl xs:text-3xl sm:text-4xl font-black text-center transition-opacity duration-1000
+                        text-4xl xs:text-3xl sm:text-5xl font-black text-center transition-opacity duration-1000
                         ${fade ? "opacity-100" : "opacity-0"}
                         text-gray-900 dark:text-gray-100
                     `}
@@ -125,7 +125,7 @@ export default function HeroForm() {
                 <form
                     action="#"
                     onSubmit={handleSubmit}
-                    className="flex flex-col sm:flex-row border border-gray-200 dark:border-gray-700 shadow-md bg-white dark:bg-gray-800 p-2 gap-2 rounded-lg transition-colors duration-300"
+                    className="flex flex-col p-2 sm:flex-row border border-gray-200 dark:border-gray-700 shadow-md bg-white dark:bg-gray-800 p-2 gap-2 rounded transition-colors duration-300"
                 >
                     <div className="sm:flex-[70%] w-full sm:w-auto">
                         <input
