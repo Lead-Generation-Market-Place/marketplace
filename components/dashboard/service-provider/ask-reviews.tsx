@@ -31,7 +31,7 @@ export default function ReviewRequest() {
     alert(`Review request sent to: ${email}`);
   };
    const handleNext = () => {
-    router.push(`/professional/ask-reviews?`);
+    router.push(`/professional/preference-intro?`);
   };
 
   const handleBack = () => {

@@ -185,7 +185,7 @@ const BusinessInfo = () => {
       if (servicesString) params.set('services', servicesString)
 
       startTransition(() => {
-        router.push(`/professional/progress?${params.toString()}`)
+        router.push(`/professional/ask-reviews?${params.toString()}`)
       })
     } else {
       console.error('Failed to insert business info:', result.message)
