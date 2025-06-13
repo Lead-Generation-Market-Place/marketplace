@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { symbol } from "zod";
 
 // Capitalize each word
 const capitalizeWords = (str: string): string =>
@@ -82,15 +83,80 @@ export const ProfessionalServices = async (formData: FormData) => {
   };
 };
 
+// Get current user information
+export const getCurrentUser = async () => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data?.user) {
+    return null;
+  }
+  // Return only a plain object for serialization safety (if used in server/client boundary)
+  const { id, email, user_metadata } = data.user;
+  return { id, email, user_metadata };
+};
+
+
+// Insert into Plan table the customer plans
+export const createCustomerPlan = async (
+  service_id: string,
+  plan_type: string
+) => {
+  // Get the current user using the reusable utility
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Could not get current user" };
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("plan")
+    .insert([{ user_id: user.id, service_id, plan_type }]);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  return { success: true, data };
+};
+
+
+// get the current user plans
+export const getCustomerPlans = async () => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Could not get current user" };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("plan")
+    .select("id, plan_type, user_id, service:service_id(id, name)") // <- fixed here
+    .eq("user_id", user.id)
+    .order("id", { ascending: true });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, data };
+};
+
 /**
  * Returns service name suggestions (max 10)
  */
-export const SearchServiceSuggestions = async (query: string): Promise<string[]> => {
+interface ServiceSuggestion {
+  id: string;
+  name: string;
+}
+
+
+export const SearchServiceSuggestions = async (query: string): Promise<ServiceSuggestion[]> => {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("services")
-    .select("name")
+    .select("id, name")
     .ilike("name", `%${query}%`)
     .limit(10);
 
@@ -98,8 +164,12 @@ export const SearchServiceSuggestions = async (query: string): Promise<string[]>
     console.error("Service suggestion error:", error.message);
     return [];
   }
+  return data.map((item) => ({
+    ...item,
+    name: capitalizeWords(item.name)
+  }));
 
-  return Array.from(new Set(data.map((item) => capitalizeWords(item.name)))).slice(0, 10);
+  // return Array.from(new Set(data.map((item) => capitalizeWords(item.name)))).slice(0, 10);
 };
 
 /**
