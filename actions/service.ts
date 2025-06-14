@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { symbol } from "zod";
+
 
 // Capitalize each word
 const capitalizeWords = (str: string): string =>
@@ -142,12 +142,29 @@ export const getCustomerPlans = async () => {
   return { success: true, data };
 };
 
+export async function removePlan(planId: string): Promise<{ error: Error | null }> {
+  const supabase = await createClient();
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: new Error('User not authenticated') };
+  }
+  const userId = user.id;
+  const { error } = await supabase
+    .from('plan')
+    .delete()
+    .eq('user_id', userId)
+    .eq('id', planId);
+
+  return { error };
+}
+
 /**
  * Returns service name suggestions (max 10)
  */
 interface ServiceSuggestion {
   id: string;
   name: string;
+  description: string;
 }
 
 
@@ -156,7 +173,7 @@ export const SearchServiceSuggestions = async (query: string): Promise<ServiceSu
 
   const { data, error } = await supabase
     .from("services")
-    .select("id, name")
+    .select("*")
     .ilike("name", `%${query}%`)
     .limit(10);
 
@@ -199,3 +216,20 @@ export const SearchLocationSuggestions = async (query: string): Promise<string[]
 
   return Array.from(suggestions).slice(0, 10);
 };
+
+export const fetchServiceIdea = async () => {
+  const supabase = await createClient();
+  
+  const {data, error} = await supabase
+  .from("services")
+  .select("*")
+  .order("id", { ascending: true });
+  if (error) {
+    console.error("Service suggestion error:", error.message);
+    return [];
+  }
+  return data.map((item) => ({
+    ...item,
+    name: capitalizeWords(item.name)
+  }));
+}
