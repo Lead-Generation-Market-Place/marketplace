@@ -8,7 +8,3 @@ export interface Service {
   priceTo: number; // Maximum price
 }
 
-export type ServiceSuggestion = {
-  id: string; 
-  name: string;
-};
