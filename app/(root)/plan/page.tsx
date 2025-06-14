@@ -1,20 +1,8 @@
 "use client";
+import Active from "@/components/plan/Active";
+import Completed from "@/components/plan/Completed";
 import Todos from "@/components/plan/Todos";
 import { useState } from "react";
-
-
-function Active() {
-  return <div>
-        <div className="">
-            <div className="">
-                <h1 className="text-xl">Your Active Projects</h1>
-            </div>
-        </div>
-  </div>;
-}
-function Completed() {
-  return <div>Completed Component</div>;
-}
 
 const TABS = [
   { label: "To-do's", key: "todos" },
