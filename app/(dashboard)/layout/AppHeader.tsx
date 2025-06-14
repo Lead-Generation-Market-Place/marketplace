@@ -88,7 +88,7 @@ const AppHeader: React.FC = () => {
               width={40}
               height={40}
               className="dark:hidden"
-              src="/us-connector.png"
+              src="/yelpax.png"
               alt="Logo"
             />
             <Image
