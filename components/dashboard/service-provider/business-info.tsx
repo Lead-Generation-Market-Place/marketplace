@@ -57,7 +57,7 @@ const BusinessFormSchema = z.object({
 
 type BusinessFormFields = z.infer<typeof BusinessFormSchema>
 
-const DEFAULT_LOGO = '/serviceProvider/serviceProfile.jpg'
+const DEFAULT_LOGO = '/service_profile.jpg'
 
 // Maximum file‐size allowed for the logo (in bytes). Example: 2 MB = 2 * 1024 * 1024.
 const MAX_LOGO_SIZE = 2 * 1024 * 1024

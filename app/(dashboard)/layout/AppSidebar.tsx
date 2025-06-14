@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/app/(dashboard)/context/SidebarContext";
+
+// Direct icon imports (no dynamic)
 import { Briefcase, Calendar, Users, Mail, Settings, Layers } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 
 type SubItem = {
   name: string;
@@ -22,32 +23,14 @@ type NavItem = {
   subItems?: SubItem[];
 };
 
-const AppSidebar: React.FC = () => {
+type AppSidebarProps = {
+  isServiceProvider: boolean | null;
+};
+
+const AppSidebar: React.FC<AppSidebarProps> = ({ isServiceProvider }) => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
-  const supabase = createClient();
 
-  const [isServiceProvider, setIsServiceProvider] = useState<boolean | null>(null);
-
-  // Fetch user role
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return setIsServiceProvider(false);
-
-      const { data: serviceProvider, error } = await supabase
-        .from("service_providers")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      setIsServiceProvider(!!serviceProvider && !error);
-    };
-
-    fetchUserRole();
-  }, [supabase]);
-
-  // Menus
   const defaultNavItems: NavItem[] = [
     { name: "Professional", path: "/professional", icon: <Briefcase size={18} /> },
     { name: "Plan", path: "/plan", icon: <Calendar size={18} /> },
@@ -64,17 +47,16 @@ const AppSidebar: React.FC = () => {
     { name: "Profile", path: "/profile", icon: <Users size={18} /> },
   ];
 
-  const navItems = isServiceProvider ? serviceProviderNavItems : defaultNavItems;
+  const navItems = isServiceProvider
+    ? serviceProviderNavItems
+    : defaultNavItems;
 
   const [openSubmenu, setOpenSubmenu] = useState<{ type: string; index: number } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
-    (path: string) => {
-      if (!path) return false;
-      return pathname === path || pathname.startsWith(`${path}/`);
-    },
+    (path: string) => pathname === path || pathname.startsWith(`${path}/`),
     [pathname]
   );
 
@@ -103,11 +85,11 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, type: string) => {
+  const handleSubmenuToggle = useCallback((index: number, type: string) => {
     setOpenSubmenu((prev) => (prev && prev.type === type && prev.index === index ? null : { type, index }));
-  };
+  }, []);
 
-  const renderMenuItems = (items: NavItem[], type: string) => (
+  const renderMenuItems = useCallback((items: NavItem[], type: string) => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => {
         const key = `${type}-${index}`;
@@ -173,16 +155,7 @@ const AppSidebar: React.FC = () => {
         );
       })}
     </ul>
-  );
-
-  // Loading state
-  if (isServiceProvider === null) {
-    return (
-      <div className="fixed mt-16 lg:mt-0 top-0 left-0 z-50 h-screen w-[90px] flex items-center justify-center bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
-        <span className="text-gray-500">Loading...</span>
-      </div>
-    );
-  }
+  ), [isActive, isExpanded, isHovered, isMobileOpen, openSubmenu, subMenuHeight, handleSubmenuToggle]);
 
   return (
     <aside
@@ -193,18 +166,20 @@ const AppSidebar: React.FC = () => {
       <div className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}`}>
         <Link href="/" className="flex items-center justify-center w-full">
           <div className="relative w-36 h-10 mx-auto">
-            <Image src="/us-connector.png" alt="Logo" fill style={{ objectFit: "contain" }} priority />
+            <Image src="/yelpax.png" alt="Logo" fill style={{ objectFit: "contain" }} priority />
           </div>
         </Link>
       </div>
 
       <div className="flex flex-col overflow-y-auto no-scrollbar">
         <nav className="mb-6">
-          <div className="flex flex-col gap-4">{renderMenuItems(navItems, "main")}</div>
+          <div className="flex flex-col gap-4">
+            {renderMenuItems(navItems, "main")}
+          </div>
         </nav>
       </div>
     </aside>
   );
 };
 
-export default AppSidebar;
+export default React.memo(AppSidebar);
