@@ -1,7 +1,8 @@
 "use client";
 
-import React, { Suspense, FC } from "react";
+import React, { Suspense, FC, useMemo } from "react";
 import { saveAvailability } from "./action";
+import { useSearchParams } from "next/navigation";
 
 const Daytime = React.lazy(() => import("@/components/dashboard/service-provider/daytime"));
 
@@ -19,10 +20,32 @@ const SkeletonLoader: FC = () => (
 );
 
 const DaytimePage: FC = () => {
+  const searchParams = useSearchParams();
+  const businessName = searchParams.get("businessName") || "";
+  const location = searchParams.get("location") || "";
+  const email = searchParams.get("email") || "";
+  const phone = searchParams.get("phone") || "";
+  const services = useMemo(() => {
+    try {
+      const raw = searchParams.get("services");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }, [searchParams]);
+
   return (
     <main className="dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <Suspense fallback={<SkeletonLoader />}>
-        <Daytime saveAvailability={saveAvailability} />
+        <Daytime
+          saveAvailability={saveAvailability}
+          businessName={businessName}
+          location={location}
+          email={email}
+          phone={phone}
+          services={services}
+        />
       </Suspense>
     </main>
   );

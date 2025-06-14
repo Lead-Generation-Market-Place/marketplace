@@ -2,45 +2,102 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import AppHeader from '../(dashboard)/layout/AppHeader'
-import AppSidebar from '../(dashboard)/layout/AppSidebar'
+import dynamic from 'next/dynamic'
 import Backdrop from '@/app/(dashboard)/layout/Backdrop'
 import { useSidebar } from '@/app/(dashboard)/context/SidebarContext'
 import { createClient } from '@/utils/supabase/client'
+import LoadingScreen from './layout/FullScreenLoader'
+import { User } from '@supabase/supabase-js'
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+// Lazy load AppSidebar and AppHeader
+const AppSidebar = dynamic(() => import('./layout/AppSidebar'), {
+  ssr: false,
+  loading: () => <></>, // we control loading status manually
+})
+const AppHeader = dynamic(() => import('./layout/AppHeader'), {
+  ssr: false,
+  loading: () => <></>,
+})
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar()
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  const [status, setStatus] = useState('Initializing...')
+  const [authReady, setAuthReady] = useState(false)
+  const [sidebarData, setSidebarData] = useState<{ isServiceProvider: boolean }>({
+    isServiceProvider: false,
+  })
+  const [headerData, setHeaderData] = useState<{
+    user: User | null
+    isServiceProvider: boolean
+    profile: {
+      id: string;
+      user_id: string;
+      full_name: string;
+      username: string;
+      bio: string;
+    } | null
+  }>({
+    user: null,
+    isServiceProvider: false,
+    profile: null,
+  })
+  const [dataReady, setDataReady] = useState(false)
+
   const router = useRouter()
   const supabase = createClient()
 
-  // Check for authentication
+  // Authentication check
   useEffect(() => {
+    setStatus('Authenticating user...')
     const checkAuth = async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (!user) {
         router.push('/login')
       } else {
-        setIsAuthenticated(true)
+        setAuthReady(true)
       }
     }
 
     checkAuth()
   }, [router, supabase])
 
-  // While checking session, render nothing or a loader
-  if (isAuthenticated === null) {
-    return <div className="text-center p-10">Checking authentication...</div>
-  }
+  // Fetch all required data for sidebar and header
+  useEffect(() => {
+    if (!authReady) return
+    setStatus('Loading...')
+    const fetchData = async () => {
+      // Fetch user and service provider status
+      const { data: { user } } = await supabase.auth.getUser();
+      let isServiceProvider = false;
+      let profile = null;
+      if (user) {
+        const { data: serviceProvider, error } = await supabase
+          .from("service_providers")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        isServiceProvider = !!serviceProvider && !error;
+        // Fetch user profile
+        const { data: profileData } = await supabase
+          .from("users_profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        profile = profileData || null;
+      }
+      setSidebarData({ isServiceProvider });
+      setHeaderData({ user, isServiceProvider, profile });
+      setDataReady(true);
+    };
+    fetchData();
+  }, [authReady])
 
-  // Sidebar margin logic
+  if (!authReady || !dataReady) return <LoadingScreen status={status} />
+
   const mainContentMargin = isMobileOpen
     ? 'ml-0'
     : isExpanded || isHovered
@@ -49,17 +106,10 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen xl:flex">
-      {/* Sidebar and Backdrop */}
-      <AppSidebar />
+      <AppSidebar isServiceProvider={sidebarData.isServiceProvider} />
       <Backdrop />
-
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}
-      >
-        {/* Header */}
-        <AppHeader />
-        {/* Page Content */}
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
+        <AppHeader user={headerData.user} profile={headerData.profile} />
         <div className="p-4 mx-auto max-w-[1440px] md:p-6 bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
           {children}
         </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import { Loader2, MapPin, Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { SearchServiceSuggestions, SearchLocationSuggestions } from "@/actions/service";
+import { ProfessionalServices, GetAllServicesWithHierarchy, GetAllLocations } from "@/actions/service";
 import { useRouter } from "next/navigation";
 
 
@@ -12,9 +12,15 @@ interface ServiceSuggestion {
   name: string;
 }
 const SearchServices = () => {
-  const [service, setService] = useState("");
+  const [categories, setCategories] = useState<{ name: string }[]>([]);
+  const [subCategories, setSubCategories] = useState<{ name: string }[]>([]);
+  const [services, setServices] = useState<string[]>([]);
+
+  const [selectedCategory, setSelectedCategory] = useState(""); // category name
+  const [selectedSubCategory, setSelectedSubCategory] = useState(""); // subcategory name
+  const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("");
-  const router = useRouter();
+  const [locationsList, setLocationsList] = useState<string[]>([]);
 
   const [serviceSuggestions, setServiceSuggestions] = useState<ServiceSuggestion[]>([]);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
@@ -24,84 +30,82 @@ const SearchServices = () => {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [ignoreLocationSuggestionFetch, setIgnoreLocationSuggestionFetch] = useState(false);
 
+
+  const [serviceHierarchy, setServiceHierarchy] = useState<Record<string, Record<string, string[]>>>({});
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   useEffect(() => {
-    if (ignoreServiceSuggestionFetch) return;
-    const timeout = setTimeout(async () => {
-      if (service.length > 1) {
-        try {
-          const res = await SearchServiceSuggestions(service);
-          setServiceSuggestions(res?.length ? res : []);
-          setShowServiceSuggestions(true);
-        } catch {
-          setServiceSuggestions([]);
-          setShowServiceSuggestions(true);
-        }
-      } else {
-        setServiceSuggestions([]);
-        setShowServiceSuggestions(false);
+    const fetchOptions = async () => {
+      try {
+        const [hierarchy, locations] = await Promise.all([
+          GetAllServicesWithHierarchy(),
+          GetAllLocations(),
+        ]);
+        setServiceHierarchy(hierarchy);
+        // Use category names
+        const cats = Object.keys(hierarchy).map((catName) => ({ name: catName }));
+        setCategories(cats);
+        setLocationsList(locations);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
       }
-    }, 150);
-    return () => clearTimeout(timeout);
-  }, [service, ignoreServiceSuggestionFetch]);
+    };
+    fetchOptions();
+  }, []);
 
   useEffect(() => {
-    if (ignoreLocationSuggestionFetch) return;
-    const timeout = setTimeout(async () => {
-      if (location.length > 1) {
-        try {
-          const res = await SearchLocationSuggestions(location);
-          setLocationSuggestions(res?.length ? res : []);
-          setShowLocationSuggestions(true);
-        } catch {
-          setLocationSuggestions([]);
-          setShowLocationSuggestions(true);
-        }
+    if (selectedCategory && serviceHierarchy[selectedCategory]) {
+      // subCategories: [{name}]
+      const subs = Object.keys(serviceHierarchy[selectedCategory]).map((subName) => ({ name: subName }));
+      setSubCategories(subs);
+      setSelectedSubCategory("");
+    } else {
+      setSubCategories([]);
+      setSelectedSubCategory("");
+      setServices([]);
+      setSelectedService("");
+    }
+  }, [selectedCategory, serviceHierarchy]);
+
+  useEffect(() => {
+    if (selectedCategory && selectedSubCategory && serviceHierarchy[selectedCategory]?.[selectedSubCategory]) {
+      setServices(serviceHierarchy[selectedCategory][selectedSubCategory].filter((x) => typeof x === 'string'));
+      // Auto-select the first service if available
+      if (serviceHierarchy[selectedCategory][selectedSubCategory].length > 0) {
+        setSelectedService(serviceHierarchy[selectedCategory][selectedSubCategory][0]);
       } else {
-        setLocationSuggestions([]);
-        setShowLocationSuggestions(false);
+        setSelectedService("");
       }
-    }, 150);
-    return () => clearTimeout(timeout);
-  }, [location, ignoreLocationSuggestionFetch]);
+    } else {
+      setServices([]);
+      setSelectedService("");
+    }
+  }, [selectedSubCategory, selectedCategory, serviceHierarchy]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!service || !location) {
-      toast.error("Please enter both service and location.");
+    if (!selectedService && !location) {
+      toast.error("Please select a service and/or location.");
       return;
     }
-    startTransition(() => {
-      router.push(
-        `/professional/services?service=${encodeURIComponent(service)}&location=${encodeURIComponent(location)}`
-      );
+
+    const formData = new FormData();
+    if (selectedService) formData.append("services", selectedService);
+    if (location) formData.append("location", location);
+
+    startTransition(async () => {
+      const result = await ProfessionalServices(formData);
+      if (result.status === "error") {
+        toast.error(result.message);
+      } else {
+        const query = new URLSearchParams();
+        if (selectedService) query.append("service", selectedService);
+        if (location) query.append("location", location);
+        router.push(`/professional/services?${query.toString()}`);
+      }
     });
-  };
-
-const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setService(e.target.value);
-  if (ignoreServiceSuggestionFetch && e.target.value !== service) {
-    setIgnoreServiceSuggestionFetch(false);
-  }
-};
-
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value);
-    if (ignoreLocationSuggestionFetch) setIgnoreLocationSuggestionFetch(false);
-  };
-
-  const handleServiceSuggestionClick = (text: string) => {
-    setService(text);
-    setShowServiceSuggestions(false);
-    setIgnoreServiceSuggestionFetch(true);
-  };
-
-  const handleLocationSuggestionClick = (text: string) => {
-    setLocation(text);
-    setShowLocationSuggestions(false);
-    setIgnoreLocationSuggestionFetch(true);
   };
 
   return (
@@ -113,11 +117,82 @@ const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6 relative" autoComplete="off">
-          {/* Service Input */}
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Category
+            </label>
+            <select
+              id="category"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat.name} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="sub-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Subcategory
+            </label>
+            <select
+              id="sub-category"
+              value={selectedSubCategory}
+              onChange={(e) => setSelectedSubCategory(e.target.value)}
+              disabled={!selectedCategory}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select subcategory</option>
+              {subCategories.map((sub) => (
+                <option key={sub.name} value={sub.name}>{sub.name}</option>
+              ))}
+            </select>
+            {/* Display subcategories below when a category is selected */}
+            {selectedCategory && subCategories.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {subCategories.map((sub) => (
+                  <span
+                    key={sub.name}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition cursor-pointer ${
+                      selectedSubCategory === sub.name
+                        ? 'bg-[#0077B6] text-white border-[#0077B6]'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600'
+                    }`}
+                    onClick={() => {
+                      if (selectedSubCategory !== sub.name) {
+                        setSelectedSubCategory(sub.name);
+                      }
+                    }}
+                    style={{ userSelect: 'none' }}
+                  >
+                    {sub.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div>
             <label htmlFor="service" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              What service do you provide?
+              Service
             </label>
+
+            <select
+              id="service"
+              value={selectedService}
+              onChange={(e) => setSelectedService(e.target.value)}
+              disabled={!selectedSubCategory}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select service</option>
+              {services.map((srv) => (
+                <option key={srv} value={srv}>{srv}</option>
+              ))}
+            </select>
+
             <div className="relative">
               <Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
               <input
@@ -150,56 +225,32 @@ const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </ul>
               )}
             </div>
+
           </div>
 
-          {/* Location Input */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Your location
+              Location
             </label>
-            <div className="relative">
-              <MapPin className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
-              <input
-                id="location"
-                name="location"
-                type="text"
-                value={location}
-                onChange={handleLocationChange}
-                placeholder="e.g. New York"
-                required
-                className="w-full pl-11 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              />
-              {showLocationSuggestions && (
-                <ul className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-[4px] max-h-48 overflow-y-auto">
-                  {locationSuggestions.length > 0 ? (
-                    locationSuggestions.map((item, i) => (
-                      <li
-                        key={i}
-                        className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700"
-                        onClick={() => handleLocationSuggestionClick(item)}
-                      >
-                        {item}
-                      </li>
-                    ))
-                  ) : (
-                    <li className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic select-none">
-                      No suggestions
-                    </li>
-                  )}
-                </ul>
-              )}
-            </div>
+            <select
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select a location</option>
+              {locationsList.map((loc, index) => (
+                <option key={index} value={loc}>{loc}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
               disabled={isPending}
               className={`w-full flex justify-center items-center gap-2 py-3 rounded-md font-semibold text-sm text-white transition ${
-                isPending
-                  ? "bg-[#0077B6]/70 cursor-not-allowed"
-                  : "bg-[#0077B6] hover:bg-[#005f8e]"
+                isPending ? "bg-[#0077B6]/70 cursor-not-allowed" : "bg-[#0077B6] hover:bg-[#005f8e]"
               }`}
             >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -208,16 +259,12 @@ const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
         </form>
 
-        {/* Help Section */}
         <div className="pt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          Need help? Call{" "}
-          <a
-            href="tel:+12028304424"
-            className="text-[#0077B6] font-medium hover:underline"
-          >
+          Need help? Call {" "}
+          <a href="tel:+12028304424" className="text-[#0077B6] font-medium hover:underline">
             +1 (202) 830-4424
           </a>{" "}
-          or{" "}
+          or {" "}
           <a href="#" className="text-[#0077B6] font-medium hover:underline">
             request a call
           </a>

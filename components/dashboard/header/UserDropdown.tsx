@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/client";
 
 import { Dropdown } from "@/components/dashboard/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/dashboard/ui/dropdown/DropdownItem";
@@ -18,13 +17,14 @@ type UserProfile = {
   // Add more fields based on your schema
 };
 
-export default function UserDropdown() {
+interface UserDropdownProps {
+  user: User | null;
+  profile: UserProfile | null;
+}
+
+export default function UserDropdown({ profile }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
-
-
   const pathname = usePathname();
   const isDashboard = pathname === '/';
 
@@ -36,37 +36,6 @@ export default function UserDropdown() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    async function fetchUserAndProfile() {
-      const supabase = createClient();
-
-      // Get Authenticated User
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
-      if (userError || !userData?.user) {
-        console.log("User not logged in.");
-        return;
-      }
-
-      setUser(userData.user);
-
-      // Now fetch the user's profile from your `user_profiles` table
-      const { data: profileData, error: profileError } = await supabase
-        .from("users_profiles")
-        .select("*")
-        .eq("id", userData.user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-      } else {
-        setProfile(profileData);
-      }
-    }
-
-    fetchUserAndProfile();
-  }, []);
-  console.log(user);
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
     setIsOpen((prev) => !prev);

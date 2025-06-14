@@ -28,7 +28,7 @@ const Navbar = async () => {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-semibold flex items-center">
-          <Image src="/yelpax.png" alt="US Connector Logo" width={120} height={10} />
+          <Image src="/yelpax.png" alt="Yelpax Logo" width={120} height={10} />
         </Link>
 
         {/* Mobile Menu (Client Component) */}
@@ -74,7 +74,7 @@ const Navbar = async () => {
           ) : (
             <>
               {/* User actions here */}
-              <UserDropdown/>
+              <UserDropdown user={user} profile={null} />
             </>
           )}
           <ThemeToggleButton />

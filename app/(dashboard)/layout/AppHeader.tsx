@@ -7,7 +7,20 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState ,useEffect,useRef} from "react";
 
-const AppHeader: React.FC = () => {
+// Accept user and isServiceProvider as props for future data-driven header
+// Accept profile as prop
+interface AppHeaderProps {
+  user: import('@supabase/supabase-js').User | null;
+  profile: {
+    id: string;
+    user_id: string;
+    full_name: string;
+    username: string;
+    bio: string;
+  } | null;
+}
+
+const AppHeader: React.FC<AppHeaderProps> = ({ user, profile }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -169,7 +182,7 @@ const AppHeader: React.FC = () => {
           </div>
           {/* <!-- User Area --> */}
 
-          <UserDropdown /> 
+          <UserDropdown user={user} profile={profile} />
     
         </div>
       </div>
