@@ -133,7 +133,7 @@ const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               {showServiceSuggestions && (
                 <ul className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-[4px] max-h-48 overflow-y-auto">
                   {serviceSuggestions.length > 0 ? (
-                    serviceSuggestions.map((item, i) => (
+                    serviceSuggestions.map((item) => (
                       <li
                         key={item.id}
                         className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700"

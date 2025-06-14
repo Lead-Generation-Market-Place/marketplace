@@ -215,7 +215,7 @@ const AppSidebar: React.FC = () => {
       <div className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}`}>
         <Link href="/" className="flex items-center justify-center w-full">
           <div className="relative w-36 h-10 mx-auto">
-            <Image src="/us-connector.png" alt="Logo" fill style={{ objectFit: "contain" }} priority />
+            <Image src="/yelpax.png" alt="Logo" fill style={{ objectFit: "contain" }} priority />
           </div>
         </Link>
       </div>
