@@ -23,11 +23,39 @@ type NavItem = {
   subItems?: SubItem[];
 };
 
+
 type AppSidebarProps = {
   isServiceProvider: boolean | null;
 };
 
 const AppSidebar: React.FC<AppSidebarProps> = ({ isServiceProvider }) => {
+=======
+const navItems: NavItem[] = [
+  {
+    name: "Professional",
+    // ↓ drop the trailing slash here
+    path: "/professional",
+    icon: <Briefcase size={18} />,
+  },
+  {
+    name: "Plan",
+    path: "/plan",
+    icon: <Calendar size={18} />,
+  },
+  {
+    name: "Team",
+    path: "/team",
+    icon: <Users size={18} />,
+  },
+  {
+    name: "Inbox",
+    path: "/Inbox",
+    icon: <Mail size={18} />,
+  },
+];
+
+const AppSidebar: React.FC = () => {
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 

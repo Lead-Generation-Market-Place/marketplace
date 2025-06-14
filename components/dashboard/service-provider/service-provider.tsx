@@ -6,6 +6,11 @@ import { toast } from "sonner";
 import { ProfessionalServices, GetAllServicesWithHierarchy, GetAllLocations } from "@/actions/service";
 import { useRouter } from "next/navigation";
 
+
+interface ServiceSuggestion {
+  id: string;
+  name: string;
+}
 const SearchServices = () => {
   const [categories, setCategories] = useState<{ name: string }[]>([]);
   const [subCategories, setSubCategories] = useState<{ name: string }[]>([]);
@@ -16,6 +21,15 @@ const SearchServices = () => {
   const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("");
   const [locationsList, setLocationsList] = useState<string[]>([]);
+
+  const [serviceSuggestions, setServiceSuggestions] = useState<ServiceSuggestion[]>([]);
+  const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
+  const [ignoreServiceSuggestionFetch, setIgnoreServiceSuggestionFetch] = useState(false);
+
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [ignoreLocationSuggestionFetch, setIgnoreLocationSuggestionFetch] = useState(false);
+
 
   const [serviceHierarchy, setServiceHierarchy] = useState<Record<string, Record<string, string[]>>>({});
   const [isPending, startTransition] = useTransition();
@@ -165,6 +179,7 @@ const SearchServices = () => {
             <label htmlFor="service" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Service
             </label>
+
             <select
               id="service"
               value={selectedService}
@@ -177,6 +192,40 @@ const SearchServices = () => {
                 <option key={srv} value={srv}>{srv}</option>
               ))}
             </select>
+
+            <div className="relative">
+              <Search className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
+              <input
+                id="service"
+                name="service"
+                type="text"
+                value={service}
+                onChange={handleServiceChange}
+                placeholder="e.g. Home Cleaning"
+                required
+                className="w-full pl-11 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:ring-2 focus:ring-[#0077B6] focus:outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              />
+              {showServiceSuggestions && (
+                <ul className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-[4px] max-h-48 overflow-y-auto">
+                  {serviceSuggestions.length > 0 ? (
+                    serviceSuggestions.map((item) => (
+                      <li
+                        key={item.id}
+                        className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700"
+                        onClick={() => handleServiceSuggestionClick(item.name)}
+                      >
+                        {item.name}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic select-none">
+                      No suggestions
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+
           </div>
 
           <div>

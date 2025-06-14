@@ -60,7 +60,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
       .in(
         "service_id",
         exactMatch.map((match) => match.id)
-      );
+      ).order('id', { ascending: true }); 
 
     if (error) {
       setError(error.message);
