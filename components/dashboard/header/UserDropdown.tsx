@@ -22,7 +22,7 @@ interface UserDropdownProps {
   profile: UserProfile | null;
 }
 
-export default function UserDropdown({ profile }: UserDropdownProps) {
+export default function UserDropdown({ user, profile }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
