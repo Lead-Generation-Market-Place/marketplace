@@ -6,12 +6,17 @@ import { toast } from "sonner";
 import { SearchServiceSuggestions, SearchLocationSuggestions } from "@/actions/service";
 import { useRouter } from "next/navigation";
 
+
+interface ServiceSuggestion {
+  id: string;
+  name: string;
+}
 const SearchServices = () => {
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
   const router = useRouter();
 
-  const [serviceSuggestions, setServiceSuggestions] = useState<any[]>([]);
+  const [serviceSuggestions, setServiceSuggestions] = useState<ServiceSuggestion[]>([]);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
   const [ignoreServiceSuggestionFetch, setIgnoreServiceSuggestionFetch] = useState(false);
 

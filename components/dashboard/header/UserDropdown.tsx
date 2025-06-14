@@ -28,9 +28,6 @@ export default function UserDropdown() {
   const pathname = usePathname();
   const isDashboard = pathname === '/';
 
-  const href = isDashboard ? '/home' : '/';
-  const text = isDashboard ? 'Dashboard' : 'Landing Page';
-
   const handleLogout = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -102,7 +99,7 @@ export default function UserDropdown() {
         onClose={closeDropdown}
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col  border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        {/* {user && profile ? (
+        {user && profile ? (
           <div className="p-2 border-b ">
             <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
               {profile.username}
@@ -113,20 +110,22 @@ export default function UserDropdown() {
           </div>
         ) : (
           <p>Loading user...</p>
-        )} */}
+        )}
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-          <li>
+          {isDashboard ? (
+            <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href={href}
+              href='/home'
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
             <ChartPie className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" />
-            {text}
+            Dashboard
             </DropdownItem>
           </li>
+          ):('')}
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
