@@ -42,7 +42,7 @@ const Navbar = async () => {
           {Object.entries(dropdownData).map(([label, items]) => (
             <DropdownMenu key={label} label={label} items={items} />
           ))}
-          <NavItems/>
+          
         </nav>
         
         ):(
