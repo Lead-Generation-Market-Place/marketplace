@@ -11,7 +11,7 @@ const SearchServices = () => {
   const [location, setLocation] = useState("");
   const router = useRouter();
 
-  const [serviceSuggestions, setServiceSuggestions] = useState<string[]>([]);
+  const [serviceSuggestions, setServiceSuggestions] = useState<any[]>([]);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
   const [ignoreServiceSuggestionFetch, setIgnoreServiceSuggestionFetch] = useState(false);
 
@@ -130,11 +130,11 @@ const handleServiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   {serviceSuggestions.length > 0 ? (
                     serviceSuggestions.map((item, i) => (
                       <li
-                        key={i}
+                        key={item.id}
                         className="px-4 py-2 text-sm cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700"
-                        onClick={() => handleServiceSuggestionClick(item)}
+                        onClick={() => handleServiceSuggestionClick(item.name)}
                       >
-                        {item}
+                        {item.name}
                       </li>
                     ))
                   ) : (
