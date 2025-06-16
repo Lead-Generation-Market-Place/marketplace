@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { ProfessionalServices, GetAllServicesWithHierarchy, GetAllLocations } from "@/actions/service";
+import {  getAllServicesWithHierarchy, getAllLocations, professionalServices } from "@/actions/service";
 import { useRouter } from "next/navigation";
 
 const SearchServices = () => {
@@ -11,8 +11,8 @@ const SearchServices = () => {
   const [subCategories, setSubCategories] = useState<{ name: string }[]>([]);
   const [services, setServices] = useState<string[]>([]);
 
-  const [selectedCategory, setSelectedCategory] = useState(""); // category name
-  const [selectedSubCategory, setSelectedSubCategory] = useState(""); // subcategory name
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedService, setSelectedService] = useState("");
   const [location, setLocation] = useState("");
   const [locationsList, setLocationsList] = useState<string[]>([]);
@@ -25,11 +25,10 @@ const SearchServices = () => {
     const fetchOptions = async () => {
       try {
         const [hierarchy, locations] = await Promise.all([
-          GetAllServicesWithHierarchy(),
-          GetAllLocations(),
+          getAllServicesWithHierarchy(),
+          getAllLocations(),
         ]);
         setServiceHierarchy(hierarchy);
-        // Use category names
         const cats = Object.keys(hierarchy).map((catName) => ({ name: catName }));
         setCategories(cats);
         setLocationsList(locations);
@@ -42,10 +41,12 @@ const SearchServices = () => {
 
   useEffect(() => {
     if (selectedCategory && serviceHierarchy[selectedCategory]) {
-      // subCategories: [{name}]
       const subs = Object.keys(serviceHierarchy[selectedCategory]).map((subName) => ({ name: subName }));
       setSubCategories(subs);
+      // Always reset subcategory and service when category changes
       setSelectedSubCategory("");
+      setServices([]);
+      setSelectedService("");
     } else {
       setSubCategories([]);
       setSelectedSubCategory("");
@@ -55,13 +56,15 @@ const SearchServices = () => {
   }, [selectedCategory, serviceHierarchy]);
 
   useEffect(() => {
-    if (selectedCategory && selectedSubCategory && serviceHierarchy[selectedCategory]?.[selectedSubCategory]) {
-      setServices(serviceHierarchy[selectedCategory][selectedSubCategory].filter((x) => typeof x === 'string'));
-      // Auto-select the first service if available
-      if (serviceHierarchy[selectedCategory][selectedSubCategory].length > 0) {
-        setSelectedService(serviceHierarchy[selectedCategory][selectedSubCategory][0]);
-      } else {
-        setSelectedService("");
+    const serviceList =
+      selectedCategory &&
+      selectedSubCategory &&
+      serviceHierarchy[selectedCategory]?.[selectedSubCategory];
+
+    if (serviceList && Array.isArray(serviceList)) {
+      setServices(serviceList);
+      if (!serviceList.includes(selectedService)) {
+        setSelectedService(serviceList[0] || "");
       }
     } else {
       setServices([]);
@@ -82,7 +85,7 @@ const SearchServices = () => {
     if (location) formData.append("location", location);
 
     startTransition(async () => {
-      const result = await ProfessionalServices(formData);
+      const result = await professionalServices(formData);
       if (result.status === "error") {
         toast.error(result.message);
       } else {
@@ -103,6 +106,7 @@ const SearchServices = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6 relative" autoComplete="off">
+          {/* Category */}
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Category
@@ -120,6 +124,7 @@ const SearchServices = () => {
             </select>
           </div>
 
+          {/* Subcategory Dropdown */}
           <div>
             <label htmlFor="sub-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Subcategory
@@ -136,7 +141,8 @@ const SearchServices = () => {
                 <option key={sub.name} value={sub.name}>{sub.name}</option>
               ))}
             </select>
-            {/* Display subcategories below when a category is selected */}
+
+            {/* Subcategory Buttons */}
             {selectedCategory && subCategories.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {subCategories.map((sub) => (
@@ -147,11 +153,7 @@ const SearchServices = () => {
                         ? 'bg-[#0077B6] text-white border-[#0077B6]'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600'
                     }`}
-                    onClick={() => {
-                      if (selectedSubCategory !== sub.name) {
-                        setSelectedSubCategory(sub.name);
-                      }
-                    }}
+                    onClick={() => setSelectedSubCategory(sub.name)}
                     style={{ userSelect: 'none' }}
                   >
                     {sub.name}
@@ -161,6 +163,7 @@ const SearchServices = () => {
             )}
           </div>
 
+          {/* Services */}
           <div>
             <label htmlFor="service" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Service
@@ -179,6 +182,7 @@ const SearchServices = () => {
             </select>
           </div>
 
+          {/* Location */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Location
@@ -196,6 +200,7 @@ const SearchServices = () => {
             </select>
           </div>
 
+          {/* Submit */}
           <div>
             <button
               type="submit"
@@ -211,11 +216,11 @@ const SearchServices = () => {
         </form>
 
         <div className="pt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          Need help? Call {" "}
+          Need help? Call{" "}
           <a href="tel:+12028304424" className="text-[#0077B6] font-medium hover:underline">
             +1 (202) 830-4424
           </a>{" "}
-          or {" "}
+          or{" "}
           <a href="#" className="text-[#0077B6] font-medium hover:underline">
             request a call
           </a>

@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
-import { signIn } from "@/actions/auth";
+import { signIn, getUserAndProvider } from "@/actions/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner"; // ✅ Use Sonner toast
+import { toast } from "sonner";
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -15,18 +15,37 @@ const LoginForm = () => {
     event.preventDefault();
     setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const result = await signIn(formData);
+    try {
+      const formData = new FormData(event.currentTarget);
+      const result = await signIn(formData);
 
-    if (result.status === "success") {
-      router.push("/home");
-    } else {
-      toast.error("Login Failed", {
-        description: result.status,
-      });
+      if (result.status !== "success") {
+        toast.error("Login failed", {
+          description: result.status || "Invalid credentials.",
+        });
+        return;
+      }
+
+      // Only use provider and error from getUserAndProvider
+      const { provider, error } = await getUserAndProvider();
+
+      if (error) {
+        toast.error(error);
+        router.replace("/");
+        return;
+      }
+
+      if (provider) {
+        router.replace("/professional/profile-setup");
+      } else {
+        router.replace("/home");
+      }
+    } catch (error) {
+      console.error("Unexpected error during login:", error);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
