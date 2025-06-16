@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Facebook, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
 
 const Footer = () => {
+    const year = new Date().getFullYear();
     return (
         <footer className="px-6 pt-6 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
             <div className="flex flex-col md:flex-row flex-wrap gap-6 md:gap-4 justify-between w-full max-w-6xl mx-auto text-xs">
@@ -66,7 +67,7 @@ const Footer = () => {
                 </ul>
             </div>
             <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row flex-wrap gap-2 justify-between text-center items-center max-w-6xl mx-auto">
-                <p className="text-sm text-gray-800 dark:text-gray-300">&copy;2023 US-Connector. All rights reserved.</p>
+                <p className="text-sm text-gray-800 dark:text-gray-300">&copy; {year} Yelpax. All rights reserved.</p>
                 <div className="flex items-center gap-2">
                     <Image src="/y-logo.png" width={50} height={30} alt="logo"/>
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Yepax Guarantee</span>
