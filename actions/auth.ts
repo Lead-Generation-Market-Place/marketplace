@@ -323,3 +323,42 @@ export async function VerifyOtp() {
     user,
   };
 }
+
+// ──────────────────────────────────────────────
+// Helper to get user session and provider info after login
+// ──────────────────────────────────────────────
+export async function getUserAndProvider() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      user: null,
+      provider: null,
+      error: "Error retrieving user session.",
+    };
+  }
+
+  const { data: provider, error: providerError } = await supabase
+    .from("service_providers")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  if (providerError && providerError.code !== "PGRST116") {
+    return {
+      user,
+      provider: null,
+      error: "Something went wrong. Try again.",
+    };
+  }
+
+  return {
+    user,
+    provider,
+    error: null,
+  };
+}

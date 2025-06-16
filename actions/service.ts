@@ -2,15 +2,12 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-
-// Capitalize each word
+// Utility to capitalize each word
 const capitalizeWords = (str: string): string =>
   str.replace(/\b\w/g, (char) => char.toUpperCase());
 
-/**
- * Fetch all categories
- */
-export const GetAllCategories = async () => {
+// Fetch all categories
+export const getAllCategories = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.from("categories").select("id, name");
 
@@ -18,29 +15,31 @@ export const GetAllCategories = async () => {
     console.error("Category fetch error:", error.message);
     return [];
   }
-  return data.map((item) => ({ id: item.id, name: capitalizeWords(item.name) }));
+
+  return data.map(({ id, name }) => ({
+    id,
+    name: capitalizeWords(name),
+  }));
 };
 
-/**
- * Fetch subcategories for a given category
- */
-export const GetSubcategoriesByCategory = async (categoryId: string) => {
+// Fetch subcategories by category ID
+export const getSubcategoriesByCategory = async (categoryId: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sub_categories")
     .select("id, name")
     .eq("category_id", categoryId);
 
-  if (error) {
-    return [];
-  }
-  return data.map((item) => ({ id: item.id, name: capitalizeWords(item.name) }));
+  if (error) return [];
+
+  return data.map(({ id, name }) => ({
+    id,
+    name: capitalizeWords(name),
+  }));
 };
 
-/**
- * Fetch services for a given subcategory
- */
-export const GetServicesBySubcategory = async (subcategoryId: string) => {
+// Fetch services by subcategory ID
+export const getServicesBySubcategory = async (subcategoryId: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("services")
@@ -51,15 +50,20 @@ export const GetServicesBySubcategory = async (subcategoryId: string) => {
     console.error("Service fetch error:", error.message);
     return [];
   }
-  return data.map((item) => ({ id: item.id, name: capitalizeWords(item.name) }));
+
+  return data.map(({ id, name }) => ({
+    id,
+    name: capitalizeWords(name),
+  }));
 };
 
-/**
- * Get hierarchical structure: category > subcategory > services
- */
-export const GetAllServicesWithHierarchy = async () => {
+// Get full hierarchy: category > subcategories > services
+export const getAllServicesWithHierarchy = async () => {
   const supabase = await createClient();
-  const { data: categories, error: catError } = await supabase.from("categories").select("id, name");
+  const { data: categories, error: catError } = await supabase
+    .from("categories")
+    .select("id, name");
+
   if (catError) {
     console.error("Category fetch error:", catError.message);
     return {};
@@ -68,22 +72,26 @@ export const GetAllServicesWithHierarchy = async () => {
   const hierarchy: Record<string, Record<string, string[]>> = {};
 
   for (const category of categories) {
-    const { data: subcategories, error: subError } = await supabase
+    const { data: subcategories } = await supabase
       .from("sub_categories")
       .select("id, name")
       .eq("category_id", category.id);
-    if (subError) continue;
+
+    if (!subcategories) continue;
 
     const subHierarchy: Record<string, string[]> = {};
 
     for (const subcategory of subcategories) {
-      const { data: services, error: srvError } = await supabase
+      const { data: services } = await supabase
         .from("services")
         .select("name")
         .eq("sub_categories_id", subcategory.id);
-      if (srvError) continue;
 
-      subHierarchy[capitalizeWords(subcategory.name)] = services.map((srv) => capitalizeWords(srv.name));
+      if (!services) continue;
+
+      subHierarchy[capitalizeWords(subcategory.name)] = services.map((srv) =>
+        capitalizeWords(srv.name)
+      );
     }
 
     hierarchy[capitalizeWords(category.name)] = subHierarchy;
@@ -92,25 +100,26 @@ export const GetAllServicesWithHierarchy = async () => {
   return hierarchy;
 };
 
-/**
- * Get all unique location names
- */
-export const GetAllLocations = async () => {
+// Get all unique state names from locations
+export const getAllLocations = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.from("us_location").select("state");
+
   if (error) {
     console.error("Location fetch error:", error.message);
     return [];
   }
+
   const states = [...new Set(data.map((item) => capitalizeWords(item.state)))];
   return states;
 };
 
-/**
- * Handles filtered search for services based on selected services and location
- */
-export const ProfessionalServices = async (formData: FormData) => {
-  const selectedServices = formData.getAll("services").map((s) => s.toString().trim().toLowerCase());
+// Filter professionals by selected services and location
+export const professionalServices = async (formData: FormData) => {
+  const selectedServices = formData
+    .getAll("services")
+    .map((s) => s.toString().trim().toLowerCase());
+
   const selectedState = formData.get("location")?.toString().trim().toLowerCase() || "";
 
   if (!selectedServices.length && !selectedState) {
@@ -134,15 +143,7 @@ export const ProfessionalServices = async (formData: FormData) => {
       .ilike("state", `%${selectedState}%`)
       .limit(10);
 
-    if (locationError) {
-      console.error("Location search error:", locationError.message);
-      return {
-        status: "error",
-        message: "Unable to search locations. Please try again.",
-      };
-    }
-
-    if (!locationData?.length) {
+    if (locationError || !locationData?.length) {
       return {
         status: "error",
         message: "No matching states found.",
@@ -152,15 +153,7 @@ export const ProfessionalServices = async (formData: FormData) => {
 
   const { data, error } = await query;
 
-  if (error) {
-    console.error("Service search error:", error.message);
-    return {
-      status: "error",
-      message: "Unable to search services. Please try again.",
-    };
-  }
-
-  if (!data?.length) {
+  if (error || !data?.length) {
     return {
       status: "error",
       message: "No matching services found.",
@@ -169,7 +162,7 @@ export const ProfessionalServices = async (formData: FormData) => {
 
   const formattedData = data.map((item) => ({
     ...item,
-    name: item.name ? capitalizeWords(item.name) : item.name,
+    name: capitalizeWords(item.name),
     location: item.location ? capitalizeWords(item.location) : item.location,
   }));
 
@@ -179,31 +172,21 @@ export const ProfessionalServices = async (formData: FormData) => {
   };
 };
 
-
-// Get current user information
+// Authenticated user info
 export const getCurrentUser = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
 
-  if (error || !data?.user) {
-    return null;
-  }
-  // Return only a plain object for serialization safety (if used in server/client boundary)
+  if (error || !data?.user) return null;
+
   const { id, email, user_metadata } = data.user;
   return { id, email, user_metadata };
 };
 
-
-// Insert into Plan table the customer plans
-export const createCustomerPlan = async (
-  service_id: string,
-  plan_type: string
-) => {
-  // Get the current user using the reusable utility
+// Create a customer plan
+export const createCustomerPlan = async (service_id: string, plan_type: string) => {
   const user = await getCurrentUser();
-  if (!user) {
-    return { success: false, error: "Could not get current user" };
-  }
+  if (!user) return { success: false, error: "Could not get current user" };
 
   const supabase = await createClient();
 
@@ -211,61 +194,55 @@ export const createCustomerPlan = async (
     .from("plan")
     .insert([{ user_id: user.id, service_id, plan_type }]);
 
-  if (error) {
-    return { success: false, error: error.message };
-  }
-  return { success: true, data };
+  return error
+    ? { success: false, error: error.message }
+    : { success: true, data };
 };
 
-
-// get the current user plans
+// Get a user's plans
 export const getCustomerPlans = async () => {
   const user = await getCurrentUser();
-  if (!user) {
-    return { success: false, error: "Could not get current user" };
-  }
+  if (!user) return { success: false, error: "Could not get current user" };
 
   const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("plan")
-    .select("id, plan_type, user_id, service:service_id(id, name)") // <- fixed here
+    .select("id, plan_type, user_id, service:service_id(id, name)")
     .eq("user_id", user.id)
     .order("id", { ascending: true });
 
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, data };
+  return error
+    ? { success: false, error: error.message }
+    : { success: true, data };
 };
 
-export async function removePlan(planId: string): Promise<{ error: Error | null }> {
+// Remove a user's plan
+export const removePlan = async (planId: string) => {
   const supabase = await createClient();
   const user = await getCurrentUser();
-  if (!user) {
-    return { error: new Error('User not authenticated') };
-  }
-  const userId = user.id;
+
+  if (!user) return { error: new Error("User not authenticated") };
+
   const { error } = await supabase
-    .from('plan')
+    .from("plan")
     .delete()
-    .eq('user_id', userId)
-    .eq('id', planId);
+    .eq("user_id", user.id)
+    .eq("id", planId);
 
   return { error };
-}
+};
 
-/**
- * Returns service name suggestions (max 10)
- */
-interface ServiceSuggestion {
+// Autocomplete suggestions for services
+export interface ServiceSuggestion {
   id: string;
   name: string;
   description: string;
 }
 
-
-export const SearchServiceSuggestions = async (query: string): Promise<ServiceSuggestion[]> => {
+export const searchServiceSuggestions = async (
+  query: string
+): Promise<ServiceSuggestion[]> => {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -278,18 +255,17 @@ export const SearchServiceSuggestions = async (query: string): Promise<ServiceSu
     console.error("Service suggestion error:", error.message);
     return [];
   }
+
   return data.map((item) => ({
     ...item,
-    name: capitalizeWords(item.name)
+    name: capitalizeWords(item.name),
   }));
-
-  // return Array.from(new Set(data.map((item) => capitalizeWords(item.name)))).slice(0, 10);
 };
 
-/**
- * Returns location suggestions (states only) based on query
- */
-export const SearchLocationSuggestions = async (query: string): Promise<string[]> => {
+// Autocomplete suggestions for location (states)
+export const searchLocationSuggestions = async (
+  query: string
+): Promise<string[]> => {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -304,7 +280,6 @@ export const SearchLocationSuggestions = async (query: string): Promise<string[]
   }
 
   const suggestions = new Set<string>();
-
   data.forEach(({ state }) => {
     if (state && state.toLowerCase().includes(query.toLowerCase())) {
       suggestions.add(capitalizeWords(state));
@@ -314,20 +289,23 @@ export const SearchLocationSuggestions = async (query: string): Promise<string[]
   return Array.from(suggestions).slice(0, 10);
 };
 
-export const fetchServiceIdea = async () => {
+// Fetch all services for idea display
+export const fetchServiceIdeas = async () => {
   const supabase = await createClient();
-  
-  const {data, error} = await supabase
-  .from("services")
-  .select("*")
-  .order("id", { ascending: true });
+
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .order("id", { ascending: true });
+
   if (error) {
-    console.error("Service suggestion error:", error.message);
+    console.error("Service fetch error:", error.message);
     return [];
   }
+
   return data.map((item) => ({
     ...item,
-    name: capitalizeWords(item.name)
+    name: capitalizeWords(item.name),
   }));
-}
+};
 
