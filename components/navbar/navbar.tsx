@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import { ThemeToggleButton } from "../dashboard/Themes/ThemeToggleButton";
 import UserDropdown from "../dashboard/header/UserDropdown";
+import NavItems from "./navItems";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],
@@ -40,18 +41,7 @@ const Navbar = async () => {
         </nav>
         ):(
           <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
-            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
-            Become a Pro
-            </Link>
-            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
-            Team
-            </Link>
-            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
-            Subscription
-            </Link>
-            <Link href="/" className="hover:text-[#023E8A] dark:hover:text-[#90e0ef] transition-colors">
-            Chat
-            </Link>
+            <NavItems/>
           </nav>
         )}
         
