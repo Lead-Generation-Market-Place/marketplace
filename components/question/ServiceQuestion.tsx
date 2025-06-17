@@ -14,15 +14,16 @@ interface Answer {
 interface Question {
   id: number;
   text: string;
+  type: string;
   service_id: number;
   answers: Answer[];
 }
 
 interface ServiceQuestionProps {
-  exactMatch: { id: number; name?: string }[];
+  serviceId: number
 }
 
-export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
+export default function ServiceQuestion({ serviceId }: ServiceQuestionProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -31,13 +32,13 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
   const supabase = createClient();
 
   useEffect(() => {
-    if (exactMatch.length > 0) {
+    if (serviceId) {
       fetchQuestions();
     } else {
       setError("No exact match found.");
       setLoading(false);
     }
-  }, [exactMatch]);
+  }, [serviceId]);
 
   async function fetchQuestions() {
     setLoading(true);
@@ -48,6 +49,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
       .select(`
         id,
         text,
+        "type",
         service_id,
         question_answers (
           answers (
@@ -57,10 +59,8 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
           )
         )
       `)
-      .in(
-        "service_id",
-        exactMatch.map((match) => match.id)
-      ).order('id', { ascending: true }); 
+      .in("service_id", [Number(serviceId)])
+      .order('id', { ascending: true }); 
 
     if (error) {
       setError(error.message);
@@ -69,6 +69,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
       const formatted: Question[] = (data || []).map((q) => ({
         id: q.id,
         text: q.text,
+        type: q.type,
         service_id: q.service_id,
         answers: q.question_answers.flatMap((qa) => qa.answers),
       }));
@@ -132,7 +133,7 @@ export default function ServiceQuestion({ exactMatch }: ServiceQuestionProps) {
             >
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
-                  type="radio"
+                  type={question.type}
                   name={`question-${question.id}`}
                   value={answer.id}
                   checked={selectedAnswers[question.id] === answer.id}

@@ -4,6 +4,7 @@ interface TodoCardProps {
   title: string;
   description?: string;
   badgeText?: string;
+  isCompleting?:boolean;
   onMarkDone?: () => void;
   onGetItDone?: () => void;
   onRemove?: () => void;
@@ -16,6 +17,7 @@ const PlanCard = ({
   title,
   description,
   badgeText,
+  isCompleting,
   onMarkDone,
   onGetItDone,
   onRemove,
@@ -23,6 +25,7 @@ const PlanCard = ({
   className,
   children,
 }: TodoCardProps) => {
+
   return (
     <div
       className={`relative flex flex-col justify-between min-h-[150px] p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors ${className || ""}`}
@@ -51,7 +54,7 @@ const PlanCard = ({
           onClick={onMarkDone}
         >
           <CircleCheckBig className="w-4 h-4 inline mr-1" />
-          Mark done
+          {isCompleting ? ('progress...'): ('Mark Done')}
         </button>
         <button
           className="border border-sky-500 bg-sky-500 rounded text-white px-2 py-1 hover:bg-sky-600 dark:hover:bg-sky-400 transition"

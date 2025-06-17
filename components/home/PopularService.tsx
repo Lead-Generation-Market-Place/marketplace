@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Carousel,
   CarouselContent,
@@ -21,6 +22,7 @@ type Service = {
 };
 
 export default function PopularService() {
+  const router = useRouter();
   const [services, setServices] = useState<Service[] | null>(null);
   const supabase = createClient();
   const carouselRef = useRef<HTMLDivElement | null>(null);
@@ -51,6 +53,11 @@ export default function PopularService() {
     }
     fetchPopularServices();
   }, [supabase]);
+
+  const loadQuestion = (service:Service)=>{
+    const serviceId = service.id;
+    router.push(`/service?serviceId=${serviceId}`);
+  }
 
   return (
     <div className="py-20 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -100,6 +107,7 @@ export default function PopularService() {
                       cursor-pointer
                       group
                     "
+                    onClick={()=>loadQuestion(service)}
                   >
                     {service.imageUrl ? (
                       <>

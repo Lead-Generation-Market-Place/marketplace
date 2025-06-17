@@ -197,7 +197,7 @@ export const getCurrentUser = async () => {
 // Insert into Plan table the customer plans
 export const createCustomerPlan = async (
   service_id: string,
-  plan_type: string
+  plan_status: string
 ) => {
   // Get the current user using the reusable utility
   const user = await getCurrentUser();
@@ -209,7 +209,7 @@ export const createCustomerPlan = async (
 
   const { data, error } = await supabase
     .from("plan")
-    .insert([{ user_id: user.id, service_id, plan_type }]);
+    .insert([{ user_id: user.id, service_id, plan_status }]);
 
   if (error) {
     return { success: false, error: error.message };
@@ -228,8 +228,9 @@ export const getCustomerPlans = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("plan")
-    .select("id, plan_type, user_id, service:service_id(id, name)") // <- fixed here
+    .select("id, plan_status, user_id, service:service_id(id, name)")
     .eq("user_id", user.id)
+    .eq("plan_status", "todo")
     .order("id", { ascending: true });
 
   if (error) {
@@ -238,6 +239,28 @@ export const getCustomerPlans = async () => {
 
   return { success: true, data };
 };
+
+export const getCompletedPlans = async () => {
+  const user = await getCurrentUser();
+  if(!user) {
+    return {success: false, error:"Could not get the current user"};
+  }
+  const supabase = await createClient();
+  const {data, error} = await supabase
+  .from("plan")
+  .select("id, plan_status,created_at, user_id, service:service_id(id, name)")
+  .eq("user_id", user.id)
+  .eq("plan_status", "done")
+  .order("id", {ascending: true});
+  if (error) {
+    return {success:false, error: error.message }
+  }
+  return {success:true, data};
+
+};
+
+  
+
 
 export async function removePlan(planId: string): Promise<{ error: Error | null }> {
   const supabase = await createClient();
@@ -331,3 +354,17 @@ export const fetchServiceIdea = async () => {
   }));
 }
 
+export async function markPlanAsCompleted(planId: string) {
+  const supabase = await createClient();
+  console.log(planId);
+  const { data, error } = await supabase
+    .from("plan")
+    .update({ plan_status: "done" })
+    .eq("id", planId);
+
+  if (error) {
+    throw new Error(`Failed to update plan: ${error.message}`);
+  }
+
+  return data;
+}

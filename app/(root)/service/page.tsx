@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/client';
 import SearchResult from '@/components/search/SearchResult';
 import SearchFilter from '@/components/search/SearchFilter';
 import ProsList from '@/components/search/ProsList';
+import ServiceQuestion from '@/components/question/ServiceQuestion';
+import BackCloseButtons from '@/lib/utils/BackCloseButton';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +14,7 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
   const params = await searchParams;
   const searchKey = params.search || '';
   const zipCode = params.zipcode || '';
+  const serviceId = params.serviceId || '';
   const locationInfo = params.locationInfo || '';
   const inputValue = searchKey.trim().toLowerCase();
 
@@ -29,6 +33,7 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
     console.log(exactMatchError);
   }
 
+
   return (
     <>
       <div className="flex bg-white dark:bg-gray-900 transition-colors duration-300 min-h-screen">
@@ -42,6 +47,13 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
       {/* Overlay Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 transition-colors duration-300">
       <div className="bg-white dark:bg-gray-900 rounded-sm shadow-lg dark:shadow-[0_2px_32px_0_rgba(0,209,255,0.20)] max-w-3xl w-full px-6 py-5 text-sm max-h-[90vh] overflow-auto border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+        {serviceId ? (
+          <>
+          <BackCloseButtons/>
+          <ServiceQuestion  serviceId={Number(serviceId)}/>
+          </>
+          
+        ):(
         <SearchResult
           categories={categories || []}
           search={searchKey}
@@ -50,6 +62,7 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
           location={locationInfo}
           fetchError={error?.message || null}
         />
+        )}
       </div>
     </div>
     </>
