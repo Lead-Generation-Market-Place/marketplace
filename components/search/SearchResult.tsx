@@ -7,7 +7,7 @@ import Link from 'next/link';
 import SearchButton from '@/components/elements/SearchButton';
 import ResetButton from '@/components/elements/ResetButton';
 import TextPlaceholder from '@/components/elements/TextPlaceholder';
-import { ArrowLeft, X } from 'lucide-react';
+import BackCloseButtons from '@/lib/utils/BackCloseButton';
 
 type Category = {
   id: number;
@@ -36,6 +36,7 @@ export default function SearchResult({
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     setLoading(true);
@@ -99,19 +100,10 @@ export default function SearchResult({
   if (exactMatch && exactMatch.length > 0) {
     return (
       <>
-        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
-          <p
-            className="cursor-pointer hover:text-[#0096C7]"
-            onClick={() => window.history.back()}>
-            <ArrowLeft />
-          </p>
-          <p
-            className="cursor-pointer hover:text-red-600"
-            onClick={() => (window.location.href = '/')}>
-            <X />
-          </p>
-        </div>
-        <ServiceQuestion exactMatch={exactMatch} />
+        <BackCloseButtons/>
+        {/* loading question for best matched services */}
+        <ServiceQuestion serviceId={exactMatch[0]?.id} />
+
       </>
     );
   }
@@ -119,19 +111,8 @@ export default function SearchResult({
   if (submitted && selectedCategory) {
     return (
       <>
-        <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
-          <p
-            className="cursor-pointer hover:text-[#0096C7]"
-            onClick={() => window.history.back()}>
-            <ArrowLeft />
-          </p>
-          <p
-            className="cursor-pointer hover:text-red-600"
-            onClick={() => (window.location.href = '/')}>
-            <X />
-          </p>
-        </div>
-        <ServiceQuestion exactMatch={[selectedCategory]} />
+        <BackCloseButtons/>
+        <ServiceQuestion serviceId={selectedCategory.id} />
       </>
     );
   }
@@ -141,18 +122,7 @@ export default function SearchResult({
 
   return (
     <>
-      <div className="px-3 py-2 flex flex-row justify-between items-center text-gray-500 dark:text-gray-300">
-        <p
-          className="cursor-pointer hover:text-[#0096C7]"
-          onClick={() => window.history.back()}>
-          <ArrowLeft />
-        </p>
-        <p
-          className="cursor-pointer hover:text-red-600"
-          onClick={() => (window.location.href = '/')}>
-          <X />
-        </p>
-      </div>
+      <BackCloseButtons/>
       <form className="flex flex-col gap-4" onSubmit={submitAnswer}>
         <h1 className="text-xl font-bold mb-4 text-center dark:text-gray-100">
           Here&apos;s what we found that best matches your search.

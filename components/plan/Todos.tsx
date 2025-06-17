@@ -6,11 +6,13 @@ import {
   createCustomerPlan,
   fetchServiceIdea,
   getCustomerPlans,
+  markPlanAsCompleted,
   removePlan,
   SearchServiceSuggestions,
 } from "@/actions/service";
 import { getUSASeason } from "@/utils/usaSeason";
 import PlanCard from "./planCard";
+import { useRouter } from "next/navigation";
 
 interface ServiceSuggestion {
   id: string;
@@ -20,7 +22,7 @@ interface ServiceSuggestion {
 
 interface Plan {
   id: string;
-  plan_type: string;
+  plan_status: string;
   user_id: string;
   service: {
     id: string;
@@ -37,7 +39,8 @@ const Todos = () => {
   const [isLoading, setLoading] = useState(false);
   const [idea, setIdea] = useState<ServiceSuggestion[]>([]);
   const [season, setSeason] = useState<string | null>(null);
-
+  const [isCompleting, setIsCompleting] = useState(false);
+  const router = useRouter();
   // Fetch service suggestions as user types
   useEffect(() => {
     if (ignoreServiceSuggestionFetch) return;
@@ -103,10 +106,10 @@ const Todos = () => {
   };
 
   const handleServiceSuggestionClick = async (item: ServiceSuggestion) => {
-    const plan_type = "todo";
+    const plan_status = "todo";
     const service_id = item.id;
 
-    const result = await createCustomerPlan(service_id, plan_type);
+    const result = await createCustomerPlan(service_id, plan_status);
 
     if (result.success) {
       const updated = await getCustomerPlans();
@@ -134,7 +137,27 @@ const Todos = () => {
       );
     }
   }
-
+  
+ const markItDone = async (planId:string) => {
+    try {
+      setIsCompleting(true);
+      console.log("plan id: ", planId)
+      await markPlanAsCompleted(planId);
+      setCustomerPlans((prevPlans) =>
+      prevPlans.filter((plan) => plan.id !== planId)
+    );
+      alert('Plan marked as completed!');
+      // optionally, re-fetch or update local state here
+    } catch (err) {
+      alert('Failed to mark as done: ' + err);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+  
+  const getItDone = (serviceId: string | undefined) => {
+    router.push(`/service?serviceId=${serviceId}`);
+  }
   return (
     <div className="container mx-auto px-2 sm:px-4 md:px-8 max-w-5xl">
       <div className="pt-6">
@@ -184,9 +207,9 @@ const Todos = () => {
             <PlanCard
               key={plan.id}
               title={plan.service?.name ?? "Unknown"}
-             
-              onMarkDone={() => alert("Mark done functionality coming soon")}
-              onGetItDone={() => alert("Mark done functionality coming soon")}
+              isCompleting={isCompleting}
+              onMarkDone={() => markItDone(plan.id)}
+              onGetItDone={() => getItDone(plan.service?.id)}
               onRemove={() => handlePlanRemove(plan.id)}
             />
           ))
