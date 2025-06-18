@@ -46,7 +46,7 @@ export default async function ServicePage({ searchParams }: { searchParams: Prom
       </div>
       {/* Overlay Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 transition-colors duration-300">
-      <div className="bg-white dark:bg-gray-900 rounded-sm shadow-lg dark:shadow-[0_2px_32px_0_rgba(0,209,255,0.20)] max-w-3xl w-full px-6 py-5 text-sm max-h-[90vh] overflow-auto border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+      <div className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white rounded-sm shadow-lg max-w-3xl w-full px-6 py-5 text-sm max-h-[90vh] overflow-auto border border-gray-100 dark:border-gray-800 transition-colors duration-300">
         {serviceId ? (
           <>
           <BackCloseButtons/>
