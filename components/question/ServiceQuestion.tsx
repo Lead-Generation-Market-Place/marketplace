@@ -121,7 +121,7 @@ export default function ServiceQuestion({ serviceId }: ServiceQuestionProps) {
 
   return (
     <div className="flex flex-col items-center justify-center mt-4 w-full">
-      <div className="w-full max-w-xl bg-white dark:bg-gray-900 rounded shadow-md p-4 transition-colors duration-300">
+      <div className="w-full max-w-xl bg-white dark:bg-gray-800 rounded shadow-md p-4 transition-colors duration-300">
         <h2 className="font-semibold mb-2 text-center text-lg dark:text-gray-100">
           {currentQuestion + 1}. {question.text}
         </h2>
