@@ -32,17 +32,17 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ isServiceProvider }) => {
   const pathname = usePathname();
 
   const defaultNavItems: NavItem[] = [
-    { name: "Professional", path: "/professional", icon: <Briefcase size={18} /> },
+    { name: "Sign up as a Pro", path: "/professional", icon: <Briefcase size={18} /> },
     { name: "Plan", path: "/plan", icon: <Calendar size={18} /> },
     { name: "Team", path: "/team", icon: <Users size={18} /> },
     { name: "Inbox", path: "/inbox", icon: <Mail size={18} /> },
   ];
 
   const serviceProviderNavItems: NavItem[] = [
+    { name: "Services", path: "/professional/servicesPro", icon: <Layers size={18} /> },
     { name: "Jobs", path: "/jobs", icon: <Briefcase size={18} /> },
     { name: "Messages", path: "/messages", icon: <Mail size={18} /> },
     { name: "Performance", path: "/performance", icon: <Settings size={18} /> },
-    { name: "Services", path: "/services", icon: <Layers size={18} /> },
     { name: "Calendar", path: "/calendar", icon: <Calendar size={18} /> },
     { name: "Profile", path: "/profile", icon: <Users size={18} /> },
   ];
