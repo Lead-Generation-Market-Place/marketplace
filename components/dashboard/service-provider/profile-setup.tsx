@@ -1,22 +1,46 @@
 "use client";
 
 import { CheckCircle, Star, UserCheck, DollarSign, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { checkProfileCompletion } from "@/actions/profile-setup";
 
-const tasks = [
-	{ id: 1, text: "Fill out your business profile.", completed: true, icon: CheckCircle },
-	{ id: 2, text: "Set your job preferences.", completed: true, icon: CheckCircle },
-	{ id: 3, text: "Set your budget.", completed: false, icon: DollarSign, href: "/budget" },
-	{ id: 4, text: "Add one past customer review.", completed: false, icon: Star, href: "/reviews" },
-	{ id: 5, text: "Get a background check.", completed: false, icon: UserCheck, href: "/background-check" },
+type TaskKey = "business" | "dub" | "service" | "review" | "background";
+
+interface Task {
+	id: number;
+	text: string;
+	key: TaskKey;
+	completed: boolean;
+	icon: React.ComponentType<{ size?: number; className?: string }>;
+	href?: string;
+}
+
+const initialTasks: Task[] = [
+	{ id: 1, text: "Fill out your business profile.", key: "business", completed: false, icon: CheckCircle, href: "/dashboard/professional/business-info" },
+	{ id: 2, text: "Set Business Availability.", key: "dub", completed: false, icon: CheckCircle, href: "/dashboard/professional/daytime" },
+	{ id: 3, text: "Set your budget.", key: "service", completed: false, icon: DollarSign, href: "/dashboard/professional/budget" },
+	{ id: 4, text: "Add one past customer review.", key: "review", completed: false, icon: Star, href: "/dashboard/professional/reviews" },
+	{ id: 5, text: "Get a background check.", key: "background", completed: false, icon: UserCheck, href: "/dashboard/professional/background-check" },
 ];
 
 export default function SetupProgress() {
+	const [tasks, setTasks] = useState<Task[]>(initialTasks);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const fetchCompletion = async () => {
+			const completion = await checkProfileCompletion();
+			setTasks((prev) => prev.map((t) => ({
+				...t,
+				completed: Boolean(completion[t.key]),
+			})));
+			setLoading(false);
+		};
+		fetchCompletion();
+	}, []);
+
 	const incompleteCount = tasks.filter((t) => !t.completed).length;
-
-	// Calculate progress % for circle (out of 100%)
 	const progressPercent = (tasks.length - incompleteCount) / tasks.length;
-
-	// Circle stroke calculation
 	const radius = 18;
 	const circumference = 2 * Math.PI * radius;
 	const strokeDashoffset = circumference * (1 - progressPercent);
@@ -58,7 +82,7 @@ export default function SetupProgress() {
 							/>
 						</svg>
 						<p className="text-base font-normal leading-relaxed">
-							Only {incompleteCount} setup tasks left before you can start getting leads.
+							{loading ? "Checking setup..." : `Only ${incompleteCount} setup tasks left before you can start getting leads.`}
 						</p>
 					</div>
 
@@ -68,11 +92,13 @@ export default function SetupProgress() {
 							<li key={id} className="flex items-center justify-between py-4">
 								<div className="flex items-center gap-3">
 									{completed ? (
-										<CheckCircle className="text-green-600" size={20} />
+										<Icon className="text-green-600" size={20} />
 									) : (
 										<Icon className="text-[#0077B6]" size={20} />
 									)}
-									{href ? (
+									{completed ? (
+										<span className="text-gray-800 dark:text-gray-300 text-sm font-normal">{text}</span>
+									) : href ? (
 										<a
 											href={href}
 											className="text-[#0077B6] dark:text-[#0077B6] hover:underline text-sm font-normal"
@@ -80,9 +106,7 @@ export default function SetupProgress() {
 											{text}
 										</a>
 									) : (
-										<span className="text-gray-800 dark:text-gray-300 text-sm font-normal">
-											{text}
-										</span>
+										<span className="text-gray-800 dark:text-gray-300 text-sm font-normal">{text}</span>
 									)}
 								</div>
 

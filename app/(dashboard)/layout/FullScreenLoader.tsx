@@ -50,7 +50,7 @@ export default function LoadingScreen({ status }: { status: string }) {
       {/* Elegant pulse bar */}
       <div className="mt-10 w-64 h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden relative">
         <motion.div
-          className="absolute left-0 top-0 h-full w-1/3 rounded-full bg-gradient-to-r from-blue-500 to-blue-300 dark:from-blue-400 dark:to-blue-200"
+          className="absolute left-0 top-0 h-full w-1/3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-[#023E8A] dark:to-blue-200"
           animate={{ x: ['-50%', '100%'] }}
           transition={{ duration: 1.4, ease: 'easeInOut', repeat: Infinity }}
         />
