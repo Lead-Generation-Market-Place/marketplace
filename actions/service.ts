@@ -94,6 +94,7 @@ export const GetAllServicesWithHierarchy = async () => {
 
 /**
  * Get all unique location names
+ * 
  */
 export const GetAllLocations = async () => {
   const supabase = await createClient();
