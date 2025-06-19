@@ -29,15 +29,28 @@ export async function GET(request: Request) {
         .single();
 
       if (!UserExits) {
+        // Fallback for username: user_name, name, email, or 'unknown'
+        let username = data?.user?.user_metadata?.user_name || data?.user?.user_metadata?.name || data?.user?.email || 'unknown';
+        // Check for username uniqueness
+        const { data: usernameExists } = await supabase
+          .from("users_profiles")
+          .select("*")
+          .eq("username", username)
+          .limit(1)
+          .single();
+        if (usernameExists) {
+          // Append random 4-digit number to make it unique
+          username = `${username}_${Math.floor(1000 + Math.random() * 9000)}`;
+        }
         const { error: dbError } = await supabase
           .from("users_profiles")
           .insert({
             email: data?.user?.email,
-            username: data?.user?.user_metadata?.username,
+            username,
           });
         if (dbError) {
-          console.log("Error fetching user data", dbError.message);
-          return NextResponse.redirect(`${origin}/error`);
+          console.log("Error inserting user profile:", dbError.message);
+          return NextResponse.redirect(`${origin}/error?msg=${encodeURIComponent(dbError.message)}`);
         }
       }
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer

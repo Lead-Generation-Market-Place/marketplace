@@ -239,8 +239,62 @@ export async function signInWithGoogle() {
     redirect("/error");
   }
   if (data?.url) {
-    redirect(data.url);
+    // After redirect, user will be authenticated. Let's ensure user profile exists.
+    // This logic should be handled in the /auth/callback route after redirect.
+    // But for server actions, we can add a helper to be called after redirect.
+    return redirect(data.url);
   }
+}
+
+// Helper to be called after OAuth callback to ensure user profile exists
+export async function ensureUserProfileAfterOAuth() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      status: userError?.message || "User not authenticated after OAuth",
+      user: null,
+    };
+  }
+
+  // Check if user exists in users_profiles
+  const { data: userExist, error: fetchError } = await supabase
+    .from("users_profiles")
+    .select("*")
+    .eq("email", user.email)
+    .limit(1)
+    .single();
+
+  if (fetchError && fetchError.code !== "PGRST116") {
+    return {
+      status: `Fetch error: ${fetchError.message}`,
+      user: null,
+    };
+  }
+
+  if (!userExist) {
+    // Fallback for username: user_name, name, email, or 'unknown'
+    const username = user.user_metadata?.user_name || user.user_metadata?.name || user.email || 'unknown';
+    const { error: insertError } = await supabase.from("users_profiles").insert({
+      email: user.email,
+      username,
+    });
+    if (insertError) {
+      return {
+        status: `Insert error: ${insertError.message}`,
+        user: null,
+      };
+    }
+  }
+
+  return {
+    status: "success",
+    user,
+  };
 }
 
 // ──────────────────────────────────────────────
