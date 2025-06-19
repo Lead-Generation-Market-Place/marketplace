@@ -126,7 +126,7 @@ const SearchServices = () => {
     <div className="py-4 mx-auto p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
       <h2 className="text-xl font-semibold text-[#0077B6] mb-2">Sign up as a Professional</h2>
       <p className="text-sm text-gray-600 mb-6">
-        Connect with top professionals in your area
+        Connect with top Customres in your area
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
