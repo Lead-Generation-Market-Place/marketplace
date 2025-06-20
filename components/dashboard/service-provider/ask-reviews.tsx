@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaRegStar, FaStar } from 'react-icons/fa';
+import { Loader2 } from 'lucide-react';
 
 export default function ReviewRequest() {
   const searchParams = useSearchParams();
@@ -13,9 +14,9 @@ export default function ReviewRequest() {
   const location = searchParams.get('location') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
-  const services = JSON.parse(searchParams.get('services') || '[]');
 
   const [emails, setEmails] = useState(['']);
+  const [isPending, startTransition] = useTransition();
 
   const handleEmailChange = (index: number, value: string) => {
     const updated = [...emails];
@@ -41,9 +42,9 @@ export default function ReviewRequest() {
     if (location) params.set('location', location);
     if (email) params.set('email', email);
     if (phone) params.set('phone', phone);
-    if (services.length) params.set('services', JSON.stringify(services));
-    
-    router.push(`/professional/preference-intro?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/professional/preference-intro?${params.toString()}`);
+    });
   };
 
   const handleBack = () => {
@@ -52,9 +53,8 @@ export default function ReviewRequest() {
     if (location) params.set('location', location);
     if (email) params.set('email', email);
     if (phone) params.set('phone', phone);
-    if (services.length) params.set('services', JSON.stringify(services));
 
-    router.push(`/professional/progress?${params.toString()}`);
+    router.push(`/professional/business-info?${params.toString()}`);
   };
 
   return (
@@ -143,7 +143,7 @@ export default function ReviewRequest() {
                 ))}
               </div>
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-1 text-justify text-[12px]">
-                Thanks for being a valued customer. I just signed up on Thumbtack to find more excellent customers like you, and reviews are a big part of my profile. Can you take a moment to write a couple sentences about working with me? I’d love if my future customers could hear about your experience firsthand.
+               
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-[12px]">Thanks, {businessName}</p>
             </div>
@@ -152,18 +152,26 @@ export default function ReviewRequest() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-6 right-6 flex gap-4">
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
         <button
+          type="button"
           onClick={handleBack}
-          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold px-6 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px]"
         >
           Back
         </button>
         <button
+          type="button"
+          disabled={isPending}
           onClick={handleNext}
-          className="bg-[#0077B6] text-white font-semibold px-6 py-2 rounded hover:bg-[#005f91] transition"
+          className={`
+            mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
+            transition duration-300 flex items-center justify-center gap-2
+            ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
+          `}
         >
-          Ask it Later
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>Next</span>
         </button>
       </div>
     </div>

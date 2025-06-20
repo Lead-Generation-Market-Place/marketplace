@@ -1,33 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client'; // Adjust path to your Supabase client
+import { Loader2 } from 'lucide-react';
 
 export default function VerifyPage() {
+    const [isPending, startTransition] = useTransition()
+  
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Get the JSON string for services from query and parse it
-  const servicesString = searchParams.get('services') || '[]';
   const location = searchParams.get('location') || '';
 
-  const [services, setServices] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [enableTextMessages, setEnableTextMessages] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Parse the services string safely
-    try {
-      const parsedServices = JSON.parse(servicesString);
-      // Clean up any unwanted whitespace/newlines
-      setServices(parsedServices.map((s: string) => s.trim()));
-    } catch (e) {
-      console.error('Error parsing services:', e);
-      setServices([]);
-    }
-  }, [servicesString]);
+
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -44,8 +34,6 @@ export default function VerifyPage() {
 
 const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
   event.preventDefault();
-  setLoading(true);
-
   const formData = new FormData(event.currentTarget);
   const phone = formData.get('phone') as string;
 
@@ -54,13 +42,12 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 
   if (email) params.set('email', email);
   if (phone) params.set('phone', phone);
-  if (services.length > 0) params.set('services', JSON.stringify(services));
   if (location) params.set('location', location);
 
-  // Navigate to new route with query string
-  router.push(`/professional/onboarding?${params.toString()}`);
-
-  setLoading(false);
+  // Navigate to new route with query string using startTransition
+  startTransition(() => {
+    router.push(`/professional/onboarding?${params.toString()}`);
+  });
 };
 
 
@@ -168,33 +155,26 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         <a href="#" className="text-[#0077B6] underline">Privacy Policy</a>.
       </p>
 
-      {/* Buttons */}
-      <div className="flex justify-between pt-4 max-w-sm mx-auto">
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
         <button
           type="button"
           onClick={() => router.back()}
-          className="text-sm text-gray-600 hover:text-[#0077B6] transition focus:outline-none focus:ring-2 focus:ring-[#0096C7] rounded"
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px] "
         >
-          &larr; Back
+          Back
         </button>
         <button
           type="submit"
-          className="inline-flex items-center gap-2 bg-[#0077B6] text-white px-5 py-2 rounded-[4px] text-sm font-semibold hover:bg-[#0096C7] transition focus:outline-none focus:ring-2 focus:ring-[#0096C7]"
-          disabled={loading}
+          disabled={isPending}
+          className={`
+            mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
+            transition duration-300 flex items-center justify-center gap-2
+            ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
+          `}
         >
-          {loading ? "Continue..." : 'Continue'}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 5l7 7-7 7" />
-          </svg>
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>Next</span>
         </button>
       </div>
     </form>
