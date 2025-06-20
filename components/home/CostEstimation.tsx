@@ -4,8 +4,9 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import { CircleDollarSign } from "lucide-react";
 
-const TopPick = () => {
+const CostEstimation = () => {
   const services = [
     {
       image: "/images/image1.jpg",
@@ -49,13 +50,21 @@ const TopPick = () => {
     <div
       className="
       bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700
-      transition-colors duration-300 py-20"
+      transition-colors duration-300 py-10"
     >
       <div className="mx-2 sm:mx-4 md:mx-6 lg:mx-8 xl:mx-12 2xl:mx-16">
         {/* Title */}
         <h2 className="pb-4 text-lg sm:text-xl md:text-2xl font-semibold py-2 text-gray-900 dark:text-white transition-colors duration-300">
-          Explore more Projects
+          Estimate your service cost for free
         </h2>
+        <p className="pb-4 text-gray-500 dark:text-gray-300 text-sm w-[50%]">
+            
+                We analyzed millions of real quotes from Yelpax professionals 
+            across a wide range of home services to give you a clear 
+            picture of what people actually pay.Explore average costs for projects 
+            similar to yours before you hire.
+           
+        </p>
         {/* Carousel */}
         <Carousel
       opts={{
@@ -78,6 +87,10 @@ const TopPick = () => {
               </div>
               <div className="">
                 <h1 className="text-lg py-2 font-semibold">{service.serviceName}</h1>
+                <div className="flex gap-1 items-center">
+                    <CircleDollarSign className="text-sky-500 w-4 h-4" />
+                    <p className="text-xs text-gray-500">Avg. price: <strong>$110 - $140</strong></p>
+                </div>
               </div>
             </div>
           </CarouselItem>
@@ -85,11 +98,13 @@ const TopPick = () => {
 
       </CarouselContent>
     </Carousel>
-
+       <div className="pt-10">
+        <button className="text-sm bg-sky-500 px-4 py-2 text-white font-semibold rounded">See all cost info</button>
+       </div>
         
       </div>
     </div>
   );
 };
 
-export default TopPick;
+export default CostEstimation;
