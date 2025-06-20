@@ -6,7 +6,7 @@ import { useState } from "react";
 
 const TABS = [
   { label: "To-do's", key: "todos" },
-  { label: "Active", key: "active" },
+  { label: "In Progress", key: "active" },
   { label: "Completed", key: "completed" }
 ];
 

@@ -3,10 +3,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/home", label: "Professional" },
-  { href: "/team", label: "Team" },
+  { href: "/home", label: "Sign Up as Pro" },
+  { href: "/team", label: "My Pro Team" },
   { href: "/plan", label: "Plan" },
-  { href: "/inbox", label: "Chat" },
+  { href: "/inbox", label: "Message" },
 ];
 
 const NavItems = () => {

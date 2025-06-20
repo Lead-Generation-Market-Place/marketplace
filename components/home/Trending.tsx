@@ -61,7 +61,6 @@ const Trending = () => {
       lg:mx-8          
       xl:mx-12         
       2xl:mx-16
-      bg-gray-50
       dark:bg-gray-900
       transition-colors
       duration-300
