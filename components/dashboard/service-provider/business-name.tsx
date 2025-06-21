@@ -8,8 +8,7 @@ const BusinessName = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Get the JSON string for services from query and parse it
-  const servicesString = searchParams.get('services') || '[]';
+
   const location = searchParams.get('location') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
@@ -25,7 +24,6 @@ const BusinessName = () => {
     if (location) params.set('location', location)
     if (email) params.set('email', email)
     if (phone) params.set('phone', phone)
-    if (servicesString) params.set('services', JSON.stringify(servicesString));
     startTransition(() => {
       router.push(
         `/professional/business-info?${params.toString()}`

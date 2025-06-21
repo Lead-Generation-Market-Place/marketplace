@@ -9,15 +9,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      style={
-        {
-          "--normal-bg": "#fff",
-          "--normal-text": "#000000",
-          "--normal-border": "#0077B6",
-          color: "#000000",
-        } as React.CSSProperties
-      }
+      className={`toaster group ${theme === "dark" ? "sonner-dark" : "sonner-light"}`}
       {...props}
     />
   );

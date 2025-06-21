@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from 'lucide-react';
 
 export default function SelectWorkArea() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const selectedCity = searchParams.get('location'); // changed from location to city
 
   const [points, setPoints] = useState<[number, number][]>([]);
@@ -33,6 +34,16 @@ export default function SelectWorkArea() {
       fetchPoints();
     }
   }, [selectedCity]);
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleNext = () => {
+    startTransition(() => {
+      router.push('/professional/daytime');
+    });
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 max-w-7xl mx-auto">
@@ -74,19 +85,27 @@ export default function SelectWorkArea() {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="fixed bottom-6 right-6 flex gap-4">
-        <Button
-          onClick={() => router.back()}
-          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600"
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
+        <button
+          onClick={handleBack}
+          type="button"
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px] "
         >
           Back
-        </Button>
-        <Button
-          onClick={() => router.push('/professional/daytime')}
-          className="bg-[#0077B6] text-white hover:bg-[#005f91]"
+        </button>
+        <button
+          onClick={handleNext}
+          type="submit"
+          disabled={isPending}
+          className={`
+            mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
+            transition duration-300 flex items-center justify-center gap-2
+            ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
+          `}
         >
-          Next
-        </Button>
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>Next</span>
+        </button>
       </div>
     </div>
   );

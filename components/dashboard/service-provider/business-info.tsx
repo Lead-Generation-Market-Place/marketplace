@@ -68,7 +68,6 @@ const BusinessInfo = () => {
   const searchParams = useSearchParams()
 
   // Pull query params from URL
-  const servicesString = searchParams.get('services') || '[]'
   const locationQuery = searchParams.get('location') || ''
   const email = searchParams.get('email') || ''
   const phone = searchParams.get('phone') || ''
@@ -182,10 +181,9 @@ const BusinessInfo = () => {
       if (locationQuery) params.set('location', locationQuery)
       if (email) params.set('email', email)
       if (phone) params.set('phone', phone)
-      if (servicesString) params.set('services', servicesString)
 
       startTransition(() => {
-        router.push(`/professional/ask-reviews?${params.toString()}`)
+         window.location.href = `/professional/ask-reviews?${params.toString()}`
       })
     } else {
       console.error('Failed to insert business info:', result.message)
@@ -491,18 +489,25 @@ const BusinessInfo = () => {
       </section>
 
       {/* Form Actions */}
-      <div className="mt-6 flex items-center justify-end gap-x-6">
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white text-[13px] py-2 px-5 rounded-[4px] font-medium hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+        >
+          Back
+        </button>
         <button
           type="submit"
           disabled={isPending}
           className={`
-            mt-6 w-full text-white text-[13px] py-2 px-5 rounded-[4px]
-            transition duration-300
+            text-white text-[13px] py-2 px-6 rounded-[4px]
+            transition duration-300 flex items-center justify-center gap-2
             ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
           `}
         >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin inline-block mr-2" />}
-          Next
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>Next</span>
         </button>
       </div>
     </form>

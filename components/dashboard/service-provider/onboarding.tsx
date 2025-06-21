@@ -10,7 +10,6 @@ export default function Onboarding() {
   const [queryData, setQueryData] = useState({
     email: '',
     phone: '',
-    services: [] as string[],
     location: '',
   });
 
@@ -18,19 +17,11 @@ export default function Onboarding() {
     const email = searchParams.get('email') || '';
     const phone = searchParams.get('phone') || '';
     const location = searchParams.get('location') || '';
-    const servicesParam = searchParams.get('services') || '[]';
 
-    let parsedServices: string[] = [];
-    try {
-      parsedServices = JSON.parse(servicesParam);
-    } catch {
-      parsedServices = [];
-    }
 
     setQueryData({
       email,
       phone,
-      services: parsedServices,
       location,
     });
   }, [searchParams]);
@@ -39,7 +30,6 @@ export default function Onboarding() {
     const query = new URLSearchParams({
       email: queryData.email,
       phone: queryData.phone,
-      services: JSON.stringify(queryData.services),
       location: queryData.location,
     });
 
@@ -80,13 +70,21 @@ export default function Onboarding() {
         </div>
       </div>
 
-      {/* Next Button */}
-      <div className="fixed bottom-6 right-6">
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px]">
         <button
-          onClick={handleNext}
-          className="bg-[#0077B6] text-white font-semibold px-6 py-2 rounded hover:bg-[#005f91] transition"
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white text-[13px] py-2 px-5 rounded-[4px] font-medium hover:bg-gray-400 dark:hover:bg-gray-600 transition"
         >
-          Next
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="bg-[#0077B6] text-white text-[13px] py-2 px-6 rounded-[4px] font-medium hover:bg-[#005f8e] transition flex items-center justify-center gap-2"
+        >
+          <span>Next</span>
         </button>
       </div>
     </div>
