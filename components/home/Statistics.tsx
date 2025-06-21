@@ -1,6 +1,6 @@
 const Statistics = () => {
   return (
-    <div className="my-5">
+    <div className="">
       <div
         className="
           bg-sky-500 dark:bg-sky-900

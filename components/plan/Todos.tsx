@@ -220,11 +220,9 @@ const Todos = () => {
       <hr className="border-gray-200 dark:border-gray-700" />
       <div className="py-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Home Improvement Tips
+          Inspiration for your home
         </h1>
-        <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
-          Looking for ideas to make your house feel more like home? Let us help you get inspired!
-        </p>
+        
       </div>
       <div className="my-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {isLoading ? (
