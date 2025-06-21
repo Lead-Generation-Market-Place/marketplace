@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, FC, useMemo } from "react";
+import React, { Suspense, FC } from "react";
 import { saveAvailability } from "./action";
 import { useSearchParams } from "next/navigation";
 
@@ -25,15 +25,7 @@ const DaytimePage: FC = () => {
   const location = searchParams.get("location") || "";
   const email = searchParams.get("email") || "";
   const phone = searchParams.get("phone") || "";
-  const services = useMemo(() => {
-    try {
-      const raw = searchParams.get("services");
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }, [searchParams]);
+
 
   return (
     <main className="dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -44,7 +36,6 @@ const DaytimePage: FC = () => {
           location={location}
           email={email}
           phone={phone}
-          services={services}
         />
       </Suspense>
     </main>

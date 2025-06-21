@@ -45,7 +45,7 @@ export default function AvailabilityForm({
 	email: string;
 	phone: string;
 }) {
-	const [selectedOption, setSelectedOption] = useState<'business' | 'any'>('business');
+	const [selectedOption, setSelectedOption] = useState<'business' | 'string'>('business');
 	const [schedule, setSchedule] = useState(defaultSchedule);
 	const [isPending, startTransition] = useTransition();
 	const router = useRouter();
@@ -111,7 +111,7 @@ export default function AvailabilityForm({
 		formData.set('phone', phone);
 
 		let finalSchedule = schedule;
-		if (selectedOption === 'any') {
+		if (selectedOption === 'string') {
 			finalSchedule = defaultSchedule.map((day) => ({
 				...day,
 				shifts: [{ openTime: '00:00', closeTime: '23:59', isClosed: false }],
@@ -121,20 +121,35 @@ export default function AvailabilityForm({
 		formData.set('schedule', JSON.stringify(finalSchedule));
 
 		startTransition(async () => {
-			const result = await saveAvailability(formData);
-			if (result.status === 'success') {
-				// Serialize data to URL params for preference-geo page
-				const params = new URLSearchParams({
-					businessName,
-					location,
-					email,
-					phone,
-					timezone,
-				});
+			try {
+				const result = await saveAvailability(formData);
+				if (result.status === 'success') {
+					// Serialize data to URL params for preference-geo page
+					const params = new URLSearchParams({
+						businessName,
+						location,
+						email,
+						phone,
+						timezone,
+					});
 
-				router.push(`/professional/preference-geo?${params.toString()}`);
-			} else {
-				alert(`Error: ${result.message}`);
+					router.push(`/professional/preference-geo?${params.toString()}`);
+				} else {
+					// Replace alert with toast if you want toast notification
+					alert(`Error: ${result.message}`);
+				}
+			} catch (error: unknown) {
+				let message = 'An unexpected error occurred while saving availability.';
+				if (
+					typeof error === 'object' &&
+					error !== null &&
+					'message' in error &&
+					typeof (error as { message: unknown }).message === 'string'
+				) {
+					message = (error as { message: string }).message;
+				}
+				// Replace alert with toast if you want toast notification
+				alert(message);
 			}
 		});
 	};
@@ -235,21 +250,21 @@ export default function AvailabilityForm({
 						{/* Available Any Time Option */}
 						<div
 							className={`border rounded-[4px] cursor-pointer p-4 ${
-								selectedOption === 'any' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
+								selectedOption === 'string' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
 							}`}
-							onClick={() => setSelectedOption('any')}
+							onClick={() => setSelectedOption('string')}
 						>
 							<div className="flex items-center space-x-2">
 								<input
 									type="radio"
-									checked={selectedOption === 'any'}
+									checked={selectedOption === 'string'}
 									readOnly
 									className="accent-[#0077B6]"
 								/>
 								<span className="font-medium text-gray-900 dark:text-gray-100">Available Any Time</span>
 							</div>
 
-							{selectedOption === 'any' && (
+							{selectedOption === 'string' && (
 								<p className="mt-4 text-green-600 dark:text-green-400">
 									You will be available 24 hours, every day.
 								</p>
