@@ -1,9 +1,11 @@
 import ActiveLocation from '@/components/home/ActiveLocation';
+import BecomePro from '@/components/home/BecomePro';
 import CostEstimation from '@/components/home/CostEstimation';
 import HeroForm from '@/components/home/HeroForm';
 import MobileApps from '@/components/home/MobileApps';
 import PopularService from '@/components/home/PopularService';
 import Promotion from '@/components/home/Promotion';
+import Reviews from '@/components/home/Reviews';
 import Statistics from '@/components/home/Statistics';
 import TopPick from '@/components/home/TopPick';
 import Trending from '@/components/home/Trending';
@@ -17,23 +19,20 @@ const page = () => {
       <div className="space-y-8">
         <Promotion />
         <PopularService />
-        
-        {/* 
-        
-        
-        
-        
-       <NewService />
-         */}
       </div>
     </div>
     <MobileApps />
     <TopPick />
-    
     <Trending />
     <CostEstimation/>
     <Statistics />
-      <ActiveLocation/>
+    <ActiveLocation/>
+    <BecomePro />
+    <Reviews />
+    <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      
+    </div>
     
     </>
   );
