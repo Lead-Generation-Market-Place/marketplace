@@ -31,7 +31,7 @@ const tags = [
 ];
 const maxTags = 3;
 const maxPhotos = 3;
-const ratingLabels = ['Tribble', 'Poor', 'Average', 'Very Good', 'Excellent'];
+const ratingLabels = ['Terrible', 'Poor', 'Average', 'Very Good', 'Excellent'];
 
 const ReviewForm = () => {
   const [isPending, setIsPending] = useState(false);
@@ -101,7 +101,7 @@ const ReviewForm = () => {
       formData.append("email", email);
       formData.append("password", password);
 
-      const result = await SubmitReviews(formData, userId);
+      const result = await SubmitReviews(formData);
 
       if (result.status === 'success') {
         toast.success("Review submitted successfully!");

@@ -144,9 +144,9 @@ export const SearchLocationSuggestions = async (query: string): Promise<string[]
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("us_location")
-    .select("state")
-    .ilike("state", `%${query}%`)
+    .from("state")
+    .select("name")
+    .ilike("name", `%${query}%`)
     .limit(10);
 
   if (error) {
@@ -156,9 +156,9 @@ export const SearchLocationSuggestions = async (query: string): Promise<string[]
 
   const suggestions = new Set<string>();
 
-  data.forEach(({ state }) => {
-    if (state && state.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.add(capitalizeWords(state));
+  data.forEach(({ name }) => {
+    if (name && name.toLowerCase().includes(query.toLowerCase())) {
+      suggestions.add(capitalizeWords(name));
     }
   });
 

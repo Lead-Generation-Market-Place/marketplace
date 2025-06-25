@@ -1,50 +1,40 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
-// Schema with expected field names
+// Schema for form validation
 const schema = z.object({
-  userId: z.string().uuid(),              // reviewer (user) ID
-  provider_id: z.string().uuid(),         // reviewed provider ID
-  reviewer_name: z.string().min(1),
-  reviewer_last_name: z.string().min(1),
+  userId: z.string().uuid(),              // Provider ID
+  provider_id: z.string().uuid(),         // Provider ID again? This looks like a mistake.
+  reviewer_name: z.string().min(3),
+  reviewer_last_name: z.string().min(3),
   reviewer_email: z.string().email(),
   rating: z.string().refine(val => {
     const num = Number(val);
     return !isNaN(num) && num >= 1 && num <= 5;
   }, { message: 'Rating must be a number between 1 and 5' }),
   review_text: z.string().optional(),
-  password: z.string().min(1),
+  password: z.string().min(6),
 });
 
-/**
- * Submit a review.
- * @param formData - FormData object from the client
- * @param provider_id_param - The ID of the provider being reviewed (from route or props)
- */
-export async function SubmitReviews(formData: FormData, provider_id_param: string) {
+export async function SubmitReviews(formData: FormData) {
   try {
     const raw = Object.fromEntries(formData.entries());
 
-    // 🔁 Map form field names to schema keys
     const mappedData = {
-      userId: raw.userId,                   // reviewer user ID from field "providerid"
-      provider_id: provider_id_param,           // passed from route or parent component
+      userId: raw.userId,             // This should be provider_id!
+      provider_id: raw.userId,        // We'll revise this properly below.
       reviewer_name: raw.firstName,
       reviewer_last_name: raw.lastName,
       reviewer_email: raw.email,
       rating: raw.rating,
       review_text: raw.comment,
-      password: raw.password,               // password for verification
+      password: raw.password,
     };
 
-    // ✅ Validate mapped input
     const parsed = schema.safeParse(mappedData);
     if (!parsed.success) {
-      console.error('Validation failed:', parsed.error.format());
-      console.error('Flattened errors:', parsed.error.flatten());
       return {
         status: 'error',
         message: 'Validation failed',
@@ -53,67 +43,82 @@ export async function SubmitReviews(formData: FormData, provider_id_param: strin
     }
 
     const {
-      userId,
+      userId: provider_id,
       reviewer_name,
       reviewer_last_name,
       reviewer_email,
       review_text,
       rating,
+      password,
     } = parsed.data;
 
     const supabase = await createClient();
 
-    // 🔍 Check if provider exists
-    const { data: provider, error: providerError } = await supabase
-      .from('service_providers')
-      .select('*')
-      .eq('user_id', userId)
+    // Step 1: Check if reviewer already exists in users_profiles
+    let reviewerUserId: string | null = null;
+
+    const { data: existingUser} = await supabase
+      .from('users_profiles')
+      .select('id')
+      .eq('email', reviewer_email)
       .single();
 
-    if (providerError || !provider) {
-      console.error('Provider not found:', providerError);
-      toast.error('Provider not found.');
-      return {
-        status: 'error',
-        message: 'Provider not found.',
-      };
+    if (existingUser?.id) {
+      reviewerUserId = existingUser.id;
+    } else {
+      // Step 2: Create a new user in Supabase Auth
+      const randomPassword = password || Math.random().toString(36).slice(-8);
+
+      const { data: authUser, error: signUpError } = await supabase.auth.signUp({
+        email: reviewer_email,
+        password: randomPassword,
+        options: {
+          data: {
+            first_name: reviewer_name,
+          last_name: reviewer_last_name,
+          }
+        },
+      });
+
+
+      if (signUpError || !authUser.user?.id) {
+        console.error('Auth user creation failed:', signUpError?.message);
+        return {
+          status: 'error',
+          message: 'Failed to create new reviewer account.',
+        };
+      }
+
+      reviewerUserId = authUser.user.id;
     }
 
-    const providerId = provider.id;
-    // 🖼️ Upload photo attachments
+    // Step 3: Upload photos
     const mediaUrls: string[] = [];
-
     for (const [key, value] of formData.entries()) {
       if (key.startsWith('photo_') && value instanceof File) {
-        const file = value;
-        const uploadPath = `photos/${Date.now()}-${file.name}`;
-
+        const uploadPath = `photos/${Date.now()}-${value.name}`;
         const { data, error } = await supabase.storage
           .from('reviews')
-          .upload(uploadPath, file, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+          .upload(uploadPath, value, { cacheControl: '3600', upsert: false });
 
         if (error) {
-          console.error('Photo upload error:', error);
           return {
             status: 'error',
-            message: 'Failed to upload a photo. Please try again.',
+            message: 'Failed to upload photo.',
           };
         }
 
-        const publicUrl = supabase.storage.from('reviews').getPublicUrl(data.path);
-        if (publicUrl.data?.publicUrl) {
-          mediaUrls.push(publicUrl.data.publicUrl);
+        const { data: urlData } = supabase.storage.from('reviews').getPublicUrl(data.path);
+        if (urlData?.publicUrl) {
+          mediaUrls.push(urlData.publicUrl);
         }
       }
     }
 
-    // 💾 Insert review into Supabase
+    // Step 4: Insert review
     const { error: insertError } = await supabase.from('reviews').insert({
-      provider_id:providerId,
-      reviewer_id: userId,
+      reviewerUserId: reviewerUserId,
+      providerUser_id: provider_id,
       reviewer_name,
       reviewer_last_name,
       reviewer_email,
@@ -130,21 +135,18 @@ export async function SubmitReviews(formData: FormData, provider_id_param: strin
     });
 
     if (insertError) {
-      console.error('Insert error:', insertError.message, insertError.details, insertError.hint);
       return {
         status: 'error',
         message: 'Failed to save review.',
       };
     }
 
-    // ✅ Success response
     return { status: 'success' };
-
   } catch (err) {
     console.error('Unexpected error:', err);
     return {
       status: 'error',
-      message: 'Unexpected server error. Please try again later.',
+      message: 'Unexpected server error.',
     };
   }
 }

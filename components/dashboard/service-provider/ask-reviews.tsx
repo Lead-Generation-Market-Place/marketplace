@@ -239,11 +239,12 @@ export default function ReviewRequest() {
           type="button"
           disabled={isPending}
           onClick={handleNext}
-          className={`mt-6 w-full text-white py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}`}
+          className={`mt-6 w-full text-white py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}`}
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span>Next</span>
+          <span>Skip Now</span>
         </button>
+
       </div>
     </div>
   );
