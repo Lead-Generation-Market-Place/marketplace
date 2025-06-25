@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
           ★★★★★
         </div>
 
-        <a href="${reviewLink}" style="display:inline-block;background:#0077B6;color:#fff;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;text-decoration:none;margin-bottom:12px">
-          Submit Review
+        <a href="${reviewLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#0077B6;color:#fff;padding:12px 24px;border-radius:8px;font-weight:bold;font-size:14px;text-decoration:none;margin-bottom:12px">
+          Submit Review 
         </a>
 
         <p style="font-size:12px;color:#94a3b8;margin-top:12px">Requested by: <strong>${senderUsername.username}</strong></p>
