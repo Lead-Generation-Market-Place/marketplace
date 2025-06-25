@@ -39,12 +39,16 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ isServiceProvider }) => {
   ];
 
   const serviceProviderNavItems: NavItem[] = [
-    { name: "Services", path: "/professional/servicesPro", icon: <Layers size={18} /> },
-    { name: "Offers", path: "/offers", icon: <Briefcase size={18} /> },
+    { name: "My Services", path: "/professional/servicesPro", icon: <Layers size={18} /> },
+    { name: "Loads", path: "/offers", icon: <Briefcase size={18} /> },
     { name: "Messages", path: "/messages", icon: <Mail size={18} /> },
     { name: "Performance", path: "/performance", icon: <Settings size={18} /> },
     { name: "Calendar", path: "/calendar", icon: <Calendar size={18} /> },
+    { name: "Employees", path: "/Employees", icon: <Users size={18} /> },
+    { name: "Sub Contractors", path: "/contracors", icon: <Users size={18} /> },
     { name: "Profile", path: "/profile", icon: <Users size={18} /> },
+
+
   ];
 
   const navItems = isServiceProvider

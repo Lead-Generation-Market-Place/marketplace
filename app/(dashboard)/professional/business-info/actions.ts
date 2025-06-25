@@ -138,12 +138,14 @@ export async function businessInfo(formData: FormData) {
     }
   }
 
+
+
   // Step 3: Insert into provider_locations (join table)
   const { error: joinInsertError } = await supabase
     .from("provider_locations")
     .insert({
       provider_id: insertedProvider.provider_id,
-      location_id: insertedLocation.id,
+      state_id: insertedLocation.id,
       is_primary: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

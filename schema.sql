@@ -285,34 +285,26 @@ CREATE TABLE proposals (
 
 CREATE TABLE reviews (
     review_id SERIAL PRIMARY KEY,
-    provider_id UUID REFERENCES service_providers(provider_id) ON DELETE CASCADE,
-    
+    provider_id UUID REFERENCES service_providers(provider_id) ON DELETE CASCADE, 
     reviewer_id UUID REFERENCES users(id),
     reviewer_name TEXT NOT NULL,
     reviewer_last_name TEXT NOT NULL,
     reviewer_email TEXT,
     reviewer_avatar_url TEXT,
     reviewer_location TEXT,
-
     rating INT CHECK (rating BETWEEN 1 AND 5) NOT NULL,
     review_text TEXT,
     media_attachment_url TEXT[],
-
     is_verified BOOLEAN DEFAULT FALSE,
     review_source VARCHAR(50) DEFAULT 'manual',
-
     is_visible BOOLEAN DEFAULT TRUE,
     status VARCHAR(20) DEFAULT 'pending',
-
-    provider_response TEXT,
+     TEXT,
     responded_at TIMESTAMP,
-
     helpful_count INT DEFAULT 0,
-
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
-
 
 
 
@@ -435,7 +427,7 @@ CREATE TABLE job_profile_references (
     reference_id SERIAL PRIMARY KEY,
     profile_id INT REFERENCES job_profiles(profile_id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    relation TEXT,                            -- e.g., "Supervisor", "Client"
+    relprovider_responseation TEXT,                            -- e.g., "Supervisor", "Client"
     contact_email TEXT,
     contact_phone TEXT,
     reference_letter_url TEXT,                -- Optional uploaded file

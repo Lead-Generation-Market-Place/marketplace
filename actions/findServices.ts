@@ -102,13 +102,13 @@ export const GetAllServicesWithHierarchy = async () => {
  */
 export const GetAllLocations = async () => {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("us_location").select("state");
+  const { data, error } = await supabase.from("state").select("name");
 
   if (error) {
     console.error("Location fetch error:", error.message);
     return [];
   }
 
-  const states = [...new Set(data.map((item) => capitalizeWords(item.state)))];
+  const states = [...new Set(data.map((item) => capitalizeWords(item.name)))];
   return states;
 };
