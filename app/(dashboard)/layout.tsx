@@ -8,6 +8,8 @@ import { useSidebar } from '@/app/(dashboard)/context/SidebarContext'
 import { createClient } from '@/utils/supabase/client'
 import LoadingScreen from './layout/FullScreenLoader'
 import { User } from '@supabase/supabase-js'
+import { Toaster } from "@/components/ui/sonner"
+
 
 // Lazy load AppSidebar and AppHeader
 const AppSidebar = dynamic(() => import('./layout/AppSidebar'), {
@@ -112,6 +114,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <AppHeader user={headerData.user} profile={headerData.profile} />
         <div className="p-4 mx-auto max-w-[1440px] md:p-6 bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
           {children}
+                  <Toaster />
+
         </div>
       </div>
     </div>
