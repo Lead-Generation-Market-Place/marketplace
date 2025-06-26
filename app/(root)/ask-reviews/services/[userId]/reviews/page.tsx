@@ -1,23 +1,27 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { FaStar } from 'react-icons/fa';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { SubmitReviews } from '@/actions/reviews';
+import { fetchProfessional, SubmitReviews } from '@/actions/reviews/reviews';
+import debounce from 'lodash.debounce';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+// Lazy load components
+const StarRating = dynamic(() => import('@/app/(root)/ask-reviews/StarRating/page'));
+const TagsSelector = dynamic(() => import('@/app/(root)/ask-reviews/TagsSelector/page'));
+const PhotoUploader = dynamic(() => import('@/app/(root)/ask-reviews/PhotoUploader/page'));
+const ReviewDialog = dynamic(() => import('@/app/(root)/ask-reviews/reviewdialog/page'));
+const Dialog = dynamic(() => import('@/components/ui/dialog').then(mod => mod.Dialog), { ssr: false });
+const DialogContent = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogContent), { ssr: false });
+const DialogHeader = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogHeader), { ssr: false });
+const DialogTitle = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogTitle), { ssr: false });
+const DialogDescription = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogDescription), { ssr: false });
 
-const tags = [
+// Constants
+const TAGS = [
   'Professionalism',
   'Technical Expertise',
   'Attention to Detail',
@@ -29,83 +33,124 @@ const tags = [
   'Industry Knowledge',
   'Results Driven',
 ];
-const maxTags = 3;
-const maxPhotos = 3;
-const ratingLabels = ['Terrible', 'Poor', 'Average', 'Very Good', 'Excellent'];
+const MAX_TAGS = 3;
+const MAX_PHOTOS = 3;
+const RATING_LABELS = ['Terrible', 'Poor', 'Average', 'Very Good', 'Excellent'];
+const WORD_LIMIT = 250;
 
 const ReviewForm = () => {
-  const [isPending, setIsPending] = useState(false);
   const params = useParams();
   const userId = params.userId as string;
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Rating state (1 to 5)
+  // State
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [password, setPassword] = useState('');
-
-  // Tags state
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  // Comment state
   const [comment, setComment] = useState('');
-
-  // Photos state: store File objects, preview URLs, and labels
   const [photos, setPhotos] = useState<{ file: File; url: string; label: string }[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Add provider to the errors state type
-  const [errors, setErrors] = useState<{ rating?: string; selectedTags?: string; comment?: string; photos?: string; provider?: string }>({});
-
-  // Dialog open state (controlled manually)
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  // Fields inside dialog
+  const [dialogStep, setDialogStep] = useState<1 | 2>(1);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [businessName, setBusinessName] = useState<string | null>(null);
+  const [emailExists, setEmailExists] = useState<boolean | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [dialogErrors, setDialogErrors] = useState<{ firstName?: string; lastName?: string; email?: string }>({});
+  const [isPending, setIsPending] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
-  // Validation errors for dialog inputs
-  const [dialogErrors, setDialogErrors] = useState<{ firstName?: string; lastName?: string; email?: string; password?: string }>({});
-  const toggleTag = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-      setErrors(errors => ({ ...errors, selectedTags: undefined }));
-    } else if (selectedTags.length < maxTags) {
-      setSelectedTags([...selectedTags, tag]);
-      setErrors(errors => ({ ...errors, selectedTags: undefined }));
-    } else {
-      setErrors(errors => ({ ...errors, selectedTags: 'You can select up to 3 tags.' }));
+  // Memoized values
+  const showTagsSection = useMemo(() => rating > 2, [rating]);
+
+  // Fetch business name
+  useEffect(() => {
+    const fetchBusiness = async () => {
+      try {
+        const result = await fetchProfessional(userId);
+        if (result?.business_name) {
+          setBusinessName(result.business_name);
+        }
+      } catch (error) {
+        console.error('Failed to fetch business name:', error);
+      }
+    };
+    fetchBusiness();
+  }, [userId]);
+
+  // Clean up photo URLs
+  useEffect(() => {
+    return () => {
+      photos.forEach(photo => URL.revokeObjectURL(photo.url));
+    };
+  }, [photos]);
+
+  // Event handlers
+  const toggleTag = useCallback((tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : prev.length < MAX_TAGS 
+          ? [...prev, tag] 
+          : prev
+    );
+  }, []);
+
+  const validateComment = useMemo(() => debounce((text: string) => {
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    if (words > WORD_LIMIT) {
+      toast.error(`Comment must be less than ${WORD_LIMIT} words.`);
     }
-  };
+  }, 500), []);
 
-  const validateEmail = (email: string) => {
-    return /^\S+@\S+\.\S+$/.test(email);
-  };
+  const handleAddPhotos = useCallback((files: File[]) => {
+    const newPhotos = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      label: '',
+    }));
+    setPhotos(prev => [...prev, ...newPhotos]);
+  }, []);
 
-  // Your existing handleSubmit function, modified to receive extra info
-  const handleSubmit = async () => {
+  const removePhoto = useCallback((index: number) => {
+    setPhotos(prev => {
+      const updated = [...prev];
+      URL.revokeObjectURL(updated[index].url);
+      updated.splice(index, 1);
+      return updated;
+    });
+  }, []);
+
+  const handleLabelChange = useCallback((idx: number, label: string) => {
+    setPhotos(prev => prev.map((photo, i) => i === idx ? { ...photo, label } : photo));
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     setIsPending(true);
-
     try {
       const formData = new FormData();
       formData.append("userId", userId);
       formData.append("rating", rating.toString());
       formData.append("comment", comment);
-      selectedTags.forEach((tag, i) => formData.append(`tag_${i}`, tag));
+      formData.append("selectedTags", JSON.stringify(selectedTags));
+
       photos.forEach((photo, i) => formData.append(`photo_${i}`, photo.file));
       photos.forEach((photo, i) => formData.append(`photo_label_${i}`, photo.label));
 
-      // Append dialog inputs
       formData.append("firstName", firstName);
       formData.append("lastName", lastName);
       formData.append("email", email);
-      formData.append("password", password);
+      if (emailExists) {
+        formData.append("password", password);
+      }
 
       const result = await SubmitReviews(formData);
 
       if (result.status === 'success') {
-        toast.success("Review submitted successfully!");
-        // Reset everything
+        toast.success(result.message || "Review submitted successfully!");
+        // Reset form
         setRating(0);
         setSelectedTags([]);
         setComment('');
@@ -115,396 +160,261 @@ const ReviewForm = () => {
         setEmail('');
         setDialogErrors({});
         setDialogOpen(false);
+        setDialogStep(1);
+        setEmailExists(null);
       } else {
-        toast.error("Submission failed.");
+        if (result.errors) {
+          Object.entries(result.errors.fieldErrors).forEach(([field, errors]) => {
+            errors.forEach(error => toast.error(`${field}: ${error}`));
+          });
+          result.errors.formErrors.forEach(error => toast.error(error));
+        } else if (result.code) {
+          switch (result.code) {
+            case 'PASSWORD_REQUIRED':
+              toast.error('Password is required for existing accounts');
+              break;
+            case 'INVALID_PASSWORD':
+              break;
+            case 'SIGNUP_FAILED':
+              toast.error('Failed to create account');
+              break;
+            case 'PHOTO_UPLOAD_FAILED':
+              toast.error(`Failed to upload photo: ${result.file || ''}`);
+              break;
+            default:
+              toast.error(result.message || 'Submission failed');
+          }
+        } else {
+          toast.error(result.message || 'Submission failed');
+        }
       }
-
     } catch (error) {
-      let message = "Please try again later.";
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof (error as { message?: string }).message === "string"
-      ) {
-        message = (error as { message: string }).message;
-      }
-      toast.error("An unexpected error occurred", {
-        description: message,
-      });
+      console.error('Submission error:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setIsPending(false);
     }
-  };
+  }, [userId, rating, comment, selectedTags, photos, firstName, lastName, email, emailExists, password]);
 
-  // Form submit handler opens dialog
-  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const checkEmailExists = useCallback(async () => {
+    const validateEmail = (email: string) => /^\S+@\S+\.\S+$/.test(email);
+    
+    if (!validateEmail(email)) {
+      setDialogErrors(prev => ({ ...prev, email: "Invalid email format" }));
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    try {
+      const res = await fetch('/api/check-email-exists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const { exists } = await res.json();
+      setEmailExists(exists);
+      if (exists) {
+        setDialogStep(2);
+        setPasswordError(null);
+      } else {
+        await handleSubmit();
+      }
+    } catch {
+      toast.error("Failed to verify email");
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  }, [email, handleSubmit]);
+
+  const verifyPassword = useCallback(async () => {
+    if (!password) {
+      setPasswordError("Password is required");
+      return;
+    }
+
+    setIsPending(true);
+    try {
+      const res = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const { valid } = await res.json();
+      if (valid) {
+        await handleSubmit();
+      } else {
+        toast.error("Incorrect password");
+      }
+    } catch {
+      toast.error("Failed to verify password");
+    } finally {
+      setIsPending(false);
+    }
+  }, [email, password, handleSubmit]);
+
+  const onDialogConfirm = useCallback(async () => {
+    const errors: typeof dialogErrors = {};
+    if (!firstName.trim()) errors.firstName = "First name is required";
+    if (!lastName.trim()) errors.lastName = "Last name is required";
+    if (!email.trim()) errors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) errors.email = "Invalid email format";
+
+    setDialogErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      if (dialogStep === 1) {
+        await checkEmailExists();
+      } else {
+        await verifyPassword();
+      }
+    }
+  }, [dialogStep, firstName, lastName, email, checkEmailExists, verifyPassword]);
+
+  const onFormSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (rating === 0) {
       toast.error("Please select a rating before submitting.");
       return;
     }
     setDialogOpen(true);
-  };
-
-  // Confirm dialog submit
-  const onDialogConfirm = () => {
-    // Validate inputs
-    const errors: typeof dialogErrors = {};
-    if (!firstName.trim()) errors.firstName = "First name is required";
-    if (!lastName.trim()) errors.lastName = "Last name is required";
-    if (!email.trim()) errors.email = "Email is required";
-    if (!password.trim()) errors.password = "Password is required";
-    else if (!validateEmail(email)) errors.email = "Invalid email format";
-
-    setDialogErrors(errors);
-
-    if (Object.keys(errors).length === 0) {
-      // No errors, submit form
-      handleSubmit();
-    }
-  };
-
-  // Handle photo uploads
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const filesArray = Array.from(e.target.files);
-    const availableSlots = maxPhotos - photos.length;
-    if (filesArray.length > availableSlots) {
-      setErrors(errors => ({ ...errors, photos: 'You can upload up to 3 photos.' }));
-    } else {
-      setErrors(errors => ({ ...errors, photos: undefined }));
-    }
-    const filesToAdd = filesArray.slice(0, availableSlots);
-    const newPhotos = filesToAdd.map(file => ({
-      file,
-      url: URL.createObjectURL(file),
-      label: '', // Add label property
-    }));
-    setPhotos(prev => [...prev, ...newPhotos]);
-    e.target.value = ''; // Reset input so same file can be uploaded again if removed
-  };
-
-  // Remove photo by index
-  const removePhoto = (index: number) => {
-    setPhotos(prev => {
-      const updated = [...prev];
-      URL.revokeObjectURL(updated[index].url);
-      updated.splice(index, 1);
-      return updated;
-    });
-  };
-
-  // Clear URLs on unmount
-  useEffect(() => {
-    return () => {
-      photos.forEach(photo => URL.revokeObjectURL(photo.url));
-    };
-  }, [photos]);
-
-  // Word count function
-  const countWords = (str: string) => str.trim().split(/\s+/).filter(Boolean).length;
-
-  // Update label for a photo
-  const handleLabelChange = (idx: number, label: string) => {
-    setPhotos(prev => prev.map((photo, i) => i === idx ? { ...photo, label } : photo));
-  };
+  }, [rating]);
 
   return (
     <>
       <form
         onSubmit={onFormSubmit}
-        className="max-w-4xl mx-auto p-8 md:p-10 bg-white dark:bg-gray-900 rounded-[7px]  dark:border-gray-700 space-y-8 text-[13px] font-sans"
-        aria-label={`Review form for ${userId}`}
+        className="max-w-4xl mx-auto p-8 md:p-10 bg-white dark:bg-gray-900 rounded-[7px] dark:border-gray-700 space-y-8 text-[13px] font-sans"
+        aria-label={`Review form for ${businessName}`}
       >
         {/* Header with rating */}
         <div className="space-y-2">
           <h2 className="text-[16px] font-bold text-[#023E8A] dark:text-white mb-1 leading-tight">
             How would you rate your overall experience with{' '}
-            <span className="font-bold text-gray-900 dark:text-gray-100">{userId}</span>?
+            <span className="font-bold text-gray-900 dark:text-gray-100">{businessName}</span>?
           </h2>
           <div className="flex items-center space-x-3">
-            <div className="flex space-x-1" role="radiogroup" aria-label="Star rating">
-              {[...Array(5)].map((_, i) => {
-                const starValue = i + 1;
-                const isActive = hoverRating >= starValue || (!hoverRating && rating >= starValue);
-                return (
-                  <button
-                    key={starValue}
-                    type="button"
-                    onClick={() => setRating(starValue)}
-                    onMouseEnter={() => setHoverRating(starValue)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    aria-checked={rating === starValue}
-                    role="radio"
-                    tabIndex={0}
-                    className={`transition-colors duration-200 focus:outline-none ${isActive ? 'text-[#FFD60A]' : 'text-gray-300'
-                      }`}
-                    aria-label={`${starValue} star${starValue > 1 ? 's' : ''} - ${ratingLabels[starValue - 1]
-                      }`}
-                  >
-                    <FaStar size={20} style={{ opacity: 0.7 }} />
-                  </button>
-                );
-              })}
-            </div>
+            <StarRating
+              rating={rating}
+              hoverRating={hoverRating}
+              onRate={setRating}
+              onHover={setHoverRating}
+              onLeave={() => setHoverRating(0)}
+              labels={RATING_LABELS}
+            />
             <span className="text-gray-700 dark:text-gray-300 font-medium min-w-[100px] text-xs">
               {hoverRating
-                ? ratingLabels[hoverRating - 1]
+                ? RATING_LABELS[hoverRating - 1]
                 : rating
-                  ? ratingLabels[rating - 1]
+                  ? RATING_LABELS[rating - 1]
                   : 'Select a rating'}
             </span>
           </div>
         </div>
 
-        {/* Tag Selection */}
-        <div className="space-y-4">
-          <h3 className="text-[16px] font-semibold text-gray-900 dark:text-gray-100">
-            What did you like about working with <span className="font-bold text-[#023E8A] dark:text-white">{userId}</span>?
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Choose up to three items. <span className="font-medium">{selectedTags.length}/{maxTags}</span>
-          </p>
-          <p className="text-xs text-gray-400 mb-1">Select the qualities that best describe your experience.</p>
-          {errors.selectedTags && <p className="text-xs text-red-500">{errors.selectedTags}</p>}
-          <div className="flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={`px-4 py-2 rounded-[4px] border text-[13px] font-normal transition focus:outline-none focus:ring-1 focus:ring-[#0096C7] ${selectedTags.includes(tag)
-                  ? 'bg-[#0096C7] text-white border-[#0096C7]'
-                  : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                aria-pressed={selectedTags.includes(tag)}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Conditional Tags Section */}
+        {showTagsSection && (
+          <TagsSelector
+            tags={TAGS}
+            selectedTags={selectedTags}
+            onToggleTag={toggleTag}
+            businessName={businessName}
+            maxTags={MAX_TAGS}
+          />
+        )}
 
         {/* Comment Box */}
         <div>
           <label htmlFor="comment" className="block mb-2 font-medium text-gray-700 dark:text-gray-300 text-[14px]">
             Write your comments here...
           </label>
-          <p className="text-xs text-gray-400 mb-1">Share more details about your experience (max 250 characters).</p>
+          <p className="text-xs text-gray-400 mb-1">Share more details about your experience (max {WORD_LIMIT} words).</p>
           <textarea
             id="comment"
             className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-[4px] focus:outline-none focus:ring-1 focus:ring-[#0096C7] bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-[13px]"
             rows={4}
             placeholder="Your feedback..."
             value={comment}
-            onChange={e => {
+            onChange={(e) => {
               setComment(e.target.value);
-              if (countWords(e.target.value) > 250) {
-                setErrors(errors => ({ ...errors, comment: 'Comment must be less than 250 words.' }));
-              } else {
-                setErrors(errors => ({ ...errors, comment: undefined }));
-              }
+              validateComment(e.target.value);
             }}
+            required
           />
-          {errors.comment && <p className="text-xs text-red-500">{errors.comment}</p>}
         </div>
 
         {/* Photo Upload */}
-        <div className="space-y-2">
-          <label
-            htmlFor="photo-upload"
-            className="inline-block cursor-pointer px-4 py-2 border border-dashed border-gray-400 dark:border-gray-600 rounded-[4px] text-[#0096C7] dark:text-[#ffffff] hover:bg-blue-50 dark:hover:bg-gray-800 transition font-medium"
-          >
-            + Add Photos (up to {maxPhotos} - Optional)
-            <input
-              type="file"
-              id="photo-upload"
-              className="hidden"
-              multiple
-              accept="image/*"
-              onChange={handlePhotoChange}
-              ref={inputRef}
-            />
-          </label>
-          <p className="text-xs text-gray-400 mt-1">You can upload up to 3 images to support your review.</p>
-          {errors.photos && <p className="text-xs text-red-500">{errors.photos}</p>}
-          {/* Photo Previews with animation and upload progress */}
-          <AnimatePresence>
-            {photos.length > 0 && (
-              <motion.div
-                className="flex gap-4 mt-2"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.4 }}
-              >
-                {photos.map((photo, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex flex-col justify-end"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                  >
-                    <img
-                      src={photo.url}
-                      alt={`Uploaded preview ${idx + 1}`}
-                      className="object-cover w-full h-24 absolute top-0 left-0"
-                    />
-                    {/* Simulated upload progress bar */}
-                    <motion.div
-                      className="absolute bottom-8 left-0 h-2 bg-[#0096C7]"
-                      initial={{ width: '0%' }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: 1.2, ease: 'easeInOut' }}
-                    />
-                    {/* Label input */}
-                    <input
-                      type="text"
-                      value={photo.label}
-                      onChange={e => handleLabelChange(idx, e.target.value)}
-                      placeholder="Image label"
-                      className="absolute bottom-0 left-0 w-full px-2 py-1 text-xs bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 focus:outline-none"
-                      maxLength={50}
-                      aria-label={`Label for photo ${idx + 1}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(idx)}
-                      className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-[4px] p-1 text-white hover:bg-opacity-75 transition"
-                      aria-label={`Remove photo ${idx + 1}`}
-                    >
-                      &times;
-                    </button>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <PhotoUploader
+          photos={photos}
+          maxPhotos={MAX_PHOTOS}
+          onAddPhotos={handleAddPhotos}
+          onRemovePhoto={removePhoto}
+          onLabelChange={handleLabelChange}
+          inputRef={inputRef}
+          
+        />
 
         {/* Submit Button */}
         <div className="flex justify-end">
           <Button
             type="submit"
             className="px-6 py-3 bg-[#0077B6] hover:bg-[#005f8e] text-[#c3e8fb] rounded-[4px] text-[14px] font-normal focus:ring-4 focus:ring-blue-300 transition disabled:bg-[#529bbf] disabled:text-white"
-            disabled={rating === 0}
-            aria-disabled={rating === 0}
+            disabled={rating === 0 || isPending}
+            aria-disabled={rating === 0 || isPending}
             title={rating === 0 ? 'Please select a rating before submitting' : 'Submit review'}
           >
-            {isPending && <Loader2 className="animate-spin mr-2" />} <span>Submit</span>
+            {isPending && <Loader2 className="animate-spin mr-2" />} Submit Review
           </Button>
         </div>
-        {errors.provider && <div className="text-red-500 mb-2">{errors.provider}</div>}
       </form>
 
-      {/* Custom Dialog for collecting first name, last name, email */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Your Information</DialogTitle>
-            <DialogDescription>Please enter your details before submitting your review.</DialogDescription>
-          </DialogHeader>
+      {/* Two-Step Dialog */}
+      {dialogOpen && (
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            setDialogOpen(false);
+            setDialogStep(1);
+            setEmailExists(null);
+            setPasswordError(null);
+          }
+        }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {dialogStep === 1 ? 'Confirm Your Information' : 'Verify Your Identity'}
+              </DialogTitle>
+              <DialogDescription>
+                {dialogStep === 1 
+                  ? 'Please enter your details before submitting your review.'
+                  : 'Please enter your password to verify your identity.'}
+              </DialogDescription>
+            </DialogHeader>
 
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              onDialogConfirm();
-            }}
-            className="space-y-4 mt-4"
-          >
-            <div>
-              <label htmlFor="firstName" className="block mb-1 font-medium text-sm text-gray-700 dark:text-gray-300">
-                First Name
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                className={`w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0096C7] ${dialogErrors.firstName ? 'border-red-500' : 'border-gray-300'}`}
-                aria-invalid={!!dialogErrors.firstName}
-                aria-describedby={dialogErrors.firstName ? "firstName-error" : undefined}
-              />
-              {dialogErrors.firstName && (
-                <p id="firstName-error" className="text-xs text-red-500 mt-1">{dialogErrors.firstName}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="block mb-1 font-medium text-sm text-gray-700 dark:text-gray-300">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-                className={`w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0096C7] ${dialogErrors.lastName ? 'border-red-500' : 'border-gray-300'}`}
-                aria-invalid={!!dialogErrors.lastName}
-                aria-describedby={dialogErrors.lastName ? "lastName-error" : undefined}
-              />
-              {dialogErrors.lastName && (
-                <p id="lastName-error" className="text-xs text-red-500 mt-1">{dialogErrors.lastName}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block mb-1 font-medium text-sm text-gray-700 dark:text-gray-300">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className={`w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0096C7] ${dialogErrors.email ? 'border-red-500' : 'border-gray-300'}`}
-                aria-invalid={!!dialogErrors.email}
-                aria-describedby={dialogErrors.email ? "email-error" : undefined}
-              />
-              {dialogErrors.email && (
-                <p id="email-error" className="text-xs text-red-500 mt-1">{dialogErrors.email}</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="password" className="block mb-1 font-medium text-sm text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className={`w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0096C7] ${dialogErrors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                aria-invalid={!!dialogErrors.password}
-                aria-describedby={dialogErrors.password ? "password-error" : undefined}
-              />
-              {dialogErrors.password && (
-                <p id="password-error" className="text-xs text-red-500 mt-1">{dialogErrors.password}</p>
-              )}
-            </div>
-
-
-            <div className="flex justify-end gap-3 mt-6">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setDialogOpen(false)}
-                disabled={isPending}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                Confirm
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+            <ReviewDialog
+              step={dialogStep}
+              firstName={firstName}
+              lastName={lastName}
+              email={email}
+              password={password}
+              errors={dialogErrors}
+              passwordError={passwordError}
+              isPending={isPending}
+              isCheckingEmail={isCheckingEmail}
+              onFirstNameChange={setFirstName}
+              onLastNameChange={setLastName}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onConfirm={onDialogConfirm}
+              onCancel={() => setDialogOpen(false)}
+              onStepBack={() => {
+                setDialogStep(1);
+                setPasswordError(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

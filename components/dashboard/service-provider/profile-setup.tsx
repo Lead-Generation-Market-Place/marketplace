@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Star, UserCheck, DollarSign, ArrowRight } from "lucide-react";
+import { CheckCircle, UserCheck, DollarSign, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { checkProfileCompletion } from "@/actions/profile-setup";
 
@@ -14,12 +14,11 @@ interface Task {
 	icon: React.ComponentType<{ size?: number; className?: string }>;
 	href?: string;
 }
-
 const initialTasks: Task[] = [
 	{ id: 1, text: "Fill out your business profile.", key: "business", completed: false, icon: CheckCircle, href: "/dashboard/professional/business-info" },
 	{ id: 2, text: "Set Business Availability.", key: "dub", completed: false, icon: CheckCircle, href: "/dashboard/professional/daytime" },
 	{ id: 3, text: "Set your budget.", key: "service", completed: false, icon: DollarSign, href: "/dashboard/professional/budget" },
-	{ id: 4, text: "Add one past customer review.", key: "review", completed: false, icon: Star, href: "/dashboard/professional/reviews" },
+	{ id: 4, text: "Add one past customer review.", key: "review", completed: false, icon:  CheckCircle, href: "/dashboard/professional/reviews" },
 	{ id: 5, text: "Get a background check.", key: "background", completed: false, icon: UserCheck, href: "/dashboard/professional/background-check" },
 ];
 

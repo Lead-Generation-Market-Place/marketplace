@@ -42,8 +42,8 @@ export const checkProfileCompletion = async () => {
 	let review = null;
 	const { data: reviewData } = await supabase
 		.from("reviews")
-		.select("id")
-		.eq("user_id", userId)
+		.select("providerUser_id")
+		.eq("providerUser_id", userId)
 		.maybeSingle();
 	review = reviewData;
 
