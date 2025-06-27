@@ -10,10 +10,10 @@ import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 
 // Lazy load components
-const StarRating = dynamic(() => import('@/app/(root)/ask-reviews/StarRating/page'));
-const TagsSelector = dynamic(() => import('@/app/(root)/ask-reviews/TagsSelector/page'));
-const PhotoUploader = dynamic(() => import('@/app/(root)/ask-reviews/PhotoUploader/page'));
-const ReviewDialog = dynamic(() => import('@/app/(root)/ask-reviews/reviewdialog/page'));
+const StarRating = dynamic(() => import('@/components/customers/reviews/StarRating/page'));
+const TagsSelector = dynamic(() => import('@/components/customers/reviews/TagsSelector/page'));
+const PhotoUploader = dynamic(() => import('@/components/customers/reviews/PhotoUploader/page'));
+const ReviewDialog = dynamic(() => import('@/components/customers/reviews/reviewdialog/page'));
 const Dialog = dynamic(() => import('@/components/ui/dialog').then(mod => mod.Dialog), { ssr: false });
 const DialogContent = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogContent), { ssr: false });
 const DialogHeader = dynamic(() => import('@/components/ui/dialog').then(mod => mod.DialogHeader), { ssr: false });
@@ -129,6 +129,8 @@ const ReviewForm = () => {
 
   const handleSubmit = useCallback(async () => {
     setIsPending(true);
+    toast.loading('Uploading your review and photos...');
+
     try {
       const formData = new FormData();
       formData.append("userId", userId);
@@ -147,6 +149,8 @@ const ReviewForm = () => {
       }
 
       const result = await SubmitReviews(formData);
+      toast.dismiss();
+
 
       if (result.status === 'success') {
         toast.success(result.message || "Review submitted successfully!");
