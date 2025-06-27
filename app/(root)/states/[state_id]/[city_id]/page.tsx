@@ -1,5 +1,6 @@
-export default async function ServicesPage({ params }: { params: { state_id: string; city_id: string } }) {
-  console.log(params);
+export default async function ServicesPage({ params }: { params: Record<string, string> }) {
+  const stateId = Number(params.state_id);
+  const cityId = Number(params.city_id);
 
   return (
     <div className="flex items-center justify-center h-[80vh]">
