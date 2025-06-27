@@ -5,13 +5,14 @@ import { useEffect, useState } from 'react';
 import { center } from '@turf/center';
 import L, { Layer } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Feature,
   FeatureCollection,
   Geometry,
   GeoJsonProperties,
 } from 'geojson';
+
 
 const activeStates = ['California', 'Texas', 'New York', 'Alabama', 'Wyoming'];
 
@@ -26,13 +27,13 @@ const ActiveIcon = new L.DivIcon({
 
 const MapView = () => {
   const [geoData, setGeoData] = useState<FeatureCollection<Geometry, GeoJsonProperties> | null>(null);
-
+ 
   useEffect(() => {
     fetch('/us-state.json')
       .then((res) => res.json())
       .then((data: FeatureCollection<Geometry, GeoJsonProperties>) => setGeoData(data));
   }, []);
-
+  const router = useRouter();
   const styleFeature = (
     feature?: Feature<Geometry, GeoJsonProperties>
     ): L.PathOptions => {
@@ -82,7 +83,7 @@ const MapView = () => {
         );
       });
   };
-
+ 
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 dark:bg-gray-900 transition-colors">
       {/* Left Column - Active States List */}
@@ -92,7 +93,7 @@ const MapView = () => {
           {activeStates.map((state) => (
             <span
               key={state}
-              className="px-2 py-1 rounded-full text-sm font-semibold
+              className="px-2 py-1 rounded-full text-xs font-semibold
                          bg-slate-200 text-slate-800 border border-slate-200
                          dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600"
             >
@@ -102,15 +103,15 @@ const MapView = () => {
         </div>
 
         <div className="mt-5 space-y-2">
-          <h1 className="text-xl font-bold">All 50 States</h1>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <h1 className="text-xl font-semibold">All 50 States</h1>
+          <p className="text-xs text-gray-700 dark:text-gray-300">
             No more guesswork or dead ends. With Thumbtack, you&apos;ll always find what you&apos;re
             looking for no matter where you are. From major cities to quiet communities,
             we&apos;ve got trusted pros ready to help in every corner of the country.
           </p>
-          <Link href="#" className="text-gray-600 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-300">
-            View All States
-          </Link>
+          <button
+          onClick={() => router.push('/states')} 
+          className="text-xs text-gray-500 hover:text-sky-500">View All States</button>
         </div>
       </div>
 

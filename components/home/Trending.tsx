@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { LocateFixed } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../ui/carousel";
 
 const categories = [
   {
@@ -99,36 +100,40 @@ const Trending = () => {
             <h4 className="font-semibold mb-2 text-gray-900 dark:text-white transition-colors duration-300">
               {categoryObj.name} Services
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {categoryObj.subcategories.map((sub) => (
-                <div
-                  key={sub}
-                  className="
-                    rounded-t
-                    overflow-hidden
-                    flex flex-col justify-start
-                    bg-white dark:bg-gray-800
-                    border border-gray-100 dark:border-gray-700
-                    shadow-sm
-                    transition-colors
-                    duration-300
-                  "
-                >
-                  <Image
-                    src="/images/image4.jpg"
-                    width={80}
-                    height={80}
-                    alt="Subcategory Image"
-                    className="w-full h-32 object-cover mb-2 rounded"
-                  />
-                  <div className="text-start p-2">
-                    <p className="font-semibold text-gray-700 dark:text-gray-100">{sub}</p>
-                    <LocateFixed className="text-sky-500 inline-block mr-1 text-xs" />
-                    <span className="text-sm text-gray-700 dark:text-gray-200">see pros near you</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+              <Carousel opts={{align: "start",}}className="w-full max-w-screen-xl mx-auto relative">
+                <CarouselContent>
+                  {categoryObj.subcategories.map((sub, idx) => (
+                    <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                      <div
+                        key={sub}
+                        className="
+                          rounded-t
+                          overflow-hidden
+                          flex flex-col justify-start
+                          bg-white dark:bg-gray-800
+                          border border-gray-100 dark:border-gray-700
+                          shadow-sm
+                          transition-colors
+                          duration-300
+                        ">
+                        <Image
+                          src="/images/image4.jpg"
+                          width={80}
+                          height={80}
+                          alt="Subcategory Image"
+                          className="w-full h-32 object-cover mb-2 rounded"/>
+                        <div className="text-start p-2">
+                          <p className="font-semibold text-gray-700 dark:text-gray-100">{sub}</p>
+                          <LocateFixed className="text-sky-500 inline-block mr-1 text-xs" />
+                          <span className="text-sm text-gray-700 dark:text-gray-200">see pros near you</span>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute top-[50%] left-[-2%]" />
+              <CarouselNext className="absolute top-[50%] right-[-2%]"/>
+            </Carousel>
           </div>
         )}
       </div>
