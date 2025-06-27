@@ -1,93 +1,129 @@
-
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Mail, Twitter } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Mail,
+  Twitter,
+} from "lucide-react";
 
 const MobileApps = () => {
   return (
-    <div className="flex flex-col md:flex-row h-auto md:h-[60vh] overflow-hidden bg-sky-500 dark:bg-sky-900 p-4 md:p-10 items-center transition-colors duration-300">
-      {/* Left Side */}
-      <div className="w-full justify-center">
-        <div className="w-full md:w-3/4 mx-auto my-4 md:my-10 flex flex-col justify-center items-start">
-          {/* <div className="flex flex-row gap-4 items-center">
-            <p className="text-xs text-white dark:text-white">Available On</p>
-            <Image src="/apple.svg" width={15} height={15} alt="Apple Store" />
-            <Image src="/google.svg" width={15} height={15} alt="Google Play" />
-          </div> */}
-          <h1 className="font-semibold mb-4 text-xl sm:text-xl md:text-4xl leading-tight text-white dark:text-white">
+    <section className="bg-sky-50 dark:bg-sky-900 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
+      <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center px-6 sm:px-8 md:px-12 lg:px-16 py-10 md:py-16">
+        {/* Left Side */}
+        <div className="w-full md:w-1/2 mb-10 md:mb-0 lg:border-r sm:border-0 border-sky-200 dark:border-gray-500">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4 leading-tight">
             The only app you need to stay on{" "}
-            <span className="text-[#0077B6] dark:text-sky-300">top of everything.</span>
+            <span className="text-sky-600 dark:text-sky-300">top of everything.</span>
           </h1>
-          <p className="mb-4 text-xs md:text-base text-white dark:text-gray-200">
-            From personalized guides to seamless project planning, it&apos;s all in one place, and it&apos;s completely free.
+          <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-6">
+            From personalized guides to seamless project planning, it&apos;s all in one place — and completely free.
           </p>
-          <div className="">
-            <h6 className="pb-2 text-sm text-gray-800 dark:text-gray-200">Follow us on</h6>
-            <div className="flex flex-row gap-2">
-                <Link href="/"><Facebook className="w-8 h-5 hover:text-sky-500 transition-colors" /></Link>
-                <Link href="/"><Instagram className="w-8 h-5 hover:text-pink-500 transition-colors" /></Link>
-                <Link href="/"><Linkedin className="w-8 h-5 hover:text-sky-600 transition-colors" /></Link>
-                <Link href="/"><Mail className="w-8 h-5 hover:text-orange-400 transition-colors" /></Link>
-                <Link href="/"><Twitter className="w-8 h-5 hover:text-blue-500 transition-colors" /></Link>
+
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+            {/* Customer App */}
+            <fieldset className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 w-full md:w-auto">
+              <legend className="text-xs font-semibold text-gray-600 dark:text-gray-300 px-2">Customer&apos;s App</legend>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="https://apps.apple.com/app/idYOUR_APP_ID"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/app-store.svg"
+                    alt="Download on the App Store"
+                    className="h-8 hover:scale-105 transition-transform"
+                  />
+                </Link>
+                <Link
+                  href="https://play.google.com/store/apps/details?id=YOUR_APP_PACKAGE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/google-play.png"
+                    alt="Get it on Google Play"
+                    className="h-8 hover:scale-105 transition-transform"
+                  />
+                </Link>
+              </div>
+            </fieldset>
+
+            {/* Pro's App */}
+            <fieldset className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 w-full md:w-auto">
+              <legend className="text-xs font-semibold text-gray-600 dark:text-gray-300 px-2">Pro&apos;s App</legend>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="https://apps.apple.com/app/idYOUR_APP_ID"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/app-store.svg"
+                    alt="Download on the App Store"
+                    className="h-8 hover:scale-105 transition-transform"
+                  />
+                </Link>
+                <Link
+                  href="https://play.google.com/store/apps/details?id=YOUR_APP_PACKAGE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    src="/google-play.png"
+                    alt="Get it on Google Play"
+                    className="h-8 hover:scale-105 transition-transform"
+                  />
+                </Link>
+              </div>
+            </fieldset>
+          </div>
+
+          {/* Social Media */}
+          <div className="mt-6">
+            <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Also join us on social media</h6>
+            <div className="flex gap-3 text-gray-700 dark:text-white">
+              <Link href="/"><Facebook className="w-5 h-5 hover:text-blue-600" /></Link>
+              <Link href="/"><Instagram className="w-5 h-5 hover:text-pink-500" /></Link>
+              <Link href="/"><Linkedin className="w-5 h-5 hover:text-sky-700" /></Link>
+              <Link href="/"><Mail className="w-5 h-5 hover:text-orange-500" /></Link>
+              <Link href="/"><Twitter className="w-5 h-5 hover:text-blue-500" /></Link>
             </div>
           </div>
         </div>
-      </div>
-      {/* Right Side (App Download Buttons) */}
-      <div className="w-full md:w-1/2 flex justify-center mt-4 md:mt-0">
-        <div className="flex flex-row gap-2 flex-wrap justify-center items-center">
-          <fieldset className="border border-gray-100 dark:border-gray-500 rounded flex flex-row gap-2 p-2">
-            <legend className="text-xs text-white dark:text-gray-100">Customer&apos;s App</legend>
-            <Link
-              href="https://apps.apple.com/app/idYOUR_APP_ID"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="/app-store.svg"
-                alt="Download on the App Store"
-                className="h-6 md:h-8"
-              />
-            </Link>
-            <Link
-              href="https://play.google.com/store/apps/details?id=YOUR_APP_PACKAGE"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="/google-play.png"
-                alt="Get it on Google Play"
-                className="h-6 md:h-8"
-              />
-            </Link>
-          </fieldset>
-          <fieldset className="border border-gray-100 dark:border-gray-500 rounded flex flex-row gap-2 p-2">
-            <legend className="text-xs text-white dark:text-gray-100">Pro&apos;s App</legend>
-            <Link
-              href="https://apps.apple.com/app/idYOUR_APP_ID"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="/app-store.svg"
-                alt="Download on the App Store"
-                className="h-6 md:h-8"
-              />
-            </Link>
-            <Link
-              href="https://play.google.com/store/apps/details?id=YOUR_APP_PACKAGE"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src="/google-play.png"
-                alt="Get it on Google Play"
-                className="h-6 md:h-8"
-              />
-            </Link>
-          </fieldset>
+
+        {/* Right Side - Statistics */}
+        <div className="w-full md:w-1/2 flex flex-col items-center">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">1 Billion+</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Leads Generated On Yelpax</p>
+          </div>
+
+          <div className="flex gap-2">
+            {[
+              { value: "110,000+", label: "Business Partners", border: "border-1" },
+              { value: "450,000+", label: "Crafty Professionals", border: "border-2" },
+              { value: "100+", label: "Countries Users", border: "border-1" },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                className={`bg-white dark:bg-sky-800 rounded p-2 sm:p-4 text-center transition-transform hover:scale-105 border-sky-500 dark:border-sky-600 ${stat.border}`}
+              >
+                <h3 className="text-base sm:text-lg font-semibold text-sky-700 dark:text-sky-300">
+                  {stat.value}
+                </h3>
+                <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

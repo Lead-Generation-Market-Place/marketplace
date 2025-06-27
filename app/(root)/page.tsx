@@ -6,9 +6,9 @@ import MobileApps from '@/components/home/MobileApps';
 import PopularService from '@/components/home/PopularService';
 import Promotion from '@/components/home/Promotion';
 import Reviews from '@/components/home/Reviews';
-import Statistics from '@/components/home/Statistics';
 import TopPick from '@/components/home/TopPick';
 import Trending from '@/components/home/Trending';
+import YouMayLike from '@/components/home/YouMayLike';
 import React from 'react'
 
 const page = () => {
@@ -19,13 +19,13 @@ const page = () => {
       <div className="space-y-8">
         <Promotion />
         <PopularService />
+        <YouMayLike/>
       </div>
     </div>
     <MobileApps />
     <TopPick />
     <Trending />
     <CostEstimation/>
-    <Statistics />
     <ActiveLocation/>
     <BecomePro />
     <Reviews />

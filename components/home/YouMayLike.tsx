@@ -3,9 +3,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const TopPick = () => {
+const YouMayLike = () => {
   const services = [
     {
       image: "/images/image1.jpg",
@@ -48,20 +50,20 @@ const TopPick = () => {
     return (
     <div
       className="
-      dark:bg-gray-800
-      transition-colors duration-300 py-20"
+      bg-white dark:bg-gray-900 
+      transition-colors duration-300 pb-15"
     >
       <div className="mx-2 sm:mx-4 md:mx-6 lg:mx-8 xl:mx-12 2xl:mx-16">
         {/* Title */}
         <h2 className="pb-4 text-lg sm:text-xl md:text-2xl font-semibold py-2 text-gray-900 dark:text-white transition-colors duration-300">
-          Explore more Projects
+          Services You May Like
         </h2>
         {/* Carousel */}
         <Carousel
       opts={{
         align: "start",
       }}
-      className="w-full max-w-screen-xl mx-auto"
+      className="w-full max-w-screen-xl mx-auto relative"
     >
       <CarouselContent>
         {services.map((service, idx) => (
@@ -82,8 +84,10 @@ const TopPick = () => {
             </div>
           </CarouselItem>
        ))}
-
+        
       </CarouselContent>
+      <CarouselNext className="absolute top-[40%] right-[-2%]"/>
+      <CarouselPrevious className="absolute top-[40%] left-[-2%]"/>
     </Carousel>
 
         
@@ -92,4 +96,4 @@ const TopPick = () => {
   );
 };
 
-export default TopPick;
+export default YouMayLike;

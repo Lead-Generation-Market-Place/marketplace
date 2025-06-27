@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const BecomePro = () => {
   return (
@@ -19,9 +20,9 @@ const BecomePro = () => {
         <p className="text-xs">
             Whatever kind of work you do, we&apos;ll help you find the gigs you want.
         </p>
-        <button className="text-sm font-semibold bg-sky-500 text-white px-6 py-2 rounded hover:bg-sky-600 transition">
+        <Link href="/professional" className="text-sm font-semibold bg-sky-500 text-white px-6 py-2 rounded hover:bg-sky-600 transition">
           Become a Yelpax Pro
-        </button>
+        </Link>
       </div>
     </div>
   );
