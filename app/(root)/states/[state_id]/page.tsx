@@ -1,10 +1,10 @@
 
 
-type Props = {
-  params: {
-    state_id: string;
-  };
-};
+// type Props = {
+//   params: {
+//     state_id: string;
+//   };
+// };
 
 // type City = {
 //   id: number;
@@ -14,7 +14,7 @@ type Props = {
 
 
 
-export default async function CitiesPage({ params }: Props) {
+export default async function CitiesPage({ params }: { params: { state_id: string; } }) {
   // const supabase = await createClient();
   // const stateId = Number(params.state_id);
   console.log(params)
