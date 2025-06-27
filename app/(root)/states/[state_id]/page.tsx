@@ -17,7 +17,7 @@
 export default async function CitiesPage({ params }: { params: { state_id: string; } }) {
   // const supabase = await createClient();
   // const stateId = Number(params.state_id);
-  console.log(params)
+  console.log(params.state_id)
   // 1. Fetch cities
   // const { data: cities, error } = await supabase.rpc('get_top_cities_by_population', {
   //   state_input: stateId,
