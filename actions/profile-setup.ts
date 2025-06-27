@@ -44,7 +44,6 @@ export const checkProfileCompletion = async () => {
 		.from("reviews")
 		.select("providerUser_id")
 		.eq("providerUser_id", userId)
-		.maybeSingle();
 	review = reviewData;
 
 	// 5. Background check (background_checks)

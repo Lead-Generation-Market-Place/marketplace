@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { ChangeEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
@@ -20,7 +20,8 @@ interface PhotoUploaderProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_MB = 10; // 10 MB limit
+const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
 const PhotoPreview = React.memo(function PhotoPreview({
   photo,
@@ -79,7 +80,6 @@ const PhotoUploader = React.memo(function PhotoUploader({
   onLabelChange,
   inputRef
 }: PhotoUploaderProps) {
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const handlePhotoChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -87,9 +87,15 @@ const PhotoUploader = React.memo(function PhotoUploader({
     const availableSlots = maxPhotos - photos.length;
 
     const validFiles = filesArray.filter((file) => {
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      if (!allowedExtensions.includes(extension)) {
+        toast.error("Unsupported file format. Please upload JPG, JPEG, PNG, GIF, or WEBP images only.");
+        return false;
+      }
+
       const sizeMB = file.size / (1024 * 1024);
       if (sizeMB > MAX_FILE_SIZE_MB) {
-        toast.error(`"${file.name}" exceeds 10MB size limit.`);
+        toast.error(`"${file.name}" exceeds ${MAX_FILE_SIZE_MB}MB size limit.`);
         return false;
       }
       return true;
@@ -100,19 +106,9 @@ const PhotoUploader = React.memo(function PhotoUploader({
       return;
     }
 
-    // Simulate upload progress
-    setUploadProgress(0);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setUploadProgress(null);
-        onAddPhotos(validFiles);
-        if (e.target) e.target.value = '';
-      }
-    }, 100);
+    onAddPhotos(validFiles);
+
+    if (e.target) e.target.value = '';
   };
 
   return (
@@ -131,26 +127,17 @@ const PhotoUploader = React.memo(function PhotoUploader({
           id="photo-upload"
           className="hidden"
           multiple
-          accept="image/*"
+          accept=".jpg,.jpeg,.png,.gif,.webp"
           onChange={handlePhotoChange}
           ref={inputRef}
           disabled={photos.length >= maxPhotos}
         />
       </label>
 
-      {uploadProgress !== null && (
-        <div className="h-2 w-full bg-gray-300 dark:bg-gray-700 rounded">
-          <div
-            className="h-full bg-[#0077B6] transition-all duration-300"
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
-        </div>
-      )}
-
       <p className="text-xs text-gray-400">
         {photos.length >= maxPhotos
           ? 'Maximum photo limit reached.'
-          : `You can upload ${maxPhotos - photos.length} more photo(s). Max 10MB each.`}
+          : `You can upload ${maxPhotos - photos.length} more photo(s). Max ${MAX_FILE_SIZE_MB}MB each.`}
       </p>
 
       <AnimatePresence>
