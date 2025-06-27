@@ -1,6 +1,14 @@
-export default async function ServicesPage({ params }: { params: Record<string, string> }) {
+type Props = {
+  params: {
+    state_id: string;
+    city_id: string;
+  };
+};
+
+export default async function ServicesPage({ params }: Props) {
   const stateId = Number(params.state_id);
   const cityId = Number(params.city_id);
+
   console.log(`Passed Data State ID: ${stateId}, City ID: ${cityId}`);
 
   return (
