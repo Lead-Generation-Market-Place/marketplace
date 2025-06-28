@@ -68,7 +68,7 @@ export default function UserDropdown() {
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col  border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="Linkbsolute right-0 mt-[17px] flex w-[260px] flex-col  border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
         {profile ? (
           <div className="p-2 border-b ">
@@ -88,7 +88,7 @@ export default function UserDropdown() {
             <li>
               <DropdownItem
                 onItemClick={closeDropdown}
-                tag="a"
+                tag="Link"
                 href='/home'
                 className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               >
@@ -100,7 +100,7 @@ export default function UserDropdown() {
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
-              tag="a"
+              tag="Link"
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
@@ -125,7 +125,7 @@ export default function UserDropdown() {
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
-              tag="a"
+              tag="Link"
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
@@ -151,7 +151,7 @@ export default function UserDropdown() {
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
-              tag="a"
+              tag="Link"
               href="/profile"
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
