@@ -1,6 +1,6 @@
 "use client";
 
-import { signInWithGithub } from "@/actions/auth";
+import { signInWithGithub } from "@/actions/auth/auth";
 import React, { useTransition } from "react";
 import { FaGithub } from "react-icons/fa";
 

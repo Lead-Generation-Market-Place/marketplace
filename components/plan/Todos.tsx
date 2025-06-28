@@ -9,7 +9,7 @@ import {
   markPlanAsCompleted,
   removePlan,
   SearchServiceSuggestions,
-} from "@/actions/service";
+} from "@/actions/services/service";
 import { getUSASeason } from "@/utils/usaSeason";
 import PlanCard from "./planCard";
 import { useRouter } from "next/navigation";

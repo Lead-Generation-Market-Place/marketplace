@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { GetAllServicesWithHierarchy, GetAllLocations } from "@/actions/findServices";
-import { insertServicesAction } from "@/actions/pro_services";
+import { GetAllServicesWithHierarchy, GetAllLocations } from "@/actions/services/findServices";
+import { insertServicesAction } from "@/actions/services/pro_services";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

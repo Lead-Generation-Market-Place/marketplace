@@ -1,52 +1,54 @@
 "use client";
-import React, { useState } from "react";
-import { User } from "@supabase/supabase-js";
-
+import React, { useEffect, useState } from "react";
+import { getUserProfile } from "@/actions/profiles/users_profile"; // ✅ Updated import
 import { Dropdown } from "@/components/dashboard/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/dashboard/ui/dropdown/DropdownItem";
-import { logOut } from "@/actions/auth";
-import {  ChartPie } from "lucide-react";
+import { logOut } from "@/actions/auth/auth";
+import { ChartPie } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 
 type UserProfile = {
-  id: string;
-  user_id: string;
-  full_name: string;
   username: string;
-  bio: string;
-  // Add more fields based on your schema
+  email?: string;
 };
 
-interface UserDropdownProps {
-  user: User | null;
-  profile: UserProfile | null;
-}
-
-export default function UserDropdown({ user, profile }: UserDropdownProps) {
+export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const pathname = usePathname();
-  const isDashboard = pathname === '/';
+  const isDashboard = pathname === "/";
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { profile } = await getUserProfile(); // ✅ Use server action
+      if (profile) setProfile(profile);
+      else toast.error("Failed to load profile");
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleLogout = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     await logOut();
-
     setLoading(false);
   };
 
-  function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+  const toggleDropdown = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen((prev) => !prev);
-  }
+  };
 
-  function closeDropdown() {
+  const closeDropdown = () => {
     setIsOpen(false);
-  }
+  };
+
   return (
     <div className="relative">
-      
+
       {profile ? (
         <button
           onClick={toggleDropdown}
@@ -68,13 +70,13 @@ export default function UserDropdown({ user, profile }: UserDropdownProps) {
         onClose={closeDropdown}
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col  border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        {user && profile ? (
+        {profile ? (
           <div className="p-2 border-b ">
             <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
               {profile.username}
             </span>
             <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-              {user.email}
+              {profile.email}
             </span>
           </div>
         ) : (
@@ -84,17 +86,17 @@ export default function UserDropdown({ user, profile }: UserDropdownProps) {
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
           {isDashboard ? (
             <li>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              tag="a"
-              href='/home'
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-            <ChartPie className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" />
-            Dashboard
-            </DropdownItem>
-          </li>
-          ):('')}
+              <DropdownItem
+                onItemClick={closeDropdown}
+                tag="a"
+                href='/home'
+                className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                <ChartPie className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300" />
+                Dashboard
+              </DropdownItem>
+            </li>
+          ) : ('')}
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
@@ -144,6 +146,7 @@ export default function UserDropdown({ user, profile }: UserDropdownProps) {
               </svg>
               Account settings
             </DropdownItem>
+            
           </li>
           <li>
             <DropdownItem
@@ -173,13 +176,13 @@ export default function UserDropdown({ user, profile }: UserDropdownProps) {
         </ul>
 
         <form onSubmit={handleLogout}>
-     <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-          
-        >
-           <svg
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+
+          >
+            <svg
               className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
               width="24"
               height="24"
@@ -194,11 +197,12 @@ export default function UserDropdown({ user, profile }: UserDropdownProps) {
                 fill=""
               />
             </svg>
-          {loading ? "Signing out..." : "Sign out"}
-        </button>
-           
+            {loading ? "Signing out..." : "Sign out"}
+          </button>
+
 
         </form>
+
       </Dropdown>
     </div>
   );

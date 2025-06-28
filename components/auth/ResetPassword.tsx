@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import AuthButton from "../auth/AuthButton";
 import { useRouter, useSearchParams } from "next/navigation";
-import { resetLink } from "@/actions/auth";
+import { resetLink } from "@/actions/auth/auth";
 import { toast } from "sonner";
 
 const ResetPassword = () => {

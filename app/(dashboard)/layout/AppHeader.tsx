@@ -1,7 +1,7 @@
 "use client";
 import { ThemeToggleButton } from "@/components/dashboard/Themes/ThemeToggleButton"
 
-import UserDropdown from "@/components/dashboard/header/UserDropdown";
+import UserDropdown from "@/components/dashboard/header/ProfessionalDropdown";
 import { useSidebar } from "../context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,16 +14,18 @@ interface AppHeaderProps {
   profile: {
     id: string;
     user_id: string;
-    full_name: string;
     username: string;
     bio: string;
   } | null;
 }
 
+
+
 const AppHeader: React.FC<AppHeaderProps> = ({ user, profile }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+console.log("Profile Data",profile)
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {

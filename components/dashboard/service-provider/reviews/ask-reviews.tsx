@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FaRegStar, FaStar } from 'react-icons/fa';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAuthUserId } from '@/actions/authUser';
+import { getAuthUserId } from '@/actions/auth/authUser';
 import Link from 'next/link';
 
 export default function ReviewRequest() {
