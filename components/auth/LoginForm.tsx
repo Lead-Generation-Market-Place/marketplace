@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
-import { signIn, getUserAndProvider } from "@/actions/auth";
+import { signIn, getUserAndProvider } from "@/actions/auth/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import AuthButton from "../auth/AuthButton";
 import { useRouter } from "next/navigation";
-import { signUp } from "@/actions/auth";
+import { signUp } from "@/actions/auth/auth";
 import { toast } from "sonner"; // ✅ Use Sonner toast
 
 const SignUpForm = () => {

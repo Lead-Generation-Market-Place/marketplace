@@ -1,4 +1,4 @@
-import { getUserSession } from "@/actions/auth";
+import { getUserSession } from "@/actions/auth/auth";
 import Navbar from "@/components/navbar/navbar";
 import { Toaster } from "@/components/ui/sonner"; // Your custom Sonner wrapper
 

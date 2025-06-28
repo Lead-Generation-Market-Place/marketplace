@@ -56,12 +56,14 @@ export async function businessInfo(formData: FormData) {
     .from("business-logos")
     .upload(`logos/${crypto.randomUUID()}_${image.name}`, image)
 
-  if (uploadError || !uploadData) {
-    return {
-      status: "error",
-      message: uploadError?.message ?? "Failed to upload image",
-      user: null,
-    }
+ if (uploadError || !uploadData) {
+  return {
+    status: "error",
+    message: uploadError?.message ?? "Failed to upload image",
+    error: uploadError,
+    user: null,
+  }
+
   }
 
   const { data } = supabase.storage.from("business-logos").getPublicUrl(uploadData.path)
@@ -158,6 +160,21 @@ export async function businessInfo(formData: FormData) {
       user: null,
     }
   }
+
+    // Step 4: Update user role in users_profiles
+  const { error: updateRoleError } = await supabase
+    .from("service_providers")
+    .update({ roles: "professional" })
+    .eq("user_id", user.id)
+
+  if (updateRoleError) {
+    return {
+      status: "error",
+      message: updateRoleError.message ?? "Failed to update user role",
+      user: null,
+    }
+  }
+
 
   return {
     status: "success",

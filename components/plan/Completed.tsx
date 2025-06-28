@@ -1,4 +1,4 @@
-import { getCompletedPlans } from "@/actions/service";
+import { getCompletedPlans } from "@/actions/services/service";
 import { FileCheck2 } from "lucide-react";
 import { useEffect, useState } from "react";
 

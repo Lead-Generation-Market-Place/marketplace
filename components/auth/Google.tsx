@@ -1,6 +1,6 @@
 "use client";
 
-import {  signInWithGoogle } from "@/actions/auth";
+import {  signInWithGoogle } from "@/actions/auth/auth";
 import React, { useTransition } from "react";
 
 const LoginGithub = () => {

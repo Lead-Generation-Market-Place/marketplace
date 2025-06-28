@@ -4,7 +4,8 @@ import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import { ThemeToggleButton } from "../dashboard/Themes/ThemeToggleButton";
-import UserDropdown from "../dashboard/header/UserDropdown";
+import ProDropdown from "@/components/dashboard/header/UserDropdown"
+
 import NavItems from "./navItems";
 
 const dropdownData = {
@@ -35,20 +36,20 @@ const Navbar = async () => {
         {/* Desktop Navigation */}
         {!user ? (
           <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
-          {Object.entries(dropdownData).map(([label, items]) => (
-            <DropdownMenu key={label} label={label} items={items} />
-          ))}
-        </nav>
-        ):(
+            {Object.entries(dropdownData).map(([label, items]) => (
+              <DropdownMenu key={label} label={label} items={items} />
+            ))}
+          </nav>
+        ) : (
           <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
-            <NavItems/>
+            <NavItems />
           </nav>
         )}
-        
+
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4 text-sm font-light">
-          
+
 
           {!user ? (
             <>
@@ -69,7 +70,10 @@ const Navbar = async () => {
             <>
               {/* User actions here */}
               {user && (
-                <UserDropdown user={user} profile={null} />
+                <span>
+                  <ProDropdown   />
+                </span>
+
               )}
             </>
           )}

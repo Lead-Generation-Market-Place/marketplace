@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
-import { UnPassword } from "@/actions/auth";
+import { UnPassword } from "@/actions/auth/auth";
 import { toast } from "sonner"; // ✅ Use Sonner toast
 
 const ForgotPassword = () => {

@@ -2,7 +2,8 @@
 
 import { CheckCircle, UserCheck, DollarSign, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { checkProfileCompletion } from "@/actions/profile-setup";
+import { checkProfileCompletion } from "@/actions/profiles/profile-setup";
+import Link from "next/link";
 
 type TaskKey = "business" | "dub" | "service" | "review" | "background";
 
@@ -15,11 +16,11 @@ interface Task {
 	href?: string;
 }
 const initialTasks: Task[] = [
-	{ id: 1, text: "Fill out your business profile.", key: "business", completed: false, icon: CheckCircle, href: "/dashboard/professional/business-info" },
-	{ id: 2, text: "Set Business Availability.", key: "dub", completed: false, icon: CheckCircle, href: "/dashboard/professional/daytime" },
-	{ id: 3, text: "Set your budget.", key: "service", completed: false, icon: DollarSign, href: "/dashboard/professional/budget" },
-	{ id: 4, text: "Add one past customer review.", key: "review", completed: false, icon:  CheckCircle, href: "/dashboard/professional/reviews" },
-	{ id: 5, text: "Get a background check.", key: "background", completed: false, icon: UserCheck, href: "/dashboard/professional/background-check" },
+	{ id: 1, text: "Fill out your business profile.", key: "business", completed: false, icon: CheckCircle, href: "/professional/business-info" },
+	{ id: 2, text: "Set Business Availability.", key: "dub", completed: false, icon: CheckCircle, href: "/professional/daytime" },
+	{ id: 3, text: "Set your budget.", key: "service", completed: false, icon: DollarSign, href: "/professional/ask-reviews/create" },
+	{ id: 4, text: "Add one past customer review.", key: "review", completed: false, icon:  CheckCircle, href: "/professional/ask-reviews/read" },
+	{ id: 5, text: "Get a background check.", key: "background", completed: false, icon: UserCheck, href: "/professional/background-check" },
 ];
 
 export default function SetupProgress() {
@@ -98,25 +99,25 @@ export default function SetupProgress() {
 									{completed ? (
 										<span className="text-gray-800 dark:text-gray-300 text-sm font-normal">{text}</span>
 									) : href ? (
-										<a
+										<Link
 											href={href}
 											className="text-[#0077B6] dark:text-[#0077B6] hover:underline text-sm font-normal"
 										>
 											{text}
-										</a>
+										</Link>
 									) : (
 										<span className="text-gray-800 dark:text-gray-300 text-sm font-normal">{text}</span>
 									)}
 								</div>
 
 								{!completed && href && (
-									<a
+									<Link
 										href={href}
 										className="text-[#0077B6] dark:text-[#0077B6] hover:underline"
 										aria-label={`Go to ${text}`}
 									>
 										<ArrowRight size={18} />
-									</a>
+									</Link>
 								)}
 							</li>
 						))}
