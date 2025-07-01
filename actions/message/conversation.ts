@@ -16,31 +16,35 @@ export async function getConversations(userId: string) {
     return [];
   }
 
-  const conversationsWithDetails = await Promise.all(
-    conversations.map(async (conv) => {
-      const otherUserId = conv.customer_id === userId ? conv.professional_id : conv.customer_id;
+const conversationsWithDetails = await Promise.all(
+  conversations.map(async (conv) => {
+    const otherUserId =
+      conv.customer_id === userId ? conv.professional_id : conv.customer_id;
 
-      const { data: otherUser } = await supabase
-        .from('users_profiles')
-        .select('username')
-        .eq('id', otherUserId)
-        .single();
+    const { data: otherUser } = await supabase
+      .from('users_profiles')
+      .select('username')
+      .eq('id', otherUserId)
+      .single();
 
-      const { data: lastMessage } = await supabase
-        .from('messages')
-        .select('message')
-        .eq('conversation_id', conv.id)
-        .order('sent_at', { ascending: false })
-        .limit(1)
-        .single();
+    const { data: lastMessage } = await supabase
+      .from('messages')
+      .select('message, file_url, read_at, sent_at')
+      .eq('conversation_id', conv.id)
+      .order('sent_at', { ascending: false })
+      .limit(1)
+      .single();
 
-      return {
-        ...conv,
-        other_user_name: otherUser?.username || 'Unknown',
-        last_message: lastMessage?.message || null,
-      };
-    })
-  );
+    return {
+      ...conv,
+      other_user_name: otherUser?.username || 'Unknown',
+      last_message: lastMessage?.message || lastMessage?.file_url || null,
+      last_read_at: lastMessage?.read_at || null,
+      last_sent_at: lastMessage?.sent_at || null,
+    };
+  })
+);
+
 
   return conversationsWithDetails;
 }
@@ -57,16 +61,24 @@ export async function getMessages(conversationId: string) {
   return messages || [];
 }
 
-export async function sendMessage(conversationId: string, senderId: string, message: string) {
+export async function sendMessage(
+  conversationId: string,
+  senderId: string,
+  message: string,
+  fileUrl?: string
+) {
   const supabase = await createClient();
-
   const { data, error } = await supabase.from('messages').insert([
     {
       conversation_id: conversationId,
       sender_id: senderId,
-      message: message,
+      message,
+      file_url: fileUrl || null,
+      read_at: null,
     },
   ]);
 
-  return { success: !error, data, error };
+  if (error) throw error;
+  return data;
 }
+
