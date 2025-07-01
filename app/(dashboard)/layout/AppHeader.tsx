@@ -25,7 +25,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ user, profile }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-console.log("Profile Data",profile)
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
