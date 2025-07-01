@@ -7,47 +7,20 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const YouMayLike = () => {
-  const services = [
-    {
-      image: "/images/image1.jpg",
-      serviceName: "Service Name 1",
-      rating: 4.9,
-      reviews: 868,
-      professional: "Professional Name 1",
-      priceFrom: 200,
-      priceTo: 50,
-    },
-    {
-      image: "/images/image2.jpg",
-      serviceName: "Service Name 2",
-      rating: 4.9,
-      reviews: 868,
-      professional: "Professional Name 2",
-      priceFrom: 200,
-      priceTo: 50,
-    },
-    {
-      image: "/images/image3.jpg",
-      serviceName: "Service Name 3",
-      rating: 4.9,
-      reviews: 868,
-      professional: "Professional Name 3",
-      priceFrom: 200,
-      priceTo: 50,
-    },
-    {
-      image: "/images/image4.jpg",
-      serviceName: "Service Name 4",
-      rating: 4.9,
-      reviews: 868,
-      professional: "Professional Name 4",
-      priceFrom: 200,
-      priceTo: 50,
-    },
-  ];
+type Service = {
+  id: number;
+  name: string;
+  service_image_url: string;
+  description?: string;
+  imageUrl?: string;  // You can generate this on server or client, explained below
+};
 
-    return (
+interface YouMayLikeProps {
+  data: Service[];
+}
+
+const YouMayLike = ({ data }: YouMayLikeProps) => {
+  return (
     <div
       className="
       bg-white dark:bg-gray-900 
@@ -60,37 +33,43 @@ const YouMayLike = () => {
         </h2>
         {/* Carousel */}
         <Carousel
-      opts={{
-        align: "start",
-      }}
-      className="w-full max-w-screen-xl mx-auto relative"
-    >
-      <CarouselContent>
-        {services.map((service, idx) => (
-          <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-            <div>
-              {/* Text Content */}
-              <div className="">
-                <Image
-                  src={service.image}
-                  alt="service image"
-                  className="w-full h-48 object-cover rounded"
-                  width={400}
-                  height={300}/>
-              </div>
-              <div className="">
-                <h1 className="text-lg py-2 font-semibold">{service.serviceName}</h1>
-              </div>
-            </div>
-          </CarouselItem>
-       ))}
-        
-      </CarouselContent>
-      <CarouselNext className="absolute top-[40%] right-[-2%]"/>
-      <CarouselPrevious className="absolute top-[40%] left-[-2%]"/>
-    </Carousel>
-
-        
+          opts={{
+            align: "start",
+          }}
+          className="w-full max-w-screen-xl mx-auto relative"
+        >
+          <CarouselContent>
+            {data.length > 0 ? (
+              data.map((service, idx) => (
+                <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                  <div>
+                    {/* Image */}
+                    <div>
+                      <Image
+                        src={service.imageUrl?? ''}
+                        alt={service.name}
+                        className="w-full h-48 object-cover rounded"
+                        width={400}
+                        height={300}
+                        unoptimized={true}
+                      />
+                    </div>
+                    {/* Name */}
+                    <div>
+                      <h1 className="text-lg py-2 font-semibold">{service.name}</h1>
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                No services available.
+              </p>
+            )}
+          </CarouselContent>
+          <CarouselNext className="absolute top-[40%] right-[-2%]" />
+          <CarouselPrevious className="absolute top-[40%] left-[-2%]" />
+        </Carousel>
       </div>
     </div>
   );

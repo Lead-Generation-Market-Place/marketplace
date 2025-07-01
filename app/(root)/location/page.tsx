@@ -1,5 +1,6 @@
+// app/location/states/page.tsx
 import { createClient } from '@/utils/supabase/server';
-import ListGrid from '@/components/elements/ListGrid';
+import LazyStateList from '@/components/home/StateList';
 
 export default async function StatesPage() {
   const supabase = await createClient();
@@ -13,15 +14,8 @@ export default async function StatesPage() {
   const items = states?.map((state) => ({
     id: state.id,
     name: state.name,
-    link: `/states/${state.id}`,
+    link: `/location/${state.id}`,
   })) || [];
 
-  return (
-    <ListGrid
-      items={items}
-      title="States on Yelpax"
-      breadcrumb="Yelpax States"
-      breadcrumbHref="/"
-    />
-  );
+  return <LazyStateList items={items} />;
 }

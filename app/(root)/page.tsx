@@ -1,41 +1,99 @@
-import ActiveLocation from '@/components/home/ActiveLocation';
-import BecomePro from '@/components/home/BecomePro';
-import CostEstimation from '@/components/home/CostEstimation';
-import HeroForm from '@/components/home/HeroForm';
-import MobileApps from '@/components/home/MobileApps';
-import PopularService from '@/components/home/PopularService';
-import Promotion from '@/components/home/Promotion';
-import Reviews from '@/components/home/Reviews';
-import TopPick from '@/components/home/TopPick';
-import Trending from '@/components/home/Trending';
-import YouMayLike from '@/components/home/YouMayLike';
-import React from 'react'
+import { createClient } from '@/utils/supabase/server';
+import LazyHomeContent from './LazyHomeContent';
 
-const page = () => {
-  return (
-    <>
-    <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-      <HeroForm />
-      <div className="space-y-8">
-        <Promotion />
-        <PopularService />
-        <YouMayLike/>
-      </div>
-    </div>
-    <MobileApps />
-    <TopPick />
-    <Trending />
-    <CostEstimation/>
-    <ActiveLocation/>
-    <BecomePro />
-    <Reviews />
-    <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      
-    </div>
+export default async function Page() {
+  const supabase = await createClient();
+
+  const { data: promotions } = await supabase.from("categories").select('*');
+  const { data: popularServicesRaw } = await supabase.from('services').select('*');
+  const { data: exploreRaw } = await supabase
+  .from("sub_categories")
+  .select(`
+    id,
+    name,
+    image_url,
+    description,
+    services (
+      id,
+      name,
+      service_image_url
+    )
+  `);
+  const { data: youMayLikeRaw } = await supabase.from('services').select('*');
+  const { data: costEstimates } = await supabase.from('service_providers').select('*');
+  const { data: locations } = await supabase.from('state').select('*');
+  const { data: reviews } = await supabase
+  .from('testimonials')
+  .select(`
+    id,
+    review,
+    created_at,
+    users_profiles (
+      username
+    )
+  `);
+
+  const flattenedReviews = (reviews || []).map((review) => ({
+    ...review,
+    users_profiles: Array.isArray(review.users_profiles)
+      ? review.users_profiles[0] // flatten the array
+      : review.users_profiles,
+  }));
+
+
+  //Generate the public url for the sub_category and its services image_url
+  const explore = (exploreRaw || []).map((subcategory) => {
+    const { data: subImg } = supabase.storage
+      .from("subcategoryimage")
+      .getPublicUrl(subcategory.image_url || "");
+
+    const services = (subcategory.services || []).map((service) => {
+      const { data: serviceImg } = supabase.storage
+        .from("serviceslogos")
+        .getPublicUrl(service.service_image_url || "");
+
+      return {
+        id: service.id,
+        name: service.name,
+        imageUrl: serviceImg?.publicUrl || "/images/image4.jpg",
+      };
+    });
+
+    return {
+      id: subcategory.id,
+      name: subcategory.name,
+      imageUrl: subImg?.publicUrl || "/images/image4.jpg",
+      description: subcategory.description || "",
+      services,
+    };
+  });
+
+
+  const popularServices = popularServicesRaw?.map(service => {
+    const { data: urlData} = supabase.storage
+      .from('serviceslogos')
+      .getPublicUrl(service.service_image_url);
+
+    return { ...service, imageUrl: urlData?.publicUrl ?? '' };
+  }) || [];
+
+  const youMayLike = youMayLikeRaw?.map(service => {
+    const { data: urlData} = supabase.storage
+      .from('serviceslogos')
+      .getPublicUrl(service.service_image_url);
+    return { ...service, imageUrl: urlData?.publicUrl ?? '' };
     
-    </>
-  );
-};
+  }) || [];
 
-export default page
+  return (
+    <LazyHomeContent
+      promotions={promotions || []}
+      popularServices={popularServices}
+      youMayLike={youMayLike}
+      explore={explore || []}
+      costEstimates={costEstimates || []}
+      locations={locations || []}
+      reviews={flattenedReviews || []}
+    />
+  );
+}

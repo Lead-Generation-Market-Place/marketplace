@@ -41,7 +41,7 @@ const MapView = () => {
     const isActive = !!name && activeStates.includes(name);
 
     return {
-        fillColor: isActive ? '#00CDFE' : '#00a67e',
+        fillColor: isActive ? 'green' : '#79d2a0',
         weight: 1,
         color: '#ffffff',
         dashArray: '3',
@@ -110,7 +110,7 @@ const MapView = () => {
             we&apos;ve got trusted pros ready to help in every corner of the country.
           </p>
           <button
-          onClick={() => router.push('/states')} 
+          onClick={() => router.push('/location')} 
           className="text-xs text-gray-500 hover:text-sky-500">View All States</button>
         </div>
       </div>
