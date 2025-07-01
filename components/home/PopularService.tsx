@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,44 +8,22 @@ type Service = {
   id: number;
   name: string;
   service_image_url: string;
-  description: string;
-  imageUrl?: string;
+  description?: string;
+  imageUrl?: string;  // You can generate this on server or client, explained below
 };
 
-export default function PopularService() {
+interface PopularServiceProps {
+  data: Service[];
+}
+
+export default function PopularService({ data }: PopularServiceProps) {
   const router = useRouter();
-  const [services, setServices] = useState<Service[] | null>(null);
-  const supabase = createClient();
 
-  useEffect(() => {
-    async function fetchPopularServices() {
-      const { data, error } = await supabase.from("services").select("*").limit(8);
-
-      if (error) {
-        console.error("Error fetching services:", error);
-        return;
-      }
-
-      const servicesWithImageUrl = data.map((service) => {
-        const { data: urlData } = supabase.storage
-          .from("serviceslogos")
-          .getPublicUrl(service.service_image_url);
-
-        return {
-          ...service,
-          imageUrl: urlData.publicUrl,
-        };
-      });
-
-      setServices(servicesWithImageUrl);
-    }
-
-    fetchPopularServices();
-  }, [supabase]);
+  // Optional: If your data does not already include public image URLs, you need to generate them here
+  // But better to do it server-side and pass imageUrl already computed
 
   const loadQuestion = (service: Service) => {
-    const serviceId = service.id;
-    router.push(`/service?serviceId=${serviceId}`);
+    router.push(`/service?serviceId=${service.id}`);
   };
 
   return (
@@ -67,10 +43,10 @@ export default function PopularService() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {services?.length ? (
-            services.map((service, idx) => (
+          {data.length ? (
+            data.map((service, idx) => (
               <div
-                key={idx}
+                key={service.id}
                 className="relative w-full h-48 sm:h-40 md:h-44 lg:h-52 rounded-lg overflow-hidden shadow-md dark:shadow-gray-700 cursor-pointer group"
                 onClick={() => loadQuestion(service)}
               >
@@ -100,7 +76,7 @@ export default function PopularService() {
             ))
           ) : (
             <div className="col-span-full flex items-center justify-center h-40 bg-white dark:bg-gray-800 rounded shadow">
-              <p className="text-gray-500 dark:text-gray-300">Loading services...</p>
+              <p className="text-gray-500 dark:text-gray-300">No services found.</p>
             </div>
           )}
         </div>

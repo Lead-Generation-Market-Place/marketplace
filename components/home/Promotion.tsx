@@ -88,7 +88,6 @@ const Promotion = () => {
 
       </CarouselContent>
     </Carousel>
-
         
       </div>
     </div>
