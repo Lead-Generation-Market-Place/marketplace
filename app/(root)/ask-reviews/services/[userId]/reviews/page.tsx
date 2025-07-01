@@ -74,7 +74,7 @@ const ReviewForm = () => {
           setBusinessName(result.business_name);
         }
       } catch (error) {
-        console.error('Failed to fetch business name:', error);
+        toast.error(`Failed to fetch business name:${error}`);
       }
     };
     fetchBusiness();
