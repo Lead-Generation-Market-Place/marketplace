@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { getConversations, getMessages, sendMessage } from '@/actions/message/conversation';
 import { createClient } from '@/utils/supabase/client';
-import { Inbox, Send, Paperclip } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 import Image from 'next/image';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -40,6 +40,12 @@ export default function InboxClient({ userId }: { userId: string }) {
   const [typing, setTyping] = useState(false);
   const supabase = createClient();
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const messagesBottomRef = useRef<HTMLDivElement>(null);
+
+// Scroll to bottom when messages change
+  useEffect(() => {
+    messagesBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     (async () => {
@@ -226,183 +232,255 @@ export default function InboxClient({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[80vh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* Inbox panel */}
-      <div className="md:w-1/4 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
-        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4">
-          <Inbox className="text-gray-600 dark:text-gray-300 w-5 h-5" />
-          Inbox
-        </h2>
-        {conversations.map((c) => (
-          <div
-            key={c.id}
-            className={`p-3 mb-2 cursor-pointer border rounded-md ${
-              selectedConversation?.id === c.id
-                ? 'bg-sky-200 dark:bg-sky-800 border-sky-500'
-                : 'bg-gray-100 dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-            onClick={() => setSelectedConversation(c)}
-          >
-            <p className="font-semibold">{c.other_user_name}</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 truncate">
-              {c.last_message?.match(/\.(jpg|jpeg|png|gif|pdf|docx|mp4|webm)$/i) ? (
-                <>
-                  <Paperclip className="w-3 h-3" />
-                  <span className="italic">Attachment</span>
-                </>
-              ) : (
-                c.last_message || ''
-              )}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Chat panel */}
-      <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-800">
-        <div className="flex-1 p-4 overflow-y-auto">
-          {!selectedConversation && (
-            <p className="text-center text-gray-500 dark:text-gray-400 mt-20">
-              Select a conversation to start chatting
-            </p>
-          )}
-
-          {selectedConversation && (
-            <div className="text-center text-xs text-gray-500 dark:text-gray-400 mb-4">
-              Conversation started {dayjs(selectedConversation.created_at).fromNow()}
-            </div>
-          )}
-
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`mb-2 flex ${m.sender_id === userId ? 'justify-end' : 'justify-start'}`}
-            >
-              <div>
-                <div
-                  className={`inline-block ${m.file_url ? '' : 'px-4 py-2'} rounded-xl text-sm ${
-                    m.sender_id === userId
-                      ? 'bg-sky-400 text-white'
-                      : 'bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-100'
-                  }`}
-                >
-                  {m.file_url ? (
-                    m.file_url.match(/\.(jpeg|jpg|png|gif)$/) ? (
-                      <Image
-                        src={m.file_url}
-                        alt="shared media"
-                        width={200}
-                        height={200}
-                        className="rounded-md"
-                      />
-                    ) : (
-                      <a
-                        href={m.file_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline text-sm block"
-                      >
-                        Download File
-                      </a>
-                    )
-                  ) : (
-                    <span>{m.message}</span>
-                  )}
-                </div>
-
-                <div className="text-[8px] text-gray-500 dark:text-gray-400 ml-1">
-                  {m.sent_at ? dayjs(m.sent_at).fromNow() : ''}
-                  {m.sender_id === userId && m.read_at && <> • Seen {dayjs(m.read_at).fromNow()}</>}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {typing && (
-            <div className="text-xs text-gray-500 italic mt-2">The other user is typing...</div>
-          )}
+   <div className="flex flex-col md:flex-row h-[80vh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden">
+    {/* On small devices: horizontal scroll of user avatars */}
+    <div className="md:hidden min-h-[60px] flex items-center space-x-4 overflow-x-auto px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+    {conversations.map((conv) => (
+      <button
+        key={conv.id}
+        onClick={() => setSelectedConversation(conv)}
+        className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
+          selectedConversation?.id === conv.id
+            ? 'border-blue-500'
+            : 'border-transparent'
+        }`}
+        aria-label={`Conversation with ${conv.other_user_name}`}
+      >
+        <div className="w-full h-full rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+          {conv.other_user_name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()}
         </div>
+      </button>
+    ))}
+  </div>
 
-        {/* Input bar */}
-        {selectedConversation && (
-          <div className="border-t border-gray-300 dark:border-gray-700 p-2 flex flex-col bg-white dark:bg-gray-900">
-            {files.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-2">
-                {files.map((f, i) =>
-                  f.type.startsWith('image/') ? (
-                    <div key={i} className="relative">
-                      <img
-                        src={URL.createObjectURL(f)}
-                        alt="preview"
-                        className="h-15 rounded object-cover"
-                      />
-                      <button
-                        className="text-xs absolute top-0 right-0 bg-white/70 hover:text-red-500 hover:bg-white shadow text-black px-1 rounded"
-                        onClick={() => setFiles(files.filter((_, index) => index !== i))}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ) : (
-                    <div key={i} className="text-sm bg-gray-200 dark:bg-gray-700 p-2 rounded">
-                      📎 {f.name}
-                    </div>
-                  )
+
+  {/* Sidebar for conversations - hidden on sm */}
+  <aside className="hidden md:block w-80 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
+    <ul>
+      {conversations.map((conv) => (
+        <li
+          key={conv.id}
+          className={`cursor-pointer p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ${
+            selectedConversation?.id === conv.id
+              ? 'bg-gray-200 dark:bg-gray-700 font-semibold'
+              : ''
+          }`}
+          onClick={() => setSelectedConversation(conv)}
+        >
+          <div className="flex justify-between items-center">
+            <span className='font-semibold text-sm'>{conv.other_user_name}</span>
+            <small className="text-xs text-gray-500 dark:text-gray-400">
+              {dayjs(conv.created_at).fromNow()}
+            </small>
+          </div>
+          {conv.last_message && (() => {
+          const urlPattern = /(https?:\/\/[^\s]+)/g;
+          const fileExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'mp3', 'mov'];
+          const isFileUrl = (() => {
+            if (!conv.last_message) return false;
+            const match = conv.last_message.match(urlPattern);
+            if (!match) return false;
+            const url = match[0];
+            return fileExtensions.some(ext => url.toLowerCase().endsWith(`.${ext}`));
+          })();
+
+          if (isFileUrl) {
+            return (
+              <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <Paperclip size={12} />
+                <span>Attachment</span>
+              </div>
+            );
+          }
+
+          return (
+            <p className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-full mt-1">
+              {conv.last_message.length > 50
+                ? conv.last_message.slice(0, 50) + '...'
+                : conv.last_message}
+            </p>
+          );
+        })()}
+
+        </li>
+      ))}
+    </ul>
+  </aside>
+
+  {/* Main chat panel */}
+  <section className="flex flex-col flex-1">
+    {/* Header */}
+    <header className="p-4 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
+      {selectedConversation ? (
+        <>
+          <h2 className="text-lg font-semibold">{selectedConversation.other_user_name}</h2>
+          {typing && <span className="text-sm text-green-500 italic">Typing...</span>}
+        </>
+      ) : (
+        <p className="text-gray-500 dark:text-gray-400">Select a conversation</p>
+      )}
+    </header>
+
+    {/* Messages area */}
+    {/* Messages area */}
+    <div
+      className="flex-1 overflow-y-auto px-4 py-2 bg-gray-50 dark:bg-gray-800"
+      style={{ scrollbarWidth: 'thin' }}
+    >
+    {selectedConversation ? (
+      messages.length > 0 ? (
+        messages.map((msg) => {
+          const isMine = msg.sender_id === userId;
+        return (
+        <div
+          key={msg.id}
+          className={`flex ${isMine ? 'justify-end' : 'justify-start'} px-2`}
+        >
+          <div className="flex flex-col items-end max-w-[70%]">
+            <div
+              className={`break-words whitespace-pre-wrap ${
+                msg.file_url && !msg.message
+                  ? ''
+                  : isMine
+                    ? 'rounded-full px-3 py-1 bg-sky-500 text-white dark:bg-sky-600'
+                    : 'rounded-full px-3 py-1 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+              }`}
+            >
+              {msg.file_url && (
+                <Image
+                  src={msg.file_url}
+                  alt="attachment"
+                  width={200}
+                  height={200}
+                  className="rounded mb-1"
+                />
+              )}
+              {msg.message && <p>{msg.message}</p>}
+            </div>
+
+            {/* Timestamp below message bubble */}
+            <small
+              className={`text-xs mb-2 ${
+                isMine ? 'text-right text-gray-400' : 'text-left text-gray-500'
+              }`}
+            >
+              {msg.sent_at ? dayjs(msg.sent_at).fromNow() : ''}
+              {msg.read_at && isMine && ' ✓'}
+            </small>
+          </div>
+        </div>
+      );
+
+
+        })
+      ) : (
+        <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
+          No messages yet. Say hi!
+        </p>
+      )
+    ) : (
+      <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
+        Select a conversation to start chatting.
+      </p>
+    )}
+    {/* Scroll helper div */}
+    <div ref={messagesBottomRef} />
+
+  </div>
+
+
+    {/* Input area */}
+    {selectedConversation && (
+    <div className="border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+      {/* Preview selected images */}
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-4 mb-4">
+          {files.map((file, idx) => {
+            const fileUrl = URL.createObjectURL(file);
+            return (
+              <div key={idx} className="flex flex-col items-center">
+                <Image
+                  src={fileUrl}
+                  alt={`selected-${idx}`}
+                  width={120}
+                  height={120}
+                  className="rounded border border-gray-300 dark:border-gray-600 object-cover"
+                />
+                {uploading && (
+                  <div className="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded">
+                    <div
+                      className="h-full bg-blue-500 rounded"
+                      style={{
+                        width: `${uploadProgress}%`,
+                      }}
+                    />
+                  </div>
                 )}
               </div>
-            )}
+            );
+          })}
+        </div>
+      )}
 
-            <div className="flex items-center mt-2">
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
-                className="hidden"
-                id="file-upload"
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer text-gray-500 mr-2 flex items-center hover:text-sky-500"
-                title="Attach files"
-              >
-                <Paperclip className="w-4 h-4" />
-              </label>
-
-              <input
-                className="flex-1 border border-gray-300 dark:border-gray-700 p-2 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  broadcastTyping();
-                }}
-                placeholder="Type your message..."
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-              />
-              <button
-                onClick={handleSend}
-                className="ml-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white rounded flex items-center gap-1 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                Send
-              </button>
-            </div>
-
-            {uploading && (
-              <div className="w-full mt-2 h-2 bg-gray-300 rounded overflow-hidden">
-                <div
-                  className="h-full bg-sky-600 transition-all"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Form */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSend();
+        }}
+        className="flex items-center space-x-2"
+      >
+        <label
+          htmlFor="file-upload"
+          className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          title="Attach files"
+        >
+          <Paperclip size={20} />
+        </label>
+        <input
+          id="file-upload"
+          type="file"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) {
+              setFiles(Array.from(e.target.files));
+            }
+          }}
+        />
+        <input
+          type="text"
+          placeholder="Type your message..."
+          className="flex-1 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={newMessage}
+          onChange={(e) => {
+            setNewMessage(e.target.value);
+            broadcastTyping();
+          }}
+        />
+        <button
+          type="submit"
+          disabled={uploading || (!newMessage.trim() && files.length === 0)}
+          className={`p-2 rounded-md ${
+            uploading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+          title="Send message"
+        >
+          {uploading ? 'Sending...' : <Send size={20} />}
+        </button>
+      </form>
     </div>
+  )}
+
+  </section>
+</div>
+
   );
 }
