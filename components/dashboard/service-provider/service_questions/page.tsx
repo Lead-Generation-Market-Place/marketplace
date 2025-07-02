@@ -64,7 +64,6 @@ export default function MultiChoiceServiceForm() {
         <h1 className="text-xl font-semibold text-gray-800">Service Request Form</h1>
         <p className="text-sm text-gray-500 mt-1">Please select all options that apply</p>
       </div>
-        {location}-{services}-{timezone}-{email}-{phone}-{location}-{businessName}
       <div className="space-y-5">
         {formData.map((field, index) => (
           <fieldset key={index} className="space-y-3">
