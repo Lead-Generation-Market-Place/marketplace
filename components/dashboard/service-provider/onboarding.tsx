@@ -11,18 +11,20 @@ export default function Onboarding() {
     email: '',
     phone: '',
     location: '',
+    services: '',  // <-- add services here
   });
 
   useEffect(() => {
     const email = searchParams.get('email') || '';
     const phone = searchParams.get('phone') || '';
     const location = searchParams.get('location') || '';
-
+    const services = searchParams.get('services') || ''; // <-- get services
 
     setQueryData({
       email,
       phone,
       location,
+      services, // <-- set services
     });
   }, [searchParams]);
 
@@ -31,6 +33,7 @@ export default function Onboarding() {
       email: queryData.email,
       phone: queryData.phone,
       location: queryData.location,
+      services: queryData.services, // <-- pass services forward
     });
 
     router.push(`/professional/businessName?${query.toString()}`);

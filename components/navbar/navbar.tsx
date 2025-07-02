@@ -71,7 +71,7 @@ const Navbar = async () => {
               {/* User actions here */}
               {user && (
                 <span>
-                  <ProDropdown   />
+                  <ProDropdown />
                 </span>
 
               )}

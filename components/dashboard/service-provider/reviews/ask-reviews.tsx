@@ -16,6 +16,9 @@ export default function ReviewRequest() {
   const location = searchParams.get('location') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
+  const services = searchParams.get('services') || '';
+
+
 
   const [emails, setEmails] = useState(['']);
   const [isPending, startTransition] = useTransition();
@@ -89,11 +92,17 @@ export default function ReviewRequest() {
   };
 
   const handleNext = () => {
+    const parsedServices = services
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n))
     const params = new URLSearchParams();
     if (businessName) params.set('businessName', businessName);
     if (location) params.set('location', location);
     if (email) params.set('email', email);
     if (phone) params.set('phone', phone);
+    if (parsedServices.length > 0) params.set('services', parsedServices.join(',')) // ✅ Pass as CSV
+
     startTransition(() => {
       router.push(`/professional/preference-intro?${params.toString()}`);
     });
@@ -235,15 +244,8 @@ export default function ReviewRequest() {
         >
           Back
         </button>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={handleNext}
-          className={`mt-6 w-full text-white py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}`}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span>Next</span>
-        </button>
+        <button type="button" disabled={isPending} onClick={handleNext} className={`mt-6 w-full text-white py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}`}>{isPending && <Loader2 className="h-4 w-4 animate-spin" />}<span className="whitespace-nowrap">Skip Now</span></button>
+
       </div>
     </div>
   );
