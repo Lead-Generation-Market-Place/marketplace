@@ -3,10 +3,11 @@ import MobileMenu from "./mobileMenu";
 import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
-import { ThemeToggleButton } from "../dashboard/Themes/ThemeToggleButton";
-import ProDropdown from "@/components/dashboard/header/UserDropdown"
+import { ThemeToggleButton } from "@/components/dashboard/Themes/ThemeToggleButton";
+import ProDropdown from "@/components/dashboard/header/UserDropdown";
+import { defaultNavItems, serviceProviderNavItems} from "@/app/(dashboard)/data/NavItems";
 
-import NavItems from "./navItems";
+import Tabs from "./Tabs";
 
 const dropdownData = {
   Explore: ["Overview", "Pricing", "Features"],
@@ -15,11 +16,35 @@ const dropdownData = {
   Resources: ["Blog", "Help Center", "Contact"],
 };
 
+
 const Navbar = async () => {
+  
+  
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+const userId = user?.id;
+
+let isServiceProvider = false;
+
+if (userId) {
+  const { data, error } = await supabase
+    .from("service_providers")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (data && !error) {
+    isServiceProvider = true;
+  }
+}
+
+const navItems = isServiceProvider
+  ? serviceProviderNavItems
+  : defaultNavItems;
+
   return (
     <header className="w-full bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 border-b border-gray-200 dark:border-gray-800 font-sans z-50 relative transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -42,7 +67,11 @@ const Navbar = async () => {
           </nav>
         ) : (
           <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
-            <NavItems />
+            <Tabs navLinks={navItems.map(item => ({
+              href: item.path || "#", // fallback for undefined path
+              label: item.name
+            }))} />
+
           </nav>
         )}
 

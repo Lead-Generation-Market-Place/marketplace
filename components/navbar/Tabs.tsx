@@ -2,19 +2,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navLinks = [
-  { href: "/home", label: "Sign Up as Pro" },
-  { href: "/team", label: "My Pro Team" },
-  { href: "/plan", label: "Plan" },
-  { href: "/inbox", label: "Message" },
-];
 
-const NavItems = () => {
+type NavLink = { href: string; label: string };
+
+interface TabsProps {
+  navLinks: NavLink[];
+}
+
+const Tabs = ({ navLinks }: TabsProps) => {
   const pathname = usePathname();
 
   return (
     <>
-      {navLinks.map(({ href, label }) => {
+      {navLinks.map(({ href, label }: NavLink) => {
         // Normalize trailing slash for comparison
         const isActive =
           pathname.replace(/\/$/, "") === href.replace(/\/$/, "");
@@ -34,4 +34,4 @@ const NavItems = () => {
   );
 };
 
-export default NavItems;
+export default Tabs;
