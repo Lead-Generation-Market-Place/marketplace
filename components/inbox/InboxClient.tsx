@@ -395,14 +395,45 @@ export default function InboxClient({ userId }: { userId: string }) {
 
 
     {/* Input area */}
-    {/* Input area */}
     {selectedConversation && (
+    <div className="border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+      {/* Preview selected images */}
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-4 mb-4">
+          {files.map((file, idx) => {
+            const fileUrl = URL.createObjectURL(file);
+            return (
+              <div key={idx} className="flex flex-col items-center">
+                <Image
+                  src={fileUrl}
+                  alt={`selected-${idx}`}
+                  width={120}
+                  height={120}
+                  className="rounded border border-gray-300 dark:border-gray-600 object-cover"
+                />
+                {uploading && (
+                  <div className="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded">
+                    <div
+                      className="h-full bg-blue-500 rounded"
+                      style={{
+                        width: `${uploadProgress}%`,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSend();
         }}
-        className="border-t border-gray-300 dark:border-gray-700 p-4 flex items-center space-x-2 bg-white dark:bg-gray-900"
+        className="flex items-center space-x-2"
       >
         <label
           htmlFor="file-upload"
@@ -445,17 +476,9 @@ export default function InboxClient({ userId }: { userId: string }) {
           {uploading ? 'Sending...' : <Send size={20} />}
         </button>
       </form>
-    )}
+    </div>
+  )}
 
-    {/* Upload progress bar */}
-    {uploading && (
-      <div className="h-1 bg-blue-300 dark:bg-blue-600">
-        <div
-          className="h-full bg-blue-600 dark:bg-blue-400 transition-all duration-300"
-          style={{ width: `${uploadProgress}%` }}
-        />
-      </div>
-    )}
   </section>
 </div>
 
