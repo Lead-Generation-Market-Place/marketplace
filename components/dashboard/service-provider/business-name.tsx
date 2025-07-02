@@ -12,6 +12,9 @@ const BusinessName = () => {
   const location = searchParams.get('location') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
+  const services = searchParams.get('services') || '';
+
+
 
   const HandleBusiness = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,9 +22,15 @@ const BusinessName = () => {
     const businessName = formData.get('businessName') as string;
 
     // const URLSearch Params //
+    const parsedServices = services
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n))
     const params = new URLSearchParams();
     if (businessName) params.set('businessName', businessName)
     if (location) params.set('location', location)
+    if (parsedServices.length > 0) params.set('services', parsedServices.join(',')) // ✅ Pass as CSV
+
     if (email) params.set('email', email)
     if (phone) params.set('phone', phone)
     startTransition(() => {

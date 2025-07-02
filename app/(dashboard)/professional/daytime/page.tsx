@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { Suspense, FC } from "react";
-import { saveAvailability } from "./action";
-import { useSearchParams } from "next/navigation";
+import React, { Suspense, FC } from 'react';
+import { saveAvailability } from './action';
+import { useSearchParams } from 'next/navigation';
 
-const Daytime = React.lazy(() => import("@/components/dashboard/service-provider/daytime"));
+const Daytime = React.lazy(() => import('@/components/dashboard/service-provider/daytime'));
 
 const SkeletonLoader: FC = () => (
   <div role="status" aria-live="polite" className="w-full max-w-4xl mx-auto p-6">
@@ -21,11 +21,17 @@ const SkeletonLoader: FC = () => (
 
 const DaytimePage: FC = () => {
   const searchParams = useSearchParams();
-  const businessName = searchParams.get("businessName") || "";
-  const location = searchParams.get("location") || "";
-  const email = searchParams.get("email") || "";
-  const phone = searchParams.get("phone") || "";
 
+  const businessName = searchParams.get('businessName') || '';
+  const location = searchParams.get('location') || '';
+  const email = searchParams.get('email') || '';
+  const phone = searchParams.get('phone') || '';
+  const rawServices = searchParams.get('services') || '';
+
+  const services = rawServices
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter((n) => !isNaN(n));
 
   return (
     <main className="dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -36,6 +42,7 @@ const DaytimePage: FC = () => {
           location={location}
           email={email}
           phone={phone}
+          services={services}
         />
       </Suspense>
     </main>

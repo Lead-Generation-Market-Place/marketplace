@@ -2,22 +2,35 @@
 
 import React, { useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client'; // Adjust path to your Supabase client
+import { createClient } from '@/utils/supabase/client'; // Adjust path as needed
 import { Loader2 } from 'lucide-react';
 
 export default function VerifyPage() {
-    const [isPending, startTransition] = useTransition()
-  
+  const [isPending, startTransition] = useTransition();
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get the JSON string for services from query and parse it
+  // Read and parse location and services from query params
   const location = searchParams.get('location') || '';
+
+  // Parse services string like "1,3,5" into number array [1,3,5]
+  const servicesParam = searchParams.get('services') || '';
+  const [services, setServices] = useState<number[]>([]);
 
   const [enableTextMessages, setEnableTextMessages] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
 
-
+  useEffect(() => {
+    // Parse services query param once on mount or when it changes
+    const parsedServices = servicesParam
+      ? servicesParam
+          .split(',')
+          .map((id) => Number(id))
+          .filter((id) => !isNaN(id))
+      : [];
+    setServices(parsedServices);
+  }, [servicesParam]);
 
   useEffect(() => {
     const fetchUserEmail = async () => {
@@ -26,43 +39,37 @@ export default function VerifyPage() {
       if (data?.user) {
         setEmail(data.user.email || '');
       } else {
-        console.error("Error fetching user:", error);
+        console.error('Error fetching user:', error);
       }
     };
     fetchUserEmail();
   }, []);
 
-const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  const formData = new FormData(event.currentTarget);
-  const phone = formData.get('phone') as string;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const phone = formData.get('phone') as string;
 
-  // Construct params
-  const params = new URLSearchParams();
+    // Construct params for next page, including services as a CSV string
+    const params = new URLSearchParams();
 
-  if (email) params.set('email', email);
-  if (phone) params.set('phone', phone);
-  if (location) params.set('location', location);
+    if (email) params.set('email', email);
+    if (phone) params.set('phone', phone);
+    if (location) params.set('location', location);
 
-  // Navigate to new route with query string using startTransition
-  startTransition(() => {
-    router.push(`/professional/onboarding?${params.toString()}`);
-  });
-};
+    // Pass services as comma-separated string back in query params
+    if (services.length > 0) {
+      params.set('services', services.join(','));
+    }
 
+    startTransition(() => {
+      router.push(`/professional/onboarding?${params.toString()}`);
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-2">
-      <div className="text-center space-y-2 ">
-        <h1 className="text-2xl text-[#0077B6] tracking-tight">
-          New customers are waiting.
-        </h1>
-        <p className="text-sm text-gray-600 max-w-md mx-auto">
-          There were{' '}
-          <span className="font-semibold">1,353</span>{' '}
-          jobs on Us Connecter last month in your area.
-        </p>
-      </div>
+      {/* ... your existing JSX for inputs ... */}
 
       {/* Email Input (Disabled) */}
       <div className="max-w-lg mx-auto">
@@ -74,6 +81,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         </label>
         <div className="flex">
           <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-[4px] dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+            {/* Email Icon SVG */}
             <svg
               className="w-4 h-4 text-gray-500 dark:text-gray-400"
               aria-hidden="true"
@@ -107,6 +115,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         </label>
         <div className="flex">
           <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-[4px] dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+            {/* Phone Icon SVG */}
             <svg
               className="w-4 h-4 text-gray-500 dark:text-gray-400"
               aria-hidden="true"
@@ -144,15 +153,24 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         <label htmlFor="enableTexts" className="cursor-pointer">
           Enable text messages. By checking this box, you authorize U.S Connector to send you automated
           text messages. Opt out anytime.
-          <a href="#" className="text-[#0077B6] underline ml-1">Terms apply</a>.
+          <a href="#" className="text-[#0077B6] underline ml-1">
+            Terms apply
+          </a>
+          .
         </label>
       </div>
 
       {/* Disclaimer */}
       <p className="text-xs text-gray-500 text-center mb-6 max-w-sm mx-auto">
         By clicking Continue, you agree to the{' '}
-        <a href="#" className="text-[#0077B6] underline">Terms of Use</a> and{' '}
-        <a href="#" className="text-[#0077B6] underline">Privacy Policy</a>.
+        <a href="#" className="text-[#0077B6] underline">
+          Terms of Use
+        </a>{' '}
+        and{' '}
+        <a href="#" className="text-[#0077B6] underline">
+          Privacy Policy
+        </a>
+        .
       </p>
 
       {/* Bottom Navigation */}

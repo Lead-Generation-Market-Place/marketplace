@@ -50,13 +50,22 @@ export default function WorkControlCard() {
   const location = searchParams.get('location') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
+  const services = searchParams.get('services') || '';
+
 
 
   // Build query string for Next/Back
+  // const URLSearch Params //
+  const parsedServices = services
+    .split(',')
+    .map((s) => Number(s.trim()))
+    .filter((n) => !isNaN(n))
+
   const buildParams = () => {
     const params = new URLSearchParams();
     if (businessName) params.set('businessName', businessName);
     if (location) params.set('location', location);
+    if (parsedServices.length > 0) params.set('services', parsedServices.join(',')) // ✅ Pass as CSV
     if (email) params.set('email', email);
     if (phone) params.set('phone', phone);
     return params.toString();
@@ -120,14 +129,14 @@ export default function WorkControlCard() {
       {/* Bottom Navigation */}
       <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
         <button
-        onClick={handleBack}
+          onClick={handleBack}
           type="button"
           className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px] "
         >
           Back
         </button>
         <button
-        onClick={handleNext}
+          onClick={handleNext}
           type="submit"
           disabled={isPending}
           className={`
