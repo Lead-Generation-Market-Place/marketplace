@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getConversations, getMessages, sendMessage } from '@/actions/message/conversation';
 import { createClient } from '@/utils/supabase/client';
 import { Inbox, Send, Paperclip } from 'lucide-react';
@@ -37,7 +37,9 @@ export default function InboxClient({ userId }: { userId: string }) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [typing, setTyping] = useState(false);
   const supabase = createClient();
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +50,7 @@ export default function InboxClient({ userId }: { userId: string }) {
 
   useEffect(() => {
     if (!selectedConversation) return;
+
     (async () => {
       const data = await getMessages(selectedConversation.id);
       setMessages(data);
@@ -60,6 +63,99 @@ export default function InboxClient({ userId }: { userId: string }) {
         .is('read_at', null);
     })();
   }, [selectedConversation]);
+
+  // ✅ Realtime - new message
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    const channel = supabase
+      .channel(`conversation-${selectedConversation.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation.id}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as Message;
+          if (newMessage.sender_id !== userId) {
+            setMessages((prev) => [...prev, newMessage]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedConversation?.id, userId]);
+
+  // ✅ Realtime - read_at update
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    const readChannel = supabase
+      .channel(`read-${selectedConversation.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation.id}`,
+        },
+        (payload) => {
+          const updatedMsg = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === updatedMsg.id ? updatedMsg : msg))
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(readChannel);
+    };
+  }, [selectedConversation?.id]);
+
+  // ✅ Typing indicator
+  useEffect(() => {
+    if (!selectedConversation) return;
+
+    const typingChannel = supabase.channel(`typing-${selectedConversation.id}`)
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload.sender_id !== userId) setTyping(true);
+      })
+      .on('broadcast', { event: 'stop_typing' }, ({ payload }) => {
+        if (payload.sender_id !== userId) setTyping(false);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(typingChannel);
+    };
+  }, [selectedConversation?.id, userId]);
+
+  const broadcastTyping = () => {
+    const typingChannel = supabase.channel(`typing-${selectedConversation?.id}`);
+    typingChannel.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { sender_id: userId },
+    });
+
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+
+    typingTimeout.current = setTimeout(() => {
+      typingChannel.send({
+        type: 'broadcast',
+        event: 'stop_typing',
+        payload: { sender_id: userId },
+      });
+    }, 2000);
+  };
 
   const handleSend = async () => {
     if (!selectedConversation || (!newMessage.trim() && files.length === 0)) return;
@@ -113,17 +209,20 @@ export default function InboxClient({ userId }: { userId: string }) {
     setUploadProgress(0);
     setFiles([]);
 
+    const messagesToAdd: Message[] = [];
+
     if (uploadedUrls.length === 0) {
-      await sendMessage(selectedConversation.id, userId, newMessage);
+      const sent = await sendMessage(selectedConversation.id, userId, newMessage);
+      if (sent) messagesToAdd.push(sent);
     } else {
       for (const url of uploadedUrls) {
-        await sendMessage(selectedConversation.id, userId, newMessage, url);
-        setNewMessage('');
+        const sent = await sendMessage(selectedConversation.id, userId, newMessage, url);
+        if (sent) messagesToAdd.push(sent);
       }
     }
+
     setNewMessage('');
-    const updatedMessages = await getMessages(selectedConversation.id);
-    setMessages(updatedMessages);
+    setMessages((prev) => [...prev, ...messagesToAdd]);
   };
 
   return (
@@ -218,6 +317,10 @@ export default function InboxClient({ userId }: { userId: string }) {
               </div>
             </div>
           ))}
+
+          {typing && (
+            <div className="text-xs text-gray-500 italic mt-2">The other user is typing...</div>
+          )}
         </div>
 
         {/* Input bar */}
@@ -268,7 +371,10 @@ export default function InboxClient({ userId }: { userId: string }) {
               <input
                 className="flex-1 border border-gray-300 dark:border-gray-700 p-2 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  broadcastTyping();
+                }}
                 placeholder="Type your message..."
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {

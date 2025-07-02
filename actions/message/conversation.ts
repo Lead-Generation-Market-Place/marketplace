@@ -61,6 +61,7 @@ export async function getMessages(conversationId: string) {
   return messages || [];
 }
 
+
 export async function sendMessage(
   conversationId: string,
   senderId: string,
@@ -68,17 +69,25 @@ export async function sendMessage(
   fileUrl?: string
 ) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from('messages').insert([
-    {
-      conversation_id: conversationId,
-      sender_id: senderId,
-      message,
-      file_url: fileUrl || null,
-      read_at: null,
-    },
-  ]);
 
-  if (error) throw error;
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([
+      {
+        conversation_id: conversationId,
+        sender_id: senderId,
+        message,
+        file_url: fileUrl || null,
+      },
+    ])
+    .select()
+    .single(); // This returns the inserted row
+
+  if (error) {
+    console.error('Error sending message:', error.message);
+    return null;
+  }
+
   return data;
 }
 
