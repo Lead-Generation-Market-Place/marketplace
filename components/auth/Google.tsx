@@ -1,6 +1,6 @@
 "use client";
 
-import {  signInWithGoogle } from "@/actions/auth/auth";
+import { signInWithGoogle } from "@/actions/auth/auth";
 import React, { useTransition } from "react";
 
 const LoginGithub = () => {
@@ -11,16 +11,17 @@ const LoginGithub = () => {
       await signInWithGoogle();
     });
   };
+
   return (
-    <div className=" my-2 mx-2">
+    <div className="my-2 mx-2">
       <div
         onClick={LoginAction}
-        className="w-full rounded-[4px] px-12 py-2.5 text-sm font-medium flex items-center justify-center  bg-white text-[#0077B6]   cursor-pointer transition-colors hover:bg-[#0096C7] hover:text-white"
+        className="w-full rounded-[4px] px-12 py-2.5 text-sm font-medium flex items-center justify-center text-[#0077B6] cursor-pointer transition-colors hover:bg-[#0096C7] hover:text-white dark:text-white dark:hover:bg-[#0077B6]"
         style={{ minHeight: 40 }}
       >
         <div className="flex items-center justify-center">
           <svg
-            className="mr-2 w-5 h-5 group-hover:text-white transition-colors"
+            className="mr-2 w-5 h-5 transition-colors"
             viewBox="0 0 24 24"
           >
             <path
