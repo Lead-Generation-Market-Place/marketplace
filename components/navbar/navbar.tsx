@@ -66,7 +66,7 @@ const navItems = isServiceProvider
             ))}
           </nav>
         ) : (
-          <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+          <nav className="hidden md:flex items-center space-x-6 text-xs relative z-50">
             <Tabs navLinks={navItems.map(item => ({
               href: item.path || "#", // fallback for undefined path
               label: item.name
