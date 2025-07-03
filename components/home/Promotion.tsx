@@ -73,13 +73,13 @@ const Promotion = () => {
                   </div>
 
                   {/* Image */}
-                  <div className="flex items-center justify-center flex-shrink-0 p-3">
+                  <div className="flex items-center justify-center flex-shrink-0">
                     <Image
                       src={promo.img}
                       width={100}
-                      height={130}
+                      height={100}
                       alt="Professional"
-                      className="w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 object-cover rounded transition-all duration-300"
+                      className="w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 object-cover transition-all duration-300"
                     />
                   </div>
                 </div>
