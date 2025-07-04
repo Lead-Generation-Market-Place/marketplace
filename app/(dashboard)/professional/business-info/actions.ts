@@ -163,9 +163,9 @@ export async function businessInfo(formData: FormData) {
 
     // Step 4: Update user role in users_profiles
   const { error: updateRoleError } = await supabase
-    .from("service_providers")
-    .update({ roles: "professional" })
-    .eq("user_id", user.id)
+    .from("users_profiles")
+    .update({ roles: "Professional" })
+    .eq("id", user.id)
 
   if (updateRoleError) {
     return {
