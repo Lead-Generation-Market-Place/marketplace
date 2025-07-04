@@ -2,12 +2,7 @@
 
 import React, { lazy, Suspense } from 'react';
 
-// Define interfaces
-interface PromotionType {
-  id: string;
-  title: string;
-  imageUrl: string;
-}
+// Define interface
 
 interface ServiceType{
   id: number;
@@ -50,6 +45,20 @@ interface Review {
     username: string;
   };
 }
+interface PromotionType {
+  id: string;
+  description: string;
+  imageUrl: string;
+  categories: {
+    id: string;
+    name: string;
+  };
+}
+
+
+
+
+
 
 
 // Generic component type that accepts data prop

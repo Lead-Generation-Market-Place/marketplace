@@ -19,6 +19,8 @@ export default function UserDropdown() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const pathname = usePathname();
   const isDashboard = pathname === "/";
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -40,6 +42,7 @@ export default function UserDropdown() {
   const toggleDropdown = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen((prev) => !prev);
+    setDropdownOpen((prev) => !prev);
   };
 
   const closeDropdown = () => {
@@ -50,24 +53,33 @@ export default function UserDropdown() {
     <div className="relative">
 
       {profile ? (
-        <button
-          onClick={toggleDropdown}
-          className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
-        >
-          <span className="w-6 h-6 mr-1 flex items-center justify-center rounded-full bg-sky-200 text-sky-600 dark:bg-sky-900 dark:text-sky-200 font-semibold text-sm">
-          {profile.username
-            ?.split(' ')
-            .map((n) => n[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
-        </span>
-          <span className="block mr-1 font-medium text-theme-sm">
-            {profile.username}
-          </span>
-        </button>
+          <button
+            onClick={toggleDropdown}
+            className="group flex items-center rounded-full cursor-pointer overflow-hidden transition-all duration-300 hover:px-2 border border-sky-300 bg-sky-100"
+          >
+            {/* Profile initials - circular */}
+            <div className="flex items-center justify-center w-8 h-8 text-sky-600 font-bold bg-sky-300/50 rounded-full shrink-0">
+              {profile.username
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+
+            {/* Username - appears on hover OR when dropdown is open */}
+            <div
+              className={`font-semibold
+                overflow-hidden whitespace-nowrap text-sm transition-all duration-300 hover:ml-2
+                ${dropdownOpen ? "max-w-[200px]" : "max-w-0 group-hover:max-w-[200px]"}
+              `}
+            >
+              {profile.username}
+            </div>
+          </button>
       ) : (
-        <p>Loading user...</p>
+        <div className="flex items-center justify-center w-8 h-8  bg-gray-300/50 rounded-full shrink-0 animate-pulse">
+        </div>
       )}
 
       <Dropdown
@@ -85,7 +97,8 @@ export default function UserDropdown() {
             </span>
           </div>
         ) : (
-          <p>Loading user...</p>
+          <div className="flex items-center justify-center w-8 h-8  bg-gray-300/50 rounded-full shrink-0 animate-pulse">
+        </div>
         )}
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
