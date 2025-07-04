@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 
 export interface ServiceQuestion {
-  id: number;
+  form_id: number;
   service_id: number;
   step: number;
   form_type: string;
@@ -16,7 +16,7 @@ export async function GetServiceQuestionsById(serviceId: number): Promise<Servic
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from('service_request_forms')
+    .from('services_questions')
     .select('*')
     .eq('service_id', serviceId);
 

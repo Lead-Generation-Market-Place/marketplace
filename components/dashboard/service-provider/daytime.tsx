@@ -141,7 +141,6 @@ export default function AvailabilityForm({
           });
 
           if (services.length > 1) {
-            console.log(services.length )
             // Multiple services – go to service selection modal
             router.push(`/professional/primaryServiceModal?${params.toString()}`);
           } else {

@@ -26,7 +26,6 @@ export default function ReviewsSetup() {
     const fetchUserInfo = async () => {
       try {
         const res = await fetch("/api/reviews");
-        console.log(res)
         if (!res.ok) throw new Error("Failed to fetch reviews");
         const result: ReviewsResult = await res.json();
         setReviewsData(result);

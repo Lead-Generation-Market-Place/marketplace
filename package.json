@@ -46,7 +46,8 @@
     "sonner": "^2.0.5",
     "string-similarity": "^4.0.4",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.17"
+    "zod": "^3.25.17",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

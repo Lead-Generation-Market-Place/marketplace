@@ -16,7 +16,7 @@ const SkeletonLoader: FC = () => (
 const ParentComponent: FC = () => {
     return (
         <Suspense fallback={<SkeletonLoader />}>
-            < Service_Question />
+            <Service_Question />
         </Suspense>
     )
 }
