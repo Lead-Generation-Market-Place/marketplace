@@ -27,7 +27,7 @@ export default function PopularService({ data }: PopularServiceProps) {
   };
 
   return (
-    <div className="py-20 bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="py-15 bg-white dark:bg-gray-900 transition-colors duration-300">
       <div className="mx-2 sm:mx-4 md:mx-6 lg:mx-8 xl:mx-12 2xl:mx-16">
         <div className="flex justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-300">

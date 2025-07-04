@@ -4,7 +4,43 @@ import LazyHomeContent from './LazyHomeContent';
 export default async function Page() {
   const supabase = await createClient();
 
-  const { data: promotions } = await supabase.from("categories").select('*');
+  const { data: promotionsRaw } = await supabase
+  .from("promotion")
+  .select(`
+    id,
+    description,
+    image_url,
+    categories (
+      id,
+      name
+    )
+  `);
+
+  const promotions = (promotionsRaw || []).map((promo) => {
+    const { data: imageData } = supabase.storage
+      .from("promotionimage")
+      .getPublicUrl(promo.image_url || "");
+
+    const category = Array.isArray(promo.categories)
+      ? promo.categories[0]
+      : promo.categories;
+
+    return {
+      id: String(promo.id),
+      description: promo.description,
+      imageUrl: imageData?.publicUrl || "/images/default-promo.jpg",
+      categories: {
+        id: String(category?.id ?? ''),
+        name: String(category?.name ?? 'Uncategorized').trim(),
+      },
+    };
+  });
+
+
+
+
+
+
   const { data: popularServicesRaw } = await supabase.from('services').select('*');
   const { data: exploreRaw } = await supabase
   .from("sub_categories")
@@ -32,6 +68,10 @@ export default async function Page() {
       username
     )
   `);
+
+  
+
+
 
   const flattenedReviews = (reviews || []).map((review) => ({
     ...review,
