@@ -6,6 +6,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { SubmitAnswers } from "@/actions/answers/submit-answers";
+import { ProgressBar } from "@/components/ui/Progressbar";
 
 export interface ServiceQuestion {
   form_id: number;
@@ -17,12 +18,21 @@ export interface ServiceQuestion {
   form_group: string;
 }
 
+const ONBOARDING_STEPS = [
+  { id: 1, name: 'Services' },
+  { id: 2, name: 'Contact' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Reviews' },
+  { id: 5, name: 'Preferences' },
+];
+
+
 export default function MultiChoiceServiceForm() {
   const [questions, setQuestions] = useState<ServiceQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [isPending, setIsPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [currentStep] = useState(5);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -242,47 +252,57 @@ export default function MultiChoiceServiceForm() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 pb-20">
-      <div className="mb-4">
-        <p className="text-sm text-gray-600 mt-1">Please review and confirm your selections</p>
-      </div>
 
-      <div className="space-y-4">
-        {questions.map((question) => (
-          <div key={question.form_id} className="p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
-                {question.step}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-medium text-gray-800 mb-3">{question.question}</h3>
-                {renderField(question)}
+    <div>
+      <ProgressBar
+        currentStep={currentStep}
+        totalSteps={ONBOARDING_STEPS.length}
+        steps={ONBOARDING_STEPS}
+        className="mb-8"
+      />
+      <div className="max-w-4xl mx-auto p-4 pb-20">
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mt-1">Please review and confirm your selections</p>
+        </div>
+
+        <div className="space-y-4">
+          {questions.map((question) => (
+            <div key={question.form_id} className="p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mr-3 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-medium">
+                  {question.step}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-800 mb-3">{question.question}</h3>
+                  {renderField(question)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Form Actions */}
-      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px]">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white text-[13px] py-2 px-5 rounded-[4px] font-medium hover:bg-gray-400 dark:hover:bg-gray-600 transition"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={handleNext}
-          className={`text-white text-[13px] py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 ${isPending ? "bg-[#0077B6]/70 cursor-not-allowed" : "bg-[#0077B6] hover:bg-[#005f8e]"
-            }`}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span>Next</span>
-        </button>
+        {/* Form Actions */}
+        <div className="fixed bottom-6 right-6 flex gap-4 text-[13px]">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white text-[13px] py-2 px-5 rounded-[4px] font-medium hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleNext}
+            className={`text-white text-[13px] py-2 px-6 rounded-[4px] transition duration-300 flex items-center justify-center gap-2 ${isPending ? "bg-[#0077B6]/70 cursor-not-allowed" : "bg-[#0077B6] hover:bg-[#005f8e]"
+              }`}
+          >
+            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span>Next</span>
+          </button>
+        </div>
       </div>
     </div>
+
   );
 }

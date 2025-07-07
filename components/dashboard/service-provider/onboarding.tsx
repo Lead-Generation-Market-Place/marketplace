@@ -1,7 +1,15 @@
 'use client'; // REQUIRED at top for client-side code
 
+import { ProgressBar } from "@/components/ui/Progressbar";
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+const ONBOARDING_STEPS = [
+  { id: 1, name: 'Services' },
+  { id: 2, name: 'Contact' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Reviews' },
+  { id: 5, name: 'Preferences' },
+];
 
 export default function Onboarding() {
   const router = useRouter();
@@ -13,6 +21,7 @@ export default function Onboarding() {
     location: '',
     services: '',  // <-- add services here
   });
+  const [currentStep] = useState(2);
 
   useEffect(() => {
     const email = searchParams.get('email') || '';
@@ -41,6 +50,12 @@ export default function Onboarding() {
 
   return (
     <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col justify-between ">
+      <ProgressBar
+        currentStep={currentStep}
+        totalSteps={ONBOARDING_STEPS.length}
+        steps={ONBOARDING_STEPS}
+        className="mb-8"
+      />
       <div className="max-w-xl mx-auto py-12 px-4">
         <div className="flex flex-col items-center text-center">
           {/* Step Indicator */}

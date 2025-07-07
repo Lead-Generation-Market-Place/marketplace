@@ -9,6 +9,15 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ProgressBar } from "@/components/ui/Progressbar";
+
+const ONBOARDING_STEPS = [
+  { id: 1, name: 'Services' },
+  { id: 2, name: 'Contact' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Reviews' },
+  { id: 5, name: 'Preferences' },
+];
 
 const formSchema = z.object({
   category: z.string().min(1, "Please select a category to continue."),
@@ -27,6 +36,8 @@ interface Service {
 }
 
 const SearchServices = () => {
+  const [currentStep] = useState(1);
+
   const [serviceHierarchy, setServiceHierarchy] = useState<Record<string, Record<string, Service[]>>>({});
   const [locations, setLocations] = useState<string[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -99,7 +110,6 @@ const SearchServices = () => {
       await insertServicesAction(formData);
       const query = new URLSearchParams();
       query.append("services", data.services.join(","));
-      console.log(formData)
       query.append("location", data.location);
       router.push(`/professional/social?${query.toString()}`);
     } catch {
@@ -135,44 +145,28 @@ const SearchServices = () => {
   };
 
   return (
-    <div className="py-4 mx-auto p-6 bg-white dark:bg-gray-900 dark:border-gray-700 ">
-      <h2 className="text-xl font-semibold text-[#0077B6] dark:text-[#90e0ef] mb-2">Sign up as a Professional</h2>
-      <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Connect with top Customers in your area</p>
+    <div>
+      <ProgressBar
+        currentStep={currentStep}
+        totalSteps={ONBOARDING_STEPS.length}
+        steps={ONBOARDING_STEPS}
+        className="mb-8"
+      />
+      <div className="py-4 mx-auto p-6 bg-white dark:bg-gray-900 dark:border-gray-700 ">
+        <h2 className="text-xl font-semibold text-[#0077B6] dark:text-[#90e0ef] mb-2">Sign up as a Professional</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Connect with top Customers in your area</p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4">
-          {/* Category Selector */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-            <select
-              {...register("category")}
-              onChange={(e) => {
-                setValue("category", e.target.value);
-                trigger("category");
-                setValue("subCategory", "");
-                trigger("subCategory");
-                setValue("services", []);
-                trigger("services");
-              }}
-              className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded focus:ring-1 focus:ring-[#0077B6] focus:border-[#0077B6]"
-              disabled={loading}
-            >
-              <option value="">Select category</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-            {isSubmitted && errors.category && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.category.message}</p>}
-          </div>
-
-          {/* Subcategory Selector */}
-          {subCategories.length > 0 && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            {/* Category Selector */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
               <select
-                {...register("subCategory")}
+                {...register("category")}
                 onChange={(e) => {
-                  setValue("subCategory", e.target.value);
+                  setValue("category", e.target.value);
+                  trigger("category");
+                  setValue("subCategory", "");
                   trigger("subCategory");
                   setValue("services", []);
                   trigger("services");
@@ -180,102 +174,127 @@ const SearchServices = () => {
                 className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded focus:ring-1 focus:ring-[#0077B6] focus:border-[#0077B6]"
                 disabled={loading}
               >
-                <option value="">Select subcategory</option>
-                {subCategories.map(subCategory => (
-                  <option key={subCategory} value={subCategory}>{subCategory}</option>
+                <option value="">Select category</option>
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-              {isSubmitted && errors.subCategory && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.subCategory.message}</p>}
+              {isSubmitted && errors.category && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.category.message}</p>}
             </div>
-          )}
 
-          {/* Services Multi-select */}
-          {services.length > 0 && (
-            <div className="relative" ref={dropdownRef}>
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Services</label>
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className={`w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded text-left flex justify-between items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            {/* Subcategory Selector */}
+            {subCategories.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory</label>
+                <select
+                  {...register("subCategory")}
+                  onChange={(e) => {
+                    setValue("subCategory", e.target.value);
+                    trigger("subCategory");
+                    setValue("services", []);
+                    trigger("services");
+                  }}
+                  className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded focus:ring-1 focus:ring-[#0077B6] focus:border-[#0077B6]"
+                  disabled={loading}
+                >
+                  <option value="">Select subcategory</option>
+                  {subCategories.map(subCategory => (
+                    <option key={subCategory} value={subCategory}>{subCategory}</option>
+                  ))}
+                </select>
+                {isSubmitted && errors.subCategory && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.subCategory.message}</p>}
+              </div>
+            )}
+
+            {/* Services Multi-select */}
+            {services.length > 0 && (
+              <div className="relative" ref={dropdownRef}>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Services</label>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className={`w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded text-left flex justify-between items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading}
+                >
+                  <span className="truncate">{displayServicesText()}</span>
+                  <svg className={`w-4 h-4 text-[#0077B6] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg max-h-60 overflow-auto" onMouseLeave={() => setDropdownOpen(false)}>
+                    {selected.services.length > 0 && (
+                      <div onClick={() => { setValue("services", []); trigger("services"); }} className="p-2 text-xs cursor-pointer text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Clear all
+                      </div>
+                    )}
+                    {services.map(service => (
+                      <div key={service.id} onClick={() => toggleService(service.id)} className={`p-2 text-xs cursor-pointer flex items-center ${selected.services.includes(service.id) ? 'bg-[#0077B6]/10 text-[#0077B6] font-medium dark:bg-[#0077B6]/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                        <span className="flex-grow">{service.name}</span>
+                        {selected.services.includes(service.id) && (
+                          <svg className="w-3 h-3 text-[#0077B6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {isSubmitted && errors.services && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.services.message}</p>}
+              </div>
+            )}
+
+            {/* Location Selector */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
+              <select
+                {...register("location")}
+                onChange={(e) => {
+                  setValue("location", e.target.value);
+                  trigger("location");
+                }}
+                className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded focus:ring-1 focus:ring-[#0077B6] focus:border-[#0077B6]"
                 disabled={loading}
               >
-                <span className="truncate">{displayServicesText()}</span>
-                <svg className={`w-4 h-4 text-[#0077B6] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {dropdownOpen && (
-                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg max-h-60 overflow-auto" onMouseLeave={() => setDropdownOpen(false)}>
-                  {selected.services.length > 0 && (
-                    <div onClick={() => { setValue("services", []); trigger("services"); }} className="p-2 text-xs cursor-pointer text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex items-center">
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Clear all
-                    </div>
-                  )}
-                  {services.map(service => (
-                    <div key={service.id} onClick={() => toggleService(service.id)} className={`p-2 text-xs cursor-pointer flex items-center ${selected.services.includes(service.id) ? 'bg-[#0077B6]/10 text-[#0077B6] font-medium dark:bg-[#0077B6]/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                      <span className="flex-grow">{service.name}</span>
-                      {selected.services.includes(service.id) && (
-                        <svg className="w-3 h-3 text-[#0077B6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {isSubmitted && errors.services && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.services.message}</p>}
+                <option value="">Select location</option>
+                {locations.map(location => (
+                  <option key={location} value={location}>{location}</option>
+                ))}
+              </select>
+              {isSubmitted && errors.location && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.location.message}</p>}
             </div>
-          )}
-
-          {/* Location Selector */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
-            <select
-              {...register("location")}
-              onChange={(e) => {
-                setValue("location", e.target.value);
-                trigger("location");
-              }}
-              className="w-full text-xs p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded focus:ring-1 focus:ring-[#0077B6] focus:border-[#0077B6]"
-              disabled={loading}
-            >
-              <option value="">Select location</option>
-              {locations.map(location => (
-                <option key={location} value={location}>{location}</option>
-              ))}
-            </select>
-            {isSubmitted && errors.location && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{errors.location.message}</p>}
           </div>
-        </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-2 px-4 text-xs font-medium rounded transition-colors ${loading ? 'bg-[#0077B6]/70 dark:bg-[#0077B6]/50 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e] text-white'}`}
-        >
-          {loading ? (
-            <span className="flex items-center justify-center text-white">
-              <Loader2 className="animate-spin mr-2 h-3 w-3 text-white" />
-              Finding...
-            </span>
-          ) : 'Sign up as a Pro'}
-        </button>
-      </form>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 px-4 text-xs font-medium rounded transition-colors ${loading ? 'bg-[#0077B6]/70 dark:bg-[#0077B6]/50 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e] text-white'}`}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center text-white">
+                <Loader2 className="animate-spin mr-2 h-3 w-3 text-white" />
+                Finding...
+              </span>
+            ) : 'Sign up as a Pro'}
+          </button>
+        </form>
 
-      {/* Support Info */}
-      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="text-xs text-gray-600 dark:text-gray-300">
-          <p className="font-medium text-[#0077B6] dark:text-[#90e0ef]">Need assistance?</p>
-          <p className="mt-1">Call us at: <a href="tel:+12028304424" className="text-[#0077B6] hover:underline">+1 (202) 830-4424</a></p>
-          <p className="mt-1">Email: <a href="mailto:support@yelpax.com" className="text-[#0077B6] hover:underline">support@yelpax.com</a></p>
+        {/* Support Info */}
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            <p className="font-medium text-[#0077B6] dark:text-[#90e0ef]">Need assistance?</p>
+            <p className="mt-1">Call us at: <a href="tel:+12028304424" className="text-[#0077B6] hover:underline">+1 (202) 830-4424</a></p>
+            <p className="mt-1">Email: <a href="mailto:support@yelpax.com" className="text-[#0077B6] hover:underline">support@yelpax.com</a></p>
+          </div>
         </div>
       </div>
     </div>
+
   );
 };
 

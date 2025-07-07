@@ -90,28 +90,59 @@ export async function businessInfo(formData: FormData) {
     }
   }
 
-  // Step 1: Insert into service_providers
-  const { data: insertedProvider, error: insertProviderError } = await supabase
+  // Step 1: Upsert into service_providers (update if exists, insert if not)
+  const { data: existingProvider } = await supabase
     .from("service_providers")
-    .insert({
-      provider_id: crypto.randomUUID(),
-      user_id: user.id,
-      business_name: businessName,
-      founded_year: Number(founded),
-      employees_count: employees ? Number(employees) : null,
-      business_type: businessType,
-      introduction: about,
-      image_url: publicImageUrl,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .select()
-    .single()
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  let insertedProvider;
+  let insertProviderError;
+  if (existingProvider) {
+    // Update existing provider
+    const { data: updatedProvider, error: updateError } = await supabase
+      .from("service_providers")
+      .update({
+        business_name: businessName,
+        founded_year: Number(founded),
+        employees_count: employees ? Number(employees) : null,
+        business_type: businessType,
+        introduction: about,
+        image_url: publicImageUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id)
+      .select()
+      .single();
+    insertedProvider = updatedProvider;
+    insertProviderError = updateError;
+  } else {
+    // Insert new provider
+    const { data: newProvider, error: newInsertError } = await supabase
+      .from("service_providers")
+      .insert({
+        provider_id: crypto.randomUUID(),
+        user_id: user.id,
+        business_name: businessName,
+        founded_year: Number(founded),
+        employees_count: employees ? Number(employees) : null,
+        business_type: businessType,
+        introduction: about,
+        image_url: publicImageUrl,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    insertedProvider = newProvider;
+    insertProviderError = newInsertError;
+  }
 
   if (insertProviderError || !insertedProvider) {
     return {
       status: "error",
-      message: insertProviderError?.message ?? "Failed to insert service provider",
+      message: insertProviderError?.message ?? "Failed to upsert service provider",
       user: null,
     }
   }

@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProgressBar } from "@/components/ui/Progressbar";
 
 const defaultSchedule = [
   { dayOfWeek: 0, day: 'Sunday', shifts: [{ openTime: '00:00', closeTime: '00:00', isClosed: true }] },
@@ -32,7 +33,13 @@ export interface SaveAvailabilityResult {
   message: string;
   details?: string | null;
 }
-
+const ONBOARDING_STEPS = [
+  { id: 1, name: 'Services' },
+  { id: 2, name: 'Contact' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Reviews' },
+  { id: 5, name: 'Preferences' },
+];
 export default function AvailabilityForm({
   saveAvailability,
   businessName,
@@ -49,8 +56,11 @@ export default function AvailabilityForm({
   phone: string;
   services: number[];
 
+
 }) {
   const [selectedOption, setSelectedOption] = useState<'business' | 'string'>('business');
+  const [currentStep] = useState(5);
+
   const [schedule, setSchedule] = useState(defaultSchedule);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -175,142 +185,151 @@ export default function AvailabilityForm({
   };
 
   return (
-    <div className="flex items-center justify-center text-[13px] bg-white dark:bg-gray-900">
-      <div className="w-full max-w-4xl border border-gray-200 dark:border-gray-700 shadow-sm rounded-[7px] overflow-hidden">
-        <form ref={formRef} onSubmit={handleSubmit} className="p-8 md:p-10 bg-white dark:bg-gray-900">
-          <h2 className="text-2xl font-bold text-[#023E8A] dark:text-white mb-3">
-            Set your availability for <span className="italic">{businessName || 'your business'}</span>
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 text-[13px] mb-5">
-            Customers will only request jobs during the times you set.
-          </p>
+    <div>
+      <ProgressBar
+        currentStep={currentStep}
+        totalSteps={ONBOARDING_STEPS.length}
+        steps={ONBOARDING_STEPS}
+        className="mb-8"
+      />
+      <div className="flex items-center justify-center text-[13px] bg-white dark:bg-gray-900">
+        <div className="w-full max-w-4xl border border-gray-200 dark:border-gray-700 shadow-sm rounded-[7px] overflow-hidden">
+          <form ref={formRef} onSubmit={handleSubmit} className="p-8 md:p-10 bg-white dark:bg-gray-900">
+            <h2 className="text-2xl font-bold text-[#023E8A] dark:text-white mb-3">
+              Set your availability for <span className="italic">{businessName || 'your business'}</span>
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-[13px] mb-5">
+              Customers will only request jobs during the times you set.
+            </p>
 
-          <div className="space-y-4">
-            {/* Business Hours Option */}
-            <div
-              className={`border rounded-[4px] cursor-pointer p-4 ${selectedOption === 'business' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
-                }`}
-              onClick={() => setSelectedOption('business')}
-            >
-              <div className="flex items-center space-x-2 mb-4">
-                <input
-                  type="radio"
-                  checked={selectedOption === 'business'}
-                  readOnly
-                  className="accent-[#0077B6]"
-                />
-                <span className="font-medium text-gray-900 dark:text-gray-100">Set Business Availability</span>
-              </div>
-
-              {selectedOption === 'business' && (
-                <div className="space-y-3">
-                  {schedule.map((day, dayIndex) => (
-                    <div
-                      key={day.dayOfWeek}
-                      className="flex items-center gap-4 border-b py-2 last:border-none border-gray-200 dark:border-gray-700"
-                    >
-                      <label
-                        className="flex items-center text-gray-700 dark:text-gray-300 cursor-pointer min-w-[80px]"
-                        htmlFor={`closed-${day.dayOfWeek}`}
-                      >
-                        <input
-                          id={`closed-${day.dayOfWeek}`}
-                          type="checkbox"
-                          checked={day.shifts[0].isClosed === true}
-                          onChange={() => handleAvailabilityToggle(dayIndex, 0)}
-                          className="mr-2"
-                        />
-                        Closed
-                      </label>
-
-                      <span className="min-w-[80px] text-gray-900 dark:text-gray-100 font-medium">
-                        {day.day}
-                      </span>
-
-                      {!day.shifts[0].isClosed && (
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={day.shifts[0].openTime}
-                            onChange={(e) => handleTimeChange(dayIndex, 0, 'openTime', e.target.value)}
-                            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                          >
-                            {timeOptions.map((time) => (
-                              <option key={time} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                          </select>
-
-                          <span className="mx-1 text-gray-500 dark:text-gray-400">to</span>
-
-                          <select
-                            value={day.shifts[0].closeTime}
-                            onChange={(e) => handleTimeChange(dayIndex, 0, 'closeTime', e.target.value)}
-                            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                          >
-                            {timeOptions.map((time) => (
-                              <option key={time} value={time}>
-                                {time}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <div className="space-y-4">
+              {/* Business Hours Option */}
+              <div
+                className={`border rounded-[4px] cursor-pointer p-4 ${selectedOption === 'business' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
+                  }`}
+                onClick={() => setSelectedOption('business')}
+              >
+                <div className="flex items-center space-x-2 mb-4">
+                  <input
+                    type="radio"
+                    checked={selectedOption === 'business'}
+                    readOnly
+                    className="accent-[#0077B6]"
+                  />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Set Business Availability</span>
                 </div>
-              )}
-            </div>
 
-            {/* Available Any Time Option */}
-            <div
-              className={`border rounded-[4px] cursor-pointer p-4 ${selectedOption === 'string' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
-                }`}
-              onClick={() => setSelectedOption('string')}
-            >
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  checked={selectedOption === 'string'}
-                  readOnly
-                  className="accent-[#0077B6]"
-                />
-                <span className="font-medium text-gray-900 dark:text-gray-100">Available Any Time</span>
+                {selectedOption === 'business' && (
+                  <div className="space-y-3">
+                    {schedule.map((day, dayIndex) => (
+                      <div
+                        key={day.dayOfWeek}
+                        className="flex items-center gap-4 border-b py-2 last:border-none border-gray-200 dark:border-gray-700"
+                      >
+                        <label
+                          className="flex items-center text-gray-700 dark:text-gray-300 cursor-pointer min-w-[80px]"
+                          htmlFor={`closed-${day.dayOfWeek}`}
+                        >
+                          <input
+                            id={`closed-${day.dayOfWeek}`}
+                            type="checkbox"
+                            checked={day.shifts[0].isClosed === true}
+                            onChange={() => handleAvailabilityToggle(dayIndex, 0)}
+                            className="mr-2"
+                          />
+                          Closed
+                        </label>
+
+                        <span className="min-w-[80px] text-gray-900 dark:text-gray-100 font-medium">
+                          {day.day}
+                        </span>
+
+                        {!day.shifts[0].isClosed && (
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={day.shifts[0].openTime}
+                              onChange={(e) => handleTimeChange(dayIndex, 0, 'openTime', e.target.value)}
+                              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+                            >
+                              {timeOptions.map((time) => (
+                                <option key={time} value={time}>
+                                  {time}
+                                </option>
+                              ))}
+                            </select>
+
+                            <span className="mx-1 text-gray-500 dark:text-gray-400">to</span>
+
+                            <select
+                              value={day.shifts[0].closeTime}
+                              onChange={(e) => handleTimeChange(dayIndex, 0, 'closeTime', e.target.value)}
+                              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+                            >
+                              {timeOptions.map((time) => (
+                                <option key={time} value={time}>
+                                  {time}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {selectedOption === 'string' && (
-                <p className="mt-4 text-green-600 dark:text-green-400">
-                  You will be available 24 hours, every day.
-                </p>
-              )}
-            </div>
-          </div>
-        </form>
-      </div>
+              {/* Available Any Time Option */}
+              <div
+                className={`border rounded-[4px] cursor-pointer p-4 ${selectedOption === 'string' ? 'border-[#0077B6]' : 'border-gray-300 dark:border-gray-700'
+                  }`}
+                onClick={() => setSelectedOption('string')}
+              >
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    checked={selectedOption === 'string'}
+                    readOnly
+                    className="accent-[#0077B6]"
+                  />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Available Any Time</span>
+                </div>
 
-      {/* Navigation Buttons */}
-      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
-        <button
-          onClick={handleBack}
-          type="button"
-          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px] "
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => formRef.current?.requestSubmit()}
-          className={`
+                {selectedOption === 'string' && (
+                  <p className="mt-4 text-green-600 dark:text-green-400">
+                    You will be available 24 hours, every day.
+                  </p>
+                )}
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="fixed bottom-6 right-6 flex gap-4 text-[13px] ">
+          <button
+            onClick={handleBack}
+            type="button"
+            className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 w-full text-[13px] py-2 px-5 rounded-[4px] "
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => formRef.current?.requestSubmit()}
+            className={`
               mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
               transition duration-300 flex items-center justify-center gap-2
               ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
             `}
-        >
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span>Next</span>
-        </button>
+          >
+            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span>Next</span>
+          </button>
+        </div>
       </div>
     </div>
+
   );
 }
