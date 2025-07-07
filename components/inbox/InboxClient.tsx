@@ -8,6 +8,7 @@ import Image from 'next/image';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
+
 dayjs.extend(relativeTime);
 
 interface Conversation {
@@ -41,6 +42,10 @@ export default function InboxClient({ userId }: { userId: string }) {
   const supabase = createClient();
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const messagesBottomRef = useRef<HTMLDivElement>(null);
+
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+
 
 // Scroll to bottom when messages change
   useEffect(() => {
@@ -232,7 +237,7 @@ export default function InboxClient({ userId }: { userId: string }) {
   };
 
   return (
-   <div className="flex flex-col md:flex-row h-[80vh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden">
+   <div className="flex flex-col md:flex-row h-screen max-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden">
     {/* On small devices: horizontal scroll of user avatars */}
     <div className="md:hidden min-h-[60px] flex items-center space-x-4 overflow-x-auto px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
     {conversations.map((conv) => (
@@ -265,47 +270,66 @@ export default function InboxClient({ userId }: { userId: string }) {
       {conversations.map((conv) => (
         <li
           key={conv.id}
-          className={`cursor-pointer p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ${
+          className={`cursor-pointer p-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ${
             selectedConversation?.id === conv.id
               ? 'bg-gray-200 dark:bg-gray-700 font-semibold'
               : ''
           }`}
-          onClick={() => setSelectedConversation(conv)}
-        >
-          <div className="flex justify-between items-center">
+          onClick={() => setSelectedConversation(conv)}>
+          {/* <div className="flex justify-between items-center">
             <span className='font-semibold text-sm'>{conv.other_user_name}</span>
             <small className="text-xs text-gray-500 dark:text-gray-400">
               {dayjs(conv.created_at).fromNow()}
             </small>
+          </div> */}
+          <div className="flex flex-row items-start space-x-3">
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+            {conv.other_user_name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
           </div>
-          {conv.last_message && (() => {
-          const urlPattern = /(https?:\/\/[^\s]+)/g;
-          const fileExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'mp3', 'mov'];
-          const isFileUrl = (() => {
-            if (!conv.last_message) return false;
-            const match = conv.last_message.match(urlPattern);
-            if (!match) return false;
-            const url = match[0];
-            return fileExtensions.some(ext => url.toLowerCase().endsWith(`.${ext}`));
-          })();
 
-          if (isFileUrl) {
-            return (
-              <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
-                <Paperclip size={12} />
-                <span>Attachment</span>
-              </div>
-            );
-          }
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-sm truncate">{conv.other_user_name}</span>
+              <small className="text-xs text-gray-500 dark:text-gray-400">
+                {dayjs(conv.created_at).fromNow()}
+              </small>
+            </div>
 
-          return (
-            <p className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-full mt-1">
-              {conv.last_message.length > 50
-                ? conv.last_message.slice(0, 50) + '...'
-                : conv.last_message}
-            </p>
-          );
-        })()}
+            {/* Last message preview */}
+            {conv.last_message && (() => {
+              const urlPattern = /(https?:\/\/[^\s]+)/g;
+              const fileExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'mp3', 'mov'];
+              const match = conv.last_message.match(urlPattern);
+              const isFileUrl = match && fileExtensions.some(ext => match[0].toLowerCase().endsWith(`.${ext}`));
+
+              if (isFileUrl) {
+                return (
+                  <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <Paperclip size={12} />
+                    <span>Attachment</span>
+                  </div>
+                );
+              }
+
+              return (
+                <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">
+                  {conv.last_message.length > 50
+                    ? conv.last_message.slice(0, 50) + '...'
+                    : conv.last_message}
+                </p>
+              );
+            })()}
+          </div>
+        </div>
+
+          
 
         </li>
       ))}
@@ -313,90 +337,128 @@ export default function InboxClient({ userId }: { userId: string }) {
   </aside>
 
   {/* Main chat panel */}
-  <section className="flex flex-col flex-1">
+  <section className="flex flex-col flex-1 overflow-hidden">
     {/* Header */}
-    <header className="p-4 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between">
+     <header className="shrink-0 px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 z-10">
       {selectedConversation ? (
-        <>
-          <h2 className="text-lg font-semibold">{selectedConversation.other_user_name}</h2>
-          {typing && <span className="text-sm text-green-500 italic">Typing...</span>}
-        </>
+        <div className="w-full">
+          <div className="flex items-center space-x-3">
+            {/* Avatar */}
+            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+              {selectedConversation.other_user_name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+
+            {/* Name and Typing/Last Seen */}
+            <div className="flex flex-col">
+              <h2 className="text-md font-semibold leading-tight">
+                {selectedConversation.other_user_name}
+              </h2>
+              {typing === true ? (
+                <span className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
+                  Typing...
+                </span>
+              ) : (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Last message {dayjs(selectedConversation.created_at).fromNow()}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       ) : (
         <p className="text-gray-500 dark:text-gray-400">Select a conversation</p>
       )}
     </header>
+    {/* Messages area */}
+    <div className="flex-1 overflow-y-auto px-4 py-2 bg-gray-50 dark:bg-gray-800" style={{ scrollbarWidth: 'thin' }}>
+      {selectedConversation ? (
+        messages.length > 0 ? (
+          messages.map((msg) => {
+            const isMine = msg.sender_id === userId;
+          return (
+          <div
+            key={msg.id}
+            className={`flex ${isMine ? 'justify-end' : 'justify-start'} px-2`}
+          >
+            <div className="flex flex-col items-end max-w-[70%]">
+              <div
+                className={`break-words whitespace-pre-wrap ${
+                  msg.file_url && !msg.message
+                    ? ''
+                    : isMine
+                      ? 'rounded-full px-3 py-1 bg-sky-500 text-white dark:bg-sky-600'
+                      : 'rounded-full px-3 py-1 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                }`}
+              >
+                {msg.file_url && (
+                  <>
+                    <Image
+                      src={msg.file_url}
+                      alt="attachment"
+                      width={200}
+                      height={200}
+                      className="rounded mb-1 cursor-pointer"
+                      onClick={() => {
+                        setSelectedImageUrl(msg.file_url!);
+                        setShowImageModal(true);
+                      }}
+                    />
 
-    {/* Messages area */}
-    {/* Messages area */}
-    <div
-      className="flex-1 overflow-y-auto px-4 py-2 bg-gray-50 dark:bg-gray-800"
-      style={{ scrollbarWidth: 'thin' }}
-    >
-    {selectedConversation ? (
-      messages.length > 0 ? (
-        messages.map((msg) => {
-          const isMine = msg.sender_id === userId;
-        return (
-        <div
-          key={msg.id}
-          className={`flex ${isMine ? 'justify-end' : 'justify-start'} px-2`}
-        >
-          <div className="flex flex-col items-end max-w-[70%]">
-            <div
-              className={`break-words whitespace-pre-wrap ${
-                msg.file_url && !msg.message
-                  ? ''
-                  : isMine
-                    ? 'rounded-full px-3 py-1 bg-sky-500 text-white dark:bg-sky-600'
-                    : 'rounded-full px-3 py-1 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-              }`}
-            >
-              {msg.file_url && (
-                <Image
-                  src={msg.file_url}
-                  alt="attachment"
-                  width={200}
-                  height={200}
-                  className="rounded mb-1"
-                />
-              )}
-              {msg.message && <p>{msg.message}</p>}
+                    {showImageModal && selectedImageUrl && (
+                      <div className="fixed inset-0 bg-black bg-opacity-70 z-100 flex items-center justify-center" onClick={() => setShowImageModal(false)}>
+                        <img
+                          src={selectedImageUrl}
+                          alt="Full Image"
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {msg.message && <p>{msg.message}</p>}
+                
+              </div>
+
+              {/* Timestamp below message bubble */}
+              <small
+                className={`text-xs mb-2 ${
+                  isMine ? 'text-right text-gray-400' : 'text-left text-gray-500'
+                }`}
+              >
+                {msg.sent_at ? dayjs(msg.sent_at).fromNow() : ''}
+                {msg.read_at && isMine && ' ✓'}
+              </small>
             </div>
-
-            {/* Timestamp below message bubble */}
-            <small
-              className={`text-xs mb-2 ${
-                isMine ? 'text-right text-gray-400' : 'text-left text-gray-500'
-              }`}
-            >
-              {msg.sent_at ? dayjs(msg.sent_at).fromNow() : ''}
-              {msg.read_at && isMine && ' ✓'}
-            </small>
           </div>
-        </div>
-      );
+        );
 
 
-        })
+          })
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
+            No messages yet. Say hi!
+          </p>
+        )
       ) : (
         <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
-          No messages yet. Say hi!
+          Select a conversation to start chatting.
         </p>
-      )
-    ) : (
-      <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
-        Select a conversation to start chatting.
-      </p>
-    )}
-    {/* Scroll helper div */}
-    <div ref={messagesBottomRef} />
+      )}
+      {/* Scroll helper div */}
+      <div ref={messagesBottomRef} />
 
-  </div>
+    </div>
 
 
     {/* Input area */}
     {selectedConversation && (
-    <div className="border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+    <div className="shrink-0 border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 z-10">
       {/* Preview selected images */}
       {files.length > 0 && (
         <div className="flex flex-wrap gap-4 mb-4">

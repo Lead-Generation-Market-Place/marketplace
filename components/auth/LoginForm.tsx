@@ -26,7 +26,6 @@ const LoginForm = () => {
         return;
       }
 
-      // Only use provider and error from getUserAndProvider
       const { provider, error } = await getUserAndProvider();
 
       if (error) {
@@ -49,10 +48,10 @@ const LoginForm = () => {
   };
 
   return (
-    <div>
+    <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="flex min-h-full flex-col justify-center">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+          <h2 className="mt-10 text-center text-2xl font-bold tracking-tight">
             Sign in to your account
           </h2>
         </div>
@@ -60,23 +59,26 @@ const LoginForm = () => {
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm/6 font-medium text-gray-900">Email</label>
+              <label className="block text-sm font-medium">Email</label>
               <div className="mt-2">
                 <input
                   type="text"
                   name="email"
                   id="email"
                   required
-                  className="block w-full rounded-[4px] bg-white px-3 py-2.5 text-sm font-medium text-[#0077B6] border border-[#0077B6] focus:outline-none focus:ring-1 focus:ring-[#0077B6]"
+                  className="block w-full rounded bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-[#0077B6] dark:text-[#90E0EF] border border-[#0077B6] dark:border-[#90E0EF] focus:outline-none focus:ring-1 focus:ring-[#0077B6] dark:focus:ring-[#90E0EF]"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-sm/6 font-medium text-gray-900">Password</label>
+                <label className="block text-sm font-medium">Password</label>
                 <div className="text-sm">
-                  <Link href="/forgot-password" className="font-semibold text-[#0077B6] hover:text-[#0096C7]">
+                  <Link
+                    href="/forgot-password"
+                    className="font-semibold text-[#0077B6] hover:text-[#0096C7] dark:text-[#90E0EF] dark:hover:text-[#00B4D8]"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -87,7 +89,7 @@ const LoginForm = () => {
                   name="password"
                   id="password"
                   required
-                  className="block w-full rounded-[4px] bg-white px-3 py-2.5 text-sm font-medium text-[#0077B6] border border-[#0077B6] focus:outline-none focus:ring-1 focus:ring-[#0077B6]"
+                  className="block w-full rounded bg-white dark:bg-gray-800 px-3 py-2.5 text-sm font-medium text-[#0077B6] dark:text-[#90E0EF] border border-[#0077B6] dark:border-[#90E0EF] focus:outline-none focus:ring-1 focus:ring-[#0077B6] dark:focus:ring-[#90E0EF]"
                 />
               </div>
             </div>

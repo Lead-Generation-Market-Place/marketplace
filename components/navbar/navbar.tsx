@@ -4,8 +4,13 @@ import DropdownMenu from "./DropdownMenu";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import { ThemeToggleButton } from "@/components/dashboard/Themes/ThemeToggleButton";
-import ProDropdown from "@/components/dashboard/header/UserDropdown";
+
 import { defaultNavItems, serviceProviderNavItems} from "@/app/(dashboard)/data/NavItems";
+import { Suspense, lazy } from "react";
+
+// Lazy load the ProDropdown component
+const ProDropdown = lazy(() => import("@/components/dashboard/header/UserDropdown"));
+
 
 import Tabs from "./Tabs";
 
@@ -66,7 +71,7 @@ const navItems = isServiceProvider
             ))}
           </nav>
         ) : (
-          <nav className="hidden md:flex items-center space-x-6 text-sm relative z-50">
+          <nav className="hidden md:flex items-center space-x-6 text-xs relative z-50">
             <Tabs navLinks={navItems.map(item => ({
               href: item.path || "#", // fallback for undefined path
               label: item.name
@@ -99,9 +104,10 @@ const navItems = isServiceProvider
             <>
               {/* User actions here */}
               {user && (
-                <span>
+                <Suspense fallback={<div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse" />}>
                   <ProDropdown />
-                </span>
+                </Suspense>
+
 
               )}
             </>
