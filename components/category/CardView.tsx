@@ -91,16 +91,16 @@ export default function CardView({ selectedSubcategory }: CardViewProps) {
         {services.map((service) => (
           <div
             key={service.id}
-            className="border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 shadow transition-colors duration-300"
+            className="border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-600 transition-colors duration-300"
           >
             {service.public_url && (
               <img
                 src={service.public_url}
                 alt={service.name}
-                className="w-full h-40 object-cover rounded-t"
+                className="w-full h-30 object-cover rounded-t"
               />
             )}
-            <div className="px-4 py-2 text-sm">
+            <div className="p-2 text-sm">
               <h3 className="font-semibold capitalize text-gray-800 dark:text-gray-100">
                 {service.name}
               </h3>
