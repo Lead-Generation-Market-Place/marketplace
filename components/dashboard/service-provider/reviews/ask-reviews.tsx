@@ -7,10 +7,19 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthUserId } from '@/actions/auth/authUser';
 import Link from 'next/link';
-
+import { ProgressBar } from "@/components/ui/Progressbar";
+const ONBOARDING_STEPS = [
+  { id: 1, name: 'Services' },
+  { id: 2, name: 'Contact' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Reviews' },
+  { id: 5, name: 'Preferences' },
+];  
 export default function ReviewRequest() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [currentStep] = useState(4);
+
 
   const businessName = searchParams.get('businessName') || '';
   const location = searchParams.get('location') || '';
@@ -123,6 +132,13 @@ export default function ReviewRequest() {
     : '';
 
   return (
+      <div>
+          <ProgressBar
+            currentStep={currentStep}
+            totalSteps={ONBOARDING_STEPS.length}
+            steps={ONBOARDING_STEPS}
+            className="mb-8"
+          />
     <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-[13px]">
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 dark:border-gray-700 rounded-[7px] p-8 md:p-10 bg-white dark:bg-gray-900">
@@ -248,5 +264,7 @@ export default function ReviewRequest() {
 
       </div>
     </div>
+    </div>
+
   );
 }

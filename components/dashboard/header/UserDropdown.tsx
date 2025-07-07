@@ -54,14 +54,9 @@ export default function UserDropdown() {
           onClick={toggleDropdown}
           className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
         >
-          <span className="w-6 h-6 mr-1 flex items-center justify-center rounded-full bg-sky-200 text-sky-600 dark:bg-sky-900 dark:text-sky-200 font-semibold text-sm">
-          {profile.username
-            ?.split(' ')
-            .map((n) => n[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()}
-        </span>
+          <span className="bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200 py-1 px-2 mr-1 font-medium text-theme-xs rounded-full">
+            {(profile.username?.[0]?.toUpperCase() || '') + (profile.username?.[1]?.toLowerCase() || '')}
+          </span>
           <span className="block mr-1 font-medium text-theme-sm">
             {profile.username}
           </span>
