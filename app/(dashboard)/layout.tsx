@@ -9,6 +9,8 @@ import { createClient } from '@/utils/supabase/client'
 import LoadingScreen from './layout/FullScreenLoader'
 import { User } from '@supabase/supabase-js'
 import { Toaster } from "@/components/ui/sonner"
+import 'leaflet/dist/leaflet.css';
+
 
 
 // Lazy load AppSidebar and AppHeader

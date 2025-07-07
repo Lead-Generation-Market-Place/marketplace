@@ -10,16 +10,7 @@ export default function SelectServices() {
   const [services, setServices] = useState<{ id: number, name: string }[]>([]);
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    const idsParam = searchParams.get('services');
-    if (!idsParam) return;
-
-    const ids = idsParam.split(',').map((id) => parseInt(id.trim())).filter(Boolean);
-    getServicesByIds(ids).then((result) => {
-      setServices(result);
-    });
-  }, [searchParams]);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -28,6 +19,24 @@ export default function SelectServices() {
   const email = searchParams.get("email");
   const phone = searchParams.get("phone");
   const timezone = searchParams.get("timezone");
+
+  useEffect(() => {
+    const idsParam = searchParams.get('services');
+    if (!idsParam) {
+      setLoading(false);
+      return;
+    }
+
+    const ids = idsParam
+      .split(',')
+      .map((id) => parseInt(id.trim()))
+      .filter(Boolean);
+
+    getServicesByIds(ids).then((result) => {
+      setServices(result);
+      setLoading(false); // render immediately
+    });
+  }, [searchParams]);
 
   const handleNext = () => {
     const params = new URLSearchParams({
@@ -41,17 +50,24 @@ export default function SelectServices() {
 
     startTransition(() => {
       router.push(`/professional/service_questions?${params.toString()}`);
-    })
+    });
   };
-  
+
   const handleBack = () => {
-    router.back()
+    router.back();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#0077B6]" />
+      </div>
+    );
   }
 
   return (
     <div className="flex items-center justify-center text-[13px] bg-white dark:bg-gray-900">
       <div className="grid rounded-[7px] overflow-hidden w-full max-w-4xl dark:border-gray-700">
-        {/* Left Section - Service Selection */}
         <div className="p-8 md:p-10 bg-white dark:bg-gray-900">
           <h2 className="text-2xl font-bold text-[#023E8A] dark:text-white mb-3">
             Select your primary service.
@@ -109,12 +125,10 @@ export default function SelectServices() {
                 type="button"
                 disabled={isPending || !selectedService}
                 onClick={handleNext}
-                className={`
-                  mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
+                className={`mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
                   transition duration-300 flex items-center justify-center gap-2
-                  ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 
-                    !selectedService ? 'bg-[#0077B6]/50 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
-                `}
+                  ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' :
+                  !selectedService ? 'bg-[#0077B6]/50 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}`}
               >
                 {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 <span>Next</span>
