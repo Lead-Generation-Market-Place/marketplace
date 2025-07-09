@@ -1,44 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import L from "leaflet";
+import React from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import "leaflet/dist/leaflet.css";
-
-// Custom CSS for popup text size
-const popupStyle = `
-  .leaflet-popup-content-wrapper {
-    font-size: 13px !important;
-  }
-  .leaflet-popup-content {
-    margin: 5px 10px !important;
-  }
-`;
-
-// Default marker icon (needed because Leaflet default icon may not load in some bundlers)
-const defaultIcon = L.icon({
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  shadowSize: [41, 41],
-});
-
-// Highlighted marker icon (e.g., red)
-const highlightIcon = L.icon({
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-red.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  shadowSize: [41, 41],
-});
+import { GoogleMap, LoadScript, Marker, Polygon } from "@react-google-maps/api";
 
 interface City {
   id: number;
@@ -47,39 +12,63 @@ interface City {
   lng: number | null;
   city: string | null;
   state_name: string | null;
+  polygon?: google.maps.LatLngLiteral[]; // Added for area highlighting
 }
+
+const containerStyle = {
+  width: "100%",
+  height: "400px",
+};
+
+const defaultCenter = {
+  lat: 34.5553,
+  lng: 69.2075,
+};
+
+// Modern expand/collapse icons using SVG
+const ExpandIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
+
+const CollapseIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M18 15l-6-6-6 6" />
+  </svg>
+);
 
 const Map = () => {
   const params = useSearchParams();
   const location = params.get("location") ?? "";
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
-  const markersLayer = useRef<L.LayerGroup | null>(null);
-  const [cities, setCities] = useState<City[]>([]);
-  const [selectedZipIds, setSelectedZipIds] = useState<Set<number>>(new Set());
+  const [darkMode, setDarkMode] = React.useState(false);
 
-  // Insert popup style once
-  useEffect(() => {
-    const styleEl = document.createElement("style");
-    styleEl.innerHTML = popupStyle;
-    document.head.appendChild(styleEl);
-    return () => {
-      document.head.removeChild(styleEl);
-    };
-  }, []);
+  const [cities, setCities] = React.useState<City[]>([]);
+  const [selectedZipIds, setSelectedZipIds] = React.useState<Set<number>>(new Set());
+  const [expandedCities, setExpandedCities] = React.useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (!mapRef.current || !location) return;
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  // Fetch cities when location changes
+  React.useEffect(() => {
+    if (!location) return;
 
     const fetchZipCodes = async () => {
       try {
-        const response = await fetch(
-          `/api/location?state=${encodeURIComponent(location)}`
-        );
+        const response = await fetch(`/api/location?state=${encodeURIComponent(location)}`);
         const result = await response.json();
 
         if (result.success && result.data) {
-          setCities(result.data);
+          // Add polygon data for each city (this would come from your API)
+          const citiesWithPolygons = result.data.map((city: City) => ({
+            ...city,
+            // In a real app, you'd get this polygon data from your API
+            polygon: city.lat && city.lng ? generateDummyPolygon(city.lat, city.lng) : undefined
+          }));
+          setCities(citiesWithPolygons);
         } else {
           toast.error(result.error || "Failed to fetch data");
         }
@@ -87,81 +76,21 @@ const Map = () => {
         toast.error(`Error: ${(err as Error).message}`);
       }
     };
-
-    if (!mapInstance.current) {
-      mapInstance.current = L.map(mapRef.current).setView([37.8, -96], 4);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(mapInstance.current);
-    }
-
-    // Create a layer group for dynamic markers if not created yet
-    if (!markersLayer.current && mapInstance.current) {
-      markersLayer.current = L.layerGroup().addTo(mapInstance.current);
-    } else if (markersLayer.current) {
-      markersLayer.current.clearLayers();
-    }
-
     fetchZipCodes();
-
-    return () => {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
-    };
   }, [location]);
 
-  // Update markers when selectedZipIds or cities change
-  useEffect(() => {
-    if (!mapInstance.current || !markersLayer.current) return;
+  // Generate a simple square polygon around a point for demo purposes
+  const generateDummyPolygon = (lat: number, lng: number): google.maps.LatLngLiteral[] => {
+    const size = 0.01; // Adjust this for polygon size
+    return [
+      { lat: lat - size, lng: lng - size },
+      { lat: lat - size, lng: lng + size },
+      { lat: lat + size, lng: lng + size },
+      { lat: lat + size, lng: lng - size },
+    ];
+  };
 
-    markersLayer.current.clearLayers();
-
-    const bounds = L.latLngBounds([]);
-
-    cities.forEach((city) => {
-      if (selectedZipIds.has(city.id) && city.lat && city.lng) {
-        // Use highlighted icon for selected
-        const marker = L.marker([city.lat, city.lng], {
-          icon: highlightIcon,
-        });
-        marker.bindPopup(`
-          <strong>${city.city || "Unknown City"}</strong><br/>
-          ZIP: ${city.zip}<br/>
-          State: ${city.state_name || "Unknown State"}
-        `);
-        marker.addTo(markersLayer.current!);
-        bounds.extend([city.lat, city.lng]);
-      } else if (city.lat && city.lng) {
-        // Show non-selected markers but lighter color and smaller opacity
-        const marker = L.marker([city.lat, city.lng], {
-          icon: defaultIcon,
-          opacity: 0.4,
-        });
-        marker.bindPopup(`
-          <strong>${city.city || "Unknown City"}</strong><br/>
-          ZIP: ${city.zip}<br/>
-          State: ${city.state_name || "Unknown State"}
-        `);
-        marker.addTo(markersLayer.current!);
-      }
-    });
-
-    if (selectedZipIds.size > 0 && bounds.isValid()) {
-      mapInstance.current.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [selectedZipIds, cities]);
-
-  // Group cities by name
-  const grouped = cities.reduce((acc, city) => {
-    const group = city.city || "Unknown City";
-    if (!acc[group]) acc[group] = [];
-    acc[group].push(city);
-    return acc;
-  }, {} as Record<string, City[]>);
-
+  // Handle checkbox toggling
   const handleCheckbox = (city: City, checked: boolean) => {
     setSelectedZipIds((prev) => {
       const newSet = new Set(prev);
@@ -174,37 +103,196 @@ const Map = () => {
     });
   };
 
+  // Toggle city expansion
+  const toggleCity = (cityName: string) => {
+    setExpandedCities((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(cityName)) {
+        newSet.delete(cityName);
+      } else {
+        newSet.add(cityName);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all zip codes in a city
+  const selectAllInCity = (cityName: string, select: boolean) => {
+    setSelectedZipIds((prev) => {
+      const newSet = new Set(prev);
+      const cityZips = cities.filter(c => c.city === cityName);
+      
+      cityZips.forEach(zip => {
+        if (select) {
+          newSet.add(zip.id);
+        } else {
+          newSet.delete(zip.id);
+        }
+      });
+      
+      return newSet;
+    });
+  };
+
+  // Compute map center
+  const center = React.useMemo(() => {
+    const selectedCities = cities.filter((c) => selectedZipIds.has(c.id) && c.lat && c.lng);
+    if (selectedCities.length > 0) {
+      return { lat: selectedCities[0].lat!, lng: selectedCities[0].lng! };
+    }
+    return defaultCenter;
+  }, [selectedZipIds, cities]);
+
+  // Group cities by city name for sidebar
+  const grouped = React.useMemo(() => {
+    return cities.reduce((acc, city) => {
+      const group = city.city || "Unknown City";
+      if (!acc[group]) acc[group] = [];
+      acc[group].push(city);
+      return acc;
+    }, {} as Record<string, City[]>);
+  }, [cities]);
+
+  // Check if all zips in a city are selected
+  const isAllSelected = (cityName: string) => {
+    const cityZips = grouped[cityName] || [];
+    return cityZips.length > 0 && cityZips.every(zip => selectedZipIds.has(zip.id));
+  };
+
   return (
-    <div className="flex w-full h-[500px] gap-4">
-      {/* Sidebar */}
-      <div className="w-1/3 overflow-y-auto border p-4 rounded-md shadow bg-white">
-        <h2 className="text-xl font-semibold mb-3">Select Cities & Zip Codes</h2>
-        {Object.entries(grouped).map(([cityName, zips]) => (
-          <div key={cityName} className="mb-3">
-            <h3 className="font-semibold text-gray-700 mb-1">{cityName}</h3>
-            <div className="space-y-1">
-              {zips.map((zip) => (
-                <label
-                  key={`${zip.city}-${zip.zip}-${zip.id}`}
-                  className="flex items-center space-x-2 text-sm cursor-pointer select-none"
-                >
-                  <input
-                    type="checkbox"
-                    className="form-checkbox text-blue-600"
-                    checked={selectedZipIds.has(zip.id)}
-                    onChange={(e) => handleCheckbox(zip, e.target.checked)}
-                  />
-                  <span>{zip.zip}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
+    <div className={`flex w-full gap-4 h-[464px] ${darkMode ? 'dark' : ''}`}>
+      {/* Dark mode toggle */}
+      <button 
+        onClick={toggleDarkMode}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white dark:bg-gray-800 shadow-md"
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
+
+      {/* Sidebar - Scrollable Cities List */}
+      <div className="w-1/3 flex flex-col">
+        <h2 className="text-sm font-semibold mb-3 p-2 bg-white dark:bg-gray-800 dark:text-white">
+          Select Cities & Zip Codes
+        </h2>
+        <div className="overflow-y-auto flex-1 bg-white dark:bg-gray-800 p-2">
+          {Object.entries(grouped).map(([cityName, zips]) => {
+            const isExpanded = expandedCities.has(cityName);
+            const allSelected = isAllSelected(cityName);
+            const zipCount = zips.length;
+            const hasSelected = zips.some(zip => selectedZipIds.has(zip.id));
+            
+            return (
+              <div 
+                key={cityName} 
+                className={`space-y-1 border rounded p-2 mb-2 ${
+                  allSelected || hasSelected 
+                    ? 'border-blue-300 bg-blue-50 dark:bg-blue-900 dark:border-blue-700' 
+                    : 'border-gray-200 dark:border-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div 
+                    className="font-medium text-gray-700 dark:text-gray-300 text-xs flex items-center cursor-pointer"
+                    onClick={() => toggleCity(cityName)}
+                  >
+                    <span className="mr-2">
+                      {isExpanded ? <CollapseIcon /> : <ExpandIcon />}
+                    </span>
+                    <span>
+                      {cityName} <span className="text-gray-500 dark:text-gray-400">({zipCount})</span>
+                    </span>
+                  </div>
+                  <label className="inline-flex items-center space-x-1 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-2.5 w-2.5 text-[#0077B6] dark:text-[#0077B6] border-gray-300 dark:border-gray-600 rounded focus:ring-[#0077B6] dark:focus:ring-[#0077B6] dark:bg-gray-700"
+                      checked={allSelected}
+                      onChange={(e) => selectAllInCity(cityName, e.target.checked)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <span className="dark:text-gray-300">All</span>
+                  </label>
+                </div>
+                
+                {isExpanded && (
+                  <div className="flex flex-wrap gap-1.5 pl-4">
+                    {zips.map((zip) => (
+                      <label
+                        key={`${zip.city}-${zip.zip}-${zip.id}`}
+                        className={`inline-flex items-center space-x-1 text-xs cursor-pointer select-none rounded px-1.5 py-0.5 border ${
+                          selectedZipIds.has(zip.id) 
+                            ? 'bg-blue-100 dark:bg-blue-800 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200' 
+                            : 'border-transparent dark:text-gray-400'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-2.5 w-2.5 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700"
+                          checked={selectedZipIds.has(zip.id)}
+                          onChange={(e) => handleCheckbox(zip, e.target.checked)}
+                        />
+                        <span>{zip.zip}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Map */}
-      <div className="w-2/3 border rounded-md shadow">
-        <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+      {/* Google Map - Fixed Height */}
+      <div className="w-2/3 pt-14">
+        <LoadScript googleMapsApiKey="AIzaSyAt4uYXRmuxOopP1eGh70qY_sNt5Fpt8AM">
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={selectedZipIds.size > 0 ? 10 : 5}
+            options={{
+              styles: darkMode ? [
+                // Dark mode map styles
+                { elementType: "geometry", stylers: [{ color: "#0077B6" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#0077B6" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#0077B6" }] },
+                // ... more dark mode styles
+              ] : undefined
+            }}
+          >
+            {/* Render selected markers and polygons */}
+            {cities.map((city) => {
+              if (city.lat == null || city.lng == null || !selectedZipIds.has(city.id)) return null;
+
+              return (
+                <React.Fragment key={city.id}>
+                  <Marker
+                    position={{ lat: city.lat, lng: city.lng }}
+                    icon={{
+                      url: darkMode 
+                        ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png" 
+                        : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                      scaledSize: new window.google.maps.Size(40, 40),
+                    }}
+                    title={`${city.city} ZIP: ${city.zip}`}
+                  />
+                  {/* Render polygon if available */}
+                  {city.polygon && (
+                    <Polygon
+                      paths={city.polygon}
+                      options={{
+                        fillColor: darkMode ? "#0077B6" : "#60a5fa",
+                        fillOpacity: 0.4,
+                        strokeColor: darkMode ? "#0077B6" : "#2563eb",
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </GoogleMap>
+        </LoadScript>
       </div>
     </div>
   );
