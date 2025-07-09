@@ -25,6 +25,7 @@ const defaultCenter = {
   lng: 69.2075,
 };
 
+
 // Modern expand/collapse icons using SVG
 const ExpandIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -39,6 +40,8 @@ const CollapseIcon = () => (
 );
 
 const Map = () => {
+ const API = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
   const params = useSearchParams();
   const location = params.get("location") ?? "";
   const [darkMode, setDarkMode] = React.useState(false);
@@ -244,7 +247,7 @@ const Map = () => {
 
       {/* Google Map - Fixed Height */}
       <div className="w-2/3 pt-14">
-        <LoadScript googleMapsApiKey="AIzaSyAt4uYXRmuxOopP1eGh70qY_sNt5Fpt8AM">
+        <LoadScript googleMapsApiKey={API}>
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
