@@ -51,7 +51,7 @@ export const PromoCard = ({ promotion, index }: PromoCardProps) => {
           href={`/category/${promotion.categories?.id}`}
           className="w-fit text-center inline-block bg-black backdrop-blur-xl text-white dark:text-white px-4 py-2 mt-2 rounded-full text-xs sm:text-sm font-medium transition-colors duration-300 hover:bg-gray-800 dark:hover:bg-gray-900/50"
         >
-          Explore More
+          View More
         </Link>
       </div>
 
