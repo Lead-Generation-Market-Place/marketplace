@@ -1,13 +1,14 @@
 import { createClient } from "@/utils/supabase/server";
 
-export async function GetZipeStateCodes(location: string) {
+export async function GetZipeStateCodes() {
   const supabase = await createClient();
 
   // Explicitly select only the fields we need
   const { data, error } = await supabase
     .from("cities")
-    .select("id, zip, lat, lng, city, state_name")
-    .ilike("state_name", location);
+    .select("id, zip, lat, lng, city, state_name", { count: "exact", head: false })
+    .range(0, 99999); // Fetch up to 100,000 rows
+
 
   if (error) {
     return {

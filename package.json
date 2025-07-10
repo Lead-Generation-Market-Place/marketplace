@@ -21,7 +21,6 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.0",
     "@turf/center": "^7.2.0",
-    "antd": "^5.26.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
@@ -46,8 +45,7 @@
     "sonner": "^2.0.5",
     "string-similarity": "^4.0.4",
     "tailwind-merge": "^3.3.0",
-    "zod": "^3.25.17",
-    "zustand": "^5.0.6"
+    "zod": "^3.25.17"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

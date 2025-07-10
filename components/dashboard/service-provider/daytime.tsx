@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -62,7 +62,7 @@ export default function AvailabilityForm({
   const [currentStep] = useState(5);
 
   const [schedule, setSchedule] = useState(defaultSchedule);
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -116,6 +116,7 @@ export default function AvailabilityForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     const formData = new FormData();
     formData.set('availabilityType', selectedOption);
     formData.set('timezone', timezone);
@@ -135,49 +136,48 @@ export default function AvailabilityForm({
 
     formData.set('schedule', JSON.stringify(finalSchedule));
 
-    startTransition(async () => {
-      try {
-        const result = await saveAvailability(formData);
+    try {
+      const result = await saveAvailability(formData);
 
-        if (result.status === 'success') {
-          // Build base params
-          const params = new URLSearchParams({
-            businessName,
-            location,
-            email,
-            phone,
-            timezone,
-            services: services.join(','), // All services as comma-separated
-          });
+      if (result.status === 'success') {
+        // Build base params
+        const params = new URLSearchParams({
+          businessName,
+          location,
+          email,
+          phone,
+          timezone,
+          services: services.join(','), // All services as comma-separated
+        });
 
-          if (services.length > 1) {
-            // Multiple services – go to service selection modal
-            router.push(`/professional/primaryServiceModal?${params.toString()}`);
-          } else {
-            // Only one service – include serviceId explicitly
-            params.set('services', services[0].toString());
-
-            router.push(`/professional/service_questions?${params.toString()}`);
-          }
+        if (services.length > 1) {
+          // Multiple services – go to service selection modal
+          router.push(`/professional/primaryServiceModal?${params.toString()}`);
         } else {
-          toast.error(`Error: ${result.message}`);
-        }
-      } catch (error: unknown) {
-        let message = 'An unexpected error occurred while saving availability.';
+          // Only one service – include serviceId explicitly
+          params.set('services', services[0].toString());
 
-        if (
-          typeof error === 'object' &&
-          error !== null &&
-          'message' in error &&
-          typeof (error as { message: unknown }).message === 'string'
-        ) {
-          message = (error as { message: string }).message;
+          router.push(`/professional/service_questions?${params.toString()}`);
         }
-
-        toast.error(message);
+      } else {
+        toast.error(`Error: ${result.message}`);
       }
-    });
+    } catch (error: unknown) {
+      let message = 'An unexpected error occurred while saving availability.';
 
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message: unknown }).message === 'string'
+      ) {
+        message = (error as { message: string }).message;
+      }
+
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -316,15 +316,15 @@ export default function AvailabilityForm({
           </button>
           <button
             type="button"
-            disabled={isPending}
+            disabled={isLoading}
             onClick={() => formRef.current?.requestSubmit()}
             className={`
               mt-6 w-full text-white text-[13px] py-2 px-6 rounded-[4px]
               transition duration-300 flex items-center justify-center gap-2
-              ${isPending ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
+              ${isLoading ? 'bg-[#0077B6]/70 cursor-not-allowed' : 'bg-[#0077B6] hover:bg-[#005f8e]'}
             `}
           >
-            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             <span>Next</span>
           </button>
         </div>

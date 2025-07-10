@@ -1,301 +1,278 @@
 "use client";
 
-import React from "react";
-import { useSearchParams } from "next/navigation";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useTransition,
+} from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { GoogleMap, LoadScript, Marker, Polygon } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Circle,
+  StandaloneSearchBox,
+} from "@react-google-maps/api";
+import { Loader2 } from "lucide-react";
+import { saveCoordinates } from "@/actions/locations/saveCoordinates";
+import { Libraries } from "@react-google-maps/api";
 
-interface City {
-  id: number;
-  zip: string;
-  lat: number | null;
-  lng: number | null;
-  city: string | null;
-  state_name: string | null;
-  polygon?: google.maps.LatLngLiteral[]; // Added for area highlighting
-}
+const libraries: Libraries = ["places"];
 
 const containerStyle = {
   width: "100%",
   height: "400px",
 };
 
-const defaultCenter = {
-  lat: 34.5553,
-  lng: 69.2075,
-};
+const TAB_OPTIONS = [
+  { label: "Select by Distance", value: "distance" },
+  { label: "Advanced", value: "advanced" },
+];
 
-
-// Modern expand/collapse icons using SVG
-const ExpandIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-);
-
-const CollapseIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M18 15l-6-6-6 6" />
-  </svg>
-);
+const milesToMeters = (miles: number) => miles * 1609.34;
 
 const Map = () => {
- const API = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const params = useSearchParams();
-  const location = params.get("location") ?? "";
-  const [darkMode, setDarkMode] = React.useState(false);
+  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
 
-  const [cities, setCities] = React.useState<City[]>([]);
-  const [selectedZipIds, setSelectedZipIds] = React.useState<Set<number>>(new Set());
-  const [expandedCities, setExpandedCities] = React.useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState("distance");
+  const [radiusMiles, setRadiusMiles] = useState(10);
+  const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+    city?: string;
+    state?: string;
+    zip?: string;
+  } | null>(null);
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries,
+  });
 
-  // Fetch cities when location changes
-  React.useEffect(() => {
-    if (!location) return;
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+  }, []);
 
-    const fetchZipCodes = async () => {
-      try {
-        const response = await fetch(`/api/location?state=${encodeURIComponent(location)}`);
-        const result = await response.json();
-
-        if (result.success && result.data) {
-          // Add polygon data for each city (this would come from your API)
-          const citiesWithPolygons = result.data.map((city: City) => ({
-            ...city,
-            // In a real app, you'd get this polygon data from your API
-            polygon: city.lat && city.lng ? generateDummyPolygon(city.lat, city.lng) : undefined
-          }));
-          setCities(citiesWithPolygons);
-        } else {
-          toast.error(result.error || "Failed to fetch data");
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const userLoc = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          };
+          setCenter(userLoc);
+          setSelectedLocation({ ...userLoc });
+        },
+        () => {
+          console.warn("Geolocation denied.");
         }
-      } catch (err) {
-        toast.error(`Error: ${(err as Error).message}`);
-      }
-    };
-    fetchZipCodes();
-  }, [location]);
-
-  // Generate a simple square polygon around a point for demo purposes
-  const generateDummyPolygon = (lat: number, lng: number): google.maps.LatLngLiteral[] => {
-    const size = 0.01; // Adjust this for polygon size
-    return [
-      { lat: lat - size, lng: lng - size },
-      { lat: lat - size, lng: lng + size },
-      { lat: lat + size, lng: lng + size },
-      { lat: lat + size, lng: lng - size },
-    ];
-  };
-
-  // Handle checkbox toggling
-  const handleCheckbox = (city: City, checked: boolean) => {
-    setSelectedZipIds((prev) => {
-      const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(city.id);
-      } else {
-        newSet.delete(city.id);
-      }
-      return newSet;
-    });
-  };
-
-  // Toggle city expansion
-  const toggleCity = (cityName: string) => {
-    setExpandedCities((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(cityName)) {
-        newSet.delete(cityName);
-      } else {
-        newSet.add(cityName);
-      }
-      return newSet;
-    });
-  };
-
-  // Select all zip codes in a city
-  const selectAllInCity = (cityName: string, select: boolean) => {
-    setSelectedZipIds((prev) => {
-      const newSet = new Set(prev);
-      const cityZips = cities.filter(c => c.city === cityName);
-      
-      cityZips.forEach(zip => {
-        if (select) {
-          newSet.add(zip.id);
-        } else {
-          newSet.delete(zip.id);
-        }
-      });
-      
-      return newSet;
-    });
-  };
-
-  // Compute map center
-  const center = React.useMemo(() => {
-    const selectedCities = cities.filter((c) => selectedZipIds.has(c.id) && c.lat && c.lng);
-    if (selectedCities.length > 0) {
-      return { lat: selectedCities[0].lat!, lng: selectedCities[0].lng! };
+      );
     }
-    return defaultCenter;
-  }, [selectedZipIds, cities]);
+  }, []);
 
-  // Group cities by city name for sidebar
-  const grouped = React.useMemo(() => {
-    return cities.reduce((acc, city) => {
-      const group = city.city || "Unknown City";
-      if (!acc[group]) acc[group] = [];
-      acc[group].push(city);
-      return acc;
-    }, {} as Record<string, City[]>);
-  }, [cities]);
+  const onPlacesChanged = () => {
+    const places = searchBoxRef.current?.getPlaces();
+    if (places && places.length > 0) {
+      const place = places[0];
+      const location = place.geometry?.location;
+      const addressComponents = place.address_components;
 
-  // Check if all zips in a city are selected
-  const isAllSelected = (cityName: string) => {
-    const cityZips = grouped[cityName] || [];
-    return cityZips.length > 0 && cityZips.every(zip => selectedZipIds.has(zip.id));
+      if (location) {
+        const lat = location.lat();
+        const lng = location.lng();
+        let city = "", state = "", zip = "";
+
+        if (addressComponents) {
+          for (const comp of addressComponents) {
+            const types = comp.types;
+            if (types.includes("locality")) city = comp.long_name;
+            if (types.includes("administrative_area_level_1")) state = comp.short_name;
+            if (types.includes("postal_code")) zip = comp.long_name;
+          }
+        }
+
+        setCenter({ lat, lng });
+        setSelectedLocation({ lat, lng, city, state, zip });
+      }
+    }
   };
+
+  const handleNext = async () => {
+    if (!selectedLocation) {
+      toast.error("Please select your business location first.");
+      return;
+    }
+
+    try {
+      startTransition(async () => {
+        await saveCoordinates({ ...selectedLocation, radiusMiles });
+        toast.success("Location saved!");
+        router.push("/professional/service_questions");
+      });
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const handleBack = () => router.back();
+
+  if (loadError) {
+    return <div>Error loading Google Maps</div>;
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center" style={{ height: 400 }}>
+        <Loader2 className="h-6 w-6 animate-spin text-[#0077B6]" />
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex w-full gap-4 h-[464px] ${darkMode ? 'dark' : ''}`}>
-      {/* Dark mode toggle */}
-      <button 
-        onClick={toggleDarkMode}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white dark:bg-gray-800 shadow-md"
-      >
-        {darkMode ? '☀️' : '🌙'}
-      </button>
-
-      {/* Sidebar - Scrollable Cities List */}
-      <div className="w-1/3 flex flex-col">
-        <h2 className="text-sm font-semibold mb-3 p-2 bg-white dark:bg-gray-800 dark:text-white">
-          Select Cities & Zip Codes
-        </h2>
-        <div className="overflow-y-auto flex-1 bg-white dark:bg-gray-800 p-2">
-          {Object.entries(grouped).map(([cityName, zips]) => {
-            const isExpanded = expandedCities.has(cityName);
-            const allSelected = isAllSelected(cityName);
-            const zipCount = zips.length;
-            const hasSelected = zips.some(zip => selectedZipIds.has(zip.id));
-            
-            return (
-              <div 
-                key={cityName} 
-                className={`space-y-1 border rounded p-2 mb-2 ${
-                  allSelected || hasSelected 
-                    ? 'border-blue-300 bg-blue-50 dark:bg-blue-900 dark:border-blue-700' 
-                    : 'border-gray-200 dark:border-gray-700'
+    <div className="space-y-4">
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <ul className="flex flex-wrap -mb-px text-xs font-medium text-center" role="tablist">
+          {TAB_OPTIONS.map((tab) => (
+            <li className="me-2" key={tab.value}>
+              <button
+                className={`inline-block p-2.5 border-b-2 rounded-t-lg transition-colors duration-200 ${
+                  activeTab === tab.value
+                    ? "text-[#0077B6] border-[#0077B6]"
+                    : "text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300"
                 }`}
+                onClick={() => setActiveTab(tab.value)}
               >
-                <div className="flex items-center justify-between">
-                  <div 
-                    className="font-medium text-gray-700 dark:text-gray-300 text-xs flex items-center cursor-pointer"
-                    onClick={() => toggleCity(cityName)}
-                  >
-                    <span className="mr-2">
-                      {isExpanded ? <CollapseIcon /> : <ExpandIcon />}
-                    </span>
-                    <span>
-                      {cityName} <span className="text-gray-500 dark:text-gray-400">({zipCount})</span>
-                    </span>
-                  </div>
-                  <label className="inline-flex items-center space-x-1 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-2.5 w-2.5 text-[#0077B6] dark:text-[#0077B6] border-gray-300 dark:border-gray-600 rounded focus:ring-[#0077B6] dark:focus:ring-[#0077B6] dark:bg-gray-700"
-                      checked={allSelected}
-                      onChange={(e) => selectAllInCity(cityName, e.target.checked)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <span className="dark:text-gray-300">All</span>
-                  </label>
-                </div>
-                
-                {isExpanded && (
-                  <div className="flex flex-wrap gap-1.5 pl-4">
-                    {zips.map((zip) => (
-                      <label
-                        key={`${zip.city}-${zip.zip}-${zip.id}`}
-                        className={`inline-flex items-center space-x-1 text-xs cursor-pointer select-none rounded px-1.5 py-0.5 border ${
-                          selectedZipIds.has(zip.id) 
-                            ? 'bg-blue-100 dark:bg-blue-800 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200' 
-                            : 'border-transparent dark:text-gray-400'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-2.5 w-2.5 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:bg-gray-700"
-                          checked={selectedZipIds.has(zip.id)}
-                          onChange={(e) => handleCheckbox(zip, e.target.checked)}
-                        />
-                        <span>{zip.zip}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                {tab.label}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Google Map - Fixed Height */}
-      <div className="w-2/3 pt-14">
-        <LoadScript googleMapsApiKey={API}>
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={selectedZipIds.size > 0 ? 10 : 5}
-            options={{
-              styles: darkMode ? [
-                // Dark mode map styles
-                { elementType: "geometry", stylers: [{ color: "#0077B6" }] },
-                { elementType: "labels.text.stroke", stylers: [{ color: "#0077B6" }] },
-                { elementType: "labels.text.fill", stylers: [{ color: "#0077B6" }] },
-                // ... more dark mode styles
-              ] : undefined
-            }}
-          >
-            {/* Render selected markers and polygons */}
-            {cities.map((city) => {
-              if (city.lat == null || city.lng == null || !selectedZipIds.has(city.id)) return null;
+      {/* Distance Tab */}
+      {activeTab === "distance" && (
+        <div
+          className="rounded-lg bg-white dark:bg-gray-900 flex flex-col md:flex-row gap-4"
+          style={{ minHeight: 400 }}
+        >
+          {/* Left Controls */}
+          <div className="flex flex-col gap-3 w-full md:w-1/3 px-4 py-6">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+              Select by distance
+            </h2>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Set the max distance from your business location
+            </p>
 
-              return (
-                <React.Fragment key={city.id}>
-                  <Marker
-                    position={{ lat: city.lat, lng: city.lng }}
-                    icon={{
-                      url: darkMode 
-                        ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png" 
-                        : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                      scaledSize: new window.google.maps.Size(40, 40),
-                    }}
-                    title={`${city.city} ZIP: ${city.zip}`}
-                  />
-                  {/* Render polygon if available */}
-                  {city.polygon && (
-                    <Polygon
-                      paths={city.polygon}
-                      options={{
-                        fillColor: darkMode ? "#0077B6" : "#60a5fa",
-                        fillOpacity: 0.4,
-                        strokeColor: darkMode ? "#0077B6" : "#2563eb",
-                        strokeOpacity: 0.8,
-                        strokeWeight: 2
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </GoogleMap>
-        </LoadScript>
+            <div className="mb-4">
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                Search Business Location
+              </label>
+              <StandaloneSearchBox
+                onLoad={(ref) => (searchBoxRef.current = ref)}
+                onPlacesChanged={onPlacesChanged}
+              >
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search location..."
+                  className="mt-1 block w-full text-[12px] px-4 py-2 border border-gray-400 dark:border-gray-700 rounded-[2px] focus:outline-none focus:ring-1 focus:ring-[#0096C7] focus:border-transparent text-gray-800 dark:text-white dark:bg-gray-800 text-sm"
+                />
+              </StandaloneSearchBox>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium">Distance radius</span>
+                <span className="text-xs font-medium text-[#0077B6]">{radiusMiles} miles</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={300}
+                value={radiusMiles}
+                onChange={(e) => setRadiusMiles(Number(e.target.value))}
+                className="w-full h-1.5 bg-gray-200 rounded-lg cursor-pointer dark:bg-gray-700"
+                style={{ accentColor: "#0077B6" }}
+              />
+            </div>
+          </div>
+
+          {/* Right Map Panel */}
+          <div className="relative flex-1">
+            <GoogleMap
+              mapContainerStyle={containerStyle}
+              center={center ?? { lat: 39.8283, lng: -98.5795 }} // fallback center to continental US if none
+              zoom={center ? 6 : 4}
+              onLoad={onMapLoad}
+            >
+              {center && (
+                <Circle
+                  center={center}
+                  radius={milesToMeters(radiusMiles)}
+                  options={{
+                    fillColor: "#0077B6",
+                    fillOpacity: 0.2,
+                    strokeColor: "#0077B6",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 1.5,
+                  }}
+                />
+              )}
+            </GoogleMap>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Tab Placeholder */}
+      {activeTab === "advanced" && (
+        <div
+          className="p-6 rounded-lg bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-700 flex items-center justify-center"
+          style={{ minHeight: 400 }}
+        >
+          <div className="text-center max-w-xs">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              Advanced Filters
+            </h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Coming soon: More advanced filtering options for precise location targeting.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Footer Controls */}
+      <div className="fixed bottom-6 right-6 flex gap-4 text-[13px]">
+        <button
+          onClick={handleBack}
+          type="button"
+          className="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white mt-6 py-2 px-5 rounded-[4px]"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          disabled={isPending || !selectedLocation}
+          onClick={handleNext}
+          className={`mt-6 py-2 px-6 rounded-[4px] flex items-center justify-center gap-2 text-white text-[13px] transition duration-300
+            ${!selectedLocation || isPending
+              ? "bg-[#0077B6]/70 cursor-not-allowed"
+              : "bg-[#0077B6] hover:bg-[#005f8e]"
+            }`}
+        >
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          <span>Next</span>
+        </button>
       </div>
     </div>
   );
