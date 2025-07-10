@@ -1,13 +1,21 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { getConversations, getMessages, sendMessage } from '@/actions/message/conversation';
 import { createClient } from '@/utils/supabase/client';
-import { Send, Paperclip, Inbox, QrCode, CheckCheck } from 'lucide-react';
+import { Send, Paperclip, Inbox, QrCode, CheckCheck, Camera } from 'lucide-react';
 import Image from 'next/image';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import UserDetails from './UserDetails';
+import CameraModal from './CameraModel';
+import {
+  getConversations,
+  getMessages,
+  sendMessage,
+  markMessagesAsRead
+} from '@/actions/message/conversation';
+
+
 
 
 dayjs.extend(relativeTime);
@@ -49,6 +57,11 @@ export default function InboxClient({ userId }: { userId: string }) {
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
+  // camera modal state
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
+
+
 
 // Scroll to bottom when messages change
   useEffect(() => {
@@ -66,20 +79,35 @@ export default function InboxClient({ userId }: { userId: string }) {
   }, [userId]);
 
   useEffect(() => {
-    if (!selectedConversation) return;
+  if (!selectedConversation) return;
 
-    (async () => {
-      const data = await getMessages(selectedConversation.id);
-      setMessages(data);
+  (async () => {
+    const data = await getMessages(selectedConversation.id);
+    setMessages(data);
 
-      await supabase
-        .from('messages')
-        .update({ read_at: new Date().toISOString() })
-        .eq('conversation_id', selectedConversation.id)
-        .neq('sender_id', userId)
-        .is('read_at', null);
-    })();
-  }, [selectedConversation]);
+    try {
+      await markMessagesAsRead(selectedConversation.id, userId);
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+    }
+  })();
+}, [selectedConversation]);
+
+  // useEffect(() => {
+  //   if (!selectedConversation) return;
+
+  //   (async () => {
+  //     const data = await getMessages(selectedConversation.id);
+  //     setMessages(data);
+
+  //     await supabase
+  //       .from('messages')
+  //       .update({ read_at: new Date().toISOString() })
+  //       .eq('conversation_id', selectedConversation.id)
+  //       .neq('sender_id', userId)
+  //       .is('read_at', null);
+  //   })();
+  // }, [selectedConversation]);
 
   // ✅ Realtime - new message
   useEffect(() => {
@@ -561,24 +589,55 @@ export default function InboxClient({ userId }: { userId: string }) {
               }}
               className="flex items-center space-x-2"
             >
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                title="Attach files"
-              >
-                <Paperclip size={20} />
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files) {
-                    setFiles(Array.from(e.target.files));
-                  }
-                }}
-              />
+              {/* Attach File Button */}
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              title="Attach files"
+            >
+              <Paperclip size={20} className="text-gray-500 dark:text-gray-400 hover:text-sky-500 cursor-pointer" />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              className="hidden"
+              accept="image/*,application/pdf"
+              onChange={(e) => {
+                if (e.target.files) {
+                  setFiles(Array.from(e.target.files));
+                }
+              }}
+            />
+
+           {/* Camera photo */}
+          <button type="button" title="Open Camera"
+            onClick={() => {
+              setCameraMode('photo');
+              setShowCameraModal(true);
+            }}
+          >
+            <Camera size={20} className="text-gray-500 dark:text-gray-400 hover:text-sky-500 cursor-pointer" />
+          </button>
+
+          {/* Video camera
+          <button type="button" title="Record Video"
+            onClick={() => {
+              setCameraMode('video');
+              setShowCameraModal(true);
+            }}
+          >
+            <Film size={20} className="text-gray-500 dark:text-gray-400 hover:text-sky-500 cursor-pointer"/> 
+          </button>*/}
+           {showCameraModal && (
+            <CameraModal
+              mode={cameraMode}
+              onClose={() => setShowCameraModal(false)}
+              onCapture={(file) => setFiles([file])}
+            />
+          )}
+
+
               <input
                 type="text"
                 placeholder="Type your message..."

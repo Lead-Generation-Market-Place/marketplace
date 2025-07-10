@@ -1,5 +1,3 @@
-// File: app/actions/message/conversation.ts
-
 'use server';
 import { createClient } from '@/utils/supabase/server';
 
@@ -15,49 +13,46 @@ export async function getConversations(userId: string) {
     return [];
   }
 
-const conversationsWithDetails = await Promise.all(
-  conversations.map(async (conv) => {
-    const otherUserId =
-      conv.customer_id === userId ? conv.professional_id : conv.customer_id;
+  const conversationsWithDetails = await Promise.all(
+    conversations.map(async (conv) => {
+      const otherUserId =
+        conv.customer_id === userId ? conv.professional_id : conv.customer_id;
 
-    // Fetch other user's profile
-    const { data: otherUser } = await supabase
-      .from('users_profiles')
-      .select('id, username, profile_picture_url')
-      .eq('id', otherUserId)
-      .single();
+      // Fetch other user's profile
+      const { data: otherUser } = await supabase
+        .from('users_profiles')
+        .select('id, username, profile_picture_url')
+        .eq('id', otherUserId)
+        .single();
 
-    // Fetch latest message
-    const { data: lastMessage } = await supabase
-      .from('messages')
-      .select('message, file_url, read_at, sent_at')
-      .eq('conversation_id', conv.id)
-      .order('sent_at', { ascending: false })
-      .limit(1)
-      .single();
+      // Fetch latest message
+      const { data: lastMessage } = await supabase
+        .from('messages')
+        .select('message, file_url, read_at, sent_at')
+        .eq('conversation_id', conv.id)
+        .order('sent_at', { ascending: false })
+        .limit(1)
+        .single();
 
-    // Clean up the profile picture file name to avoid double slashes
-    const imageFileName = otherUser?.profile_picture_url?.replace(/^\/+/, '');
+      // Clean up the profile picture file name to avoid double slashes
+      const imageFileName = otherUser?.profile_picture_url?.replace(/^\/+/, '');
 
-    // Construct public image URL from Supabase Storage
-    const profileImageUrl = imageFileName
-      ? `https://hdwfpfxyzubfksctezkz.supabase.co/storage/v1/object/public/userprofilepicture/${imageFileName}`
-      : null;
+      // Construct public image URL from Supabase Storage
+      const profileImageUrl = imageFileName
+        ? `https://hdwfpfxyzubfksctezkz.supabase.co/storage/v1/object/public/userprofilepicture/${imageFileName}`
+        : null;
 
-    return {
-      ...conv,
-      other_user_name: otherUser?.username || 'Unknown',
-      last_message: lastMessage?.message || lastMessage?.file_url || null,
-      last_read_at: lastMessage?.read_at || null,
-      last_sent_at: lastMessage?.sent_at || null,
-      other_user_id: otherUser?.id || null,
-      other_user_profile_picture: profileImageUrl,
-    };
-  })
-);
-
-
-
+      return {
+        ...conv,
+        other_user_name: otherUser?.username || 'Unknown',
+        last_message: lastMessage?.message || lastMessage?.file_url || null,
+        last_read_at: lastMessage?.read_at || null,
+        last_sent_at: lastMessage?.sent_at || null,
+        other_user_id: otherUser?.id || null,
+        other_user_profile_picture: profileImageUrl,
+      };
+    })
+  );
 
   return conversationsWithDetails;
 }
@@ -73,7 +68,6 @@ export async function getMessages(conversationId: string) {
 
   return messages || [];
 }
-
 
 export async function sendMessage(
   conversationId: string,
@@ -94,7 +88,7 @@ export async function sendMessage(
       },
     ])
     .select()
-    .single(); // This returns the inserted row
+    .single();
 
   if (error) {
     console.error('Error sending message:', error.message);
@@ -104,3 +98,20 @@ export async function sendMessage(
   return data;
 }
 
+export async function markMessagesAsRead(conversationId: string, userId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', userId)
+    .is('read_at', null);
+
+  if (error) {
+    console.error('Error marking messages as read:', error.message);
+    return false;
+  }
+
+  return true;
+}
