@@ -142,7 +142,7 @@ const BusinessName = () => {
               </div>
 
               <ul className="mt-5 space-y-2 text-gray-600 dark:text-gray-300 text-sm text-left">
-                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0096C7]" /> 82 hires on Thumbtack</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0096C7]" /> 82 hired</li>
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0096C7]" /> Background checked</li>
                 <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-[#0096C7]" /> 5 years in business</li>
               </ul>

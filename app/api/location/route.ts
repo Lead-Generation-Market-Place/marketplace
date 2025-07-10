@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await GetZipeStateCodes(state);
+    const result = await GetZipeStateCodes();
     return NextResponse.json(result);
   } catch{
     return NextResponse.json(

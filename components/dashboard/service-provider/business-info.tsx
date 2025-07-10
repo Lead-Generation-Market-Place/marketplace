@@ -49,7 +49,7 @@ const BusinessFormSchema = z.object({
       { message: 'Employees must be a non-negative number' }
     ),
 
-  businessType: z.enum(['company', 'handyman']),
+  businessType: z.enum(['company', 'handyman', 'Sub-Contractor']),
 
   // All address fields are optional strings
   streetAddress: z.string().optional(),
@@ -88,7 +88,7 @@ const BusinessInfo = () => {
 
 
   // Track selected businessType in local state (default to "company")
-  const [businessType, setBusinessType] = useState<'company' | 'handyman'>('company')
+  const [businessType, setBusinessType] = useState<'company' | 'handyman' | 'Sub-Contractor'>('company')
 
   // Local state for Dropzone: the chosen File and its preview URL
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -366,12 +366,13 @@ const BusinessInfo = () => {
                 name="businessType"
                 value={businessType}
                 onChange={(e) =>
-                  setBusinessType(e.target.value as 'company' | 'handyman')
+                  setBusinessType(e.target.value as 'company' | 'handyman' | 'Sub-Contractor')
                 }
                 className="mt-2 block w-full appearance-none rounded-[4px] bg-white dark:bg-gray-900 py-1.5 pl-3 pr-8 text-base text-gray-900 dark:text-white placeholder:text-[13px] dark:placeholder-gray-500 outline-1 outline-gray-300 dark:outline-gray-600 focus:outline-1 focus:outline-[#0077B6] focus:outline-offset-2 sm:text-sm"
               >
                 <option value="company">Company</option>
                 <option value="handyman">Handyman</option>
+                <option value="Sub-Contractor">Sub-Contractor</option>
               </select>
               {errors.businessType && (
                 <p className="mt-1 text-red-600 text-[12px]">
@@ -382,6 +383,30 @@ const BusinessInfo = () => {
 
             {/* Conditionally render “Number of Employees” only if businessType === "company" */}
             {businessType === 'company' && (
+              <div className="sm:col-span-3">
+                <label
+                  htmlFor="employees"
+                  className="block text-sm font-medium text-gray-900 dark:text-gray-200"
+                >
+                  Number of Employees
+                </label>
+                <input
+                  id="employees"
+                  name="employees"
+                  type="number"
+                  min={0}
+                  placeholder="Ex: 14"
+                  className="mt-2 block w-full rounded-[4px] bg-white dark:bg-gray-900 px-3 py-1.5 text-base text-gray-900 dark:text-white placeholder:text-[13px] dark:placeholder-gray-500 outline-1 outline-gray-300 dark:outline-gray-600 focus:outline-1 focus:outline-[#0077B6] focus:outline-offset-2 sm:text-sm"
+                />
+                {errors.employees && (
+                  <p className="mt-1 text-red-600 text-[12px]">
+                    {errors.employees}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {businessType === 'Sub-Contractor' && (
               <div className="sm:col-span-3">
                 <label
                   htmlFor="employees"
