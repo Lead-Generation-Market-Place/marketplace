@@ -8,6 +8,8 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import UserDetails from './UserDetails';
 import CameraModal from './CameraModel';
+import { setupPresence } from '@/utils/SetupPresence';
+
 import {
   getConversations,
   getMessages,
@@ -60,6 +62,21 @@ export default function InboxClient({ userId }: { userId: string }) {
   // camera modal state
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraMode, setCameraMode] = useState<'photo' | 'video'>('photo');
+
+  // setup user presence
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, unknown>>({});
+
+  useEffect(() => {
+  if (!userId) return;
+  let cleanup: () => void;
+  (async () => {
+    cleanup = await setupPresence(userId, setOnlineUsers);
+  })();
+  return () => cleanup?.();
+}, [userId]);
+
+console.log("Esmatullah Online Users: ", onlineUsers);
+
 
 
 
@@ -269,7 +286,8 @@ export default function InboxClient({ userId }: { userId: string }) {
     setNewMessage('');
     setMessages((prev) => [...prev, ...messagesToAdd]);
   };
-  console.log('Picture URL:', selectedConversation?.other_user_profile_picture);
+  
+
   return (
     <div className="max-w-screen-xl mx-auto sm:px-6 lg:px-8 overflow-hidden flex flex-col">
       <p className="my-3 font-bold">
@@ -280,27 +298,47 @@ export default function InboxClient({ userId }: { userId: string }) {
         <div className="md:flex-3 flex-1 flex flex-col md:flex-row bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden border p-4 border-gray-300 dark:border-gray-700 rounded-md">
           {/* On small devices: horizontal scroll of user avatars */}
           <div className="md:hidden min-h-[60px] flex items-center space-x-4 overflow-x-auto px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => setSelectedConversation(conv)}
-                className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
-                  selectedConversation?.id === conv.id
-                    ? 'border-blue-500'
-                    : 'border-transparent'
-                }`}
-                aria-label={`Conversation with ${conv.other_user_name}`}
-              >
-                <div className="w-full h-full rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
-                  {conv.other_user_name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </div>
-              </button>
-            ))}
+            {conversations.map((conv) => {
+
+                const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
+
+                console.log("Current online user IDs:", Object.keys(onlineUsers));
+                console.log("Checking user:", conv.other_user_id, " → isOnline:", isOnline);
+                console.log("ONline Users Objects: ", onlineUsers);
+                console.log('Online UUU:', isOnline);
+              return (
+                <button
+                  key={conv.id}
+                  onClick={() => setSelectedConversation(conv)}
+                  className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
+                    selectedConversation?.id === conv.id
+                      ? 'border-blue-500'
+                      : 'border-transparent'
+                  }`}
+                  aria-label={`Conversation with ${conv.other_user_name}`}
+                >
+                  <div className="relative w-full h-full">
+                    <div className="w-full h-full rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+                      {conv.other_user_name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+
+                    {/* Online status dot */}
+                    <span
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                        isOnline ? 'bg-green-500' : 'bg-gray-400'
+                      }`}
+                      title={isOnline ? 'Online' : 'Offline'}
+                    />
+                  </div>
+                </button>
+              );
+            })}
+
           </div>
 
 
@@ -308,85 +346,102 @@ export default function InboxClient({ userId }: { userId: string }) {
           <aside className="hidden md:block w-80 border-r border-gray-300 dark:border-gray-700 overflow-y-auto">
           
             <ul>
-              {conversations.map((conv) => (
-                <li
-                  key={conv.id}
-                  className={`cursor-pointer p-2 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                    selectedConversation?.id === conv.id
-                      ? 'bg-gray-200 dark:bg-gray-700 font-semibold'
-                      : ''
-                  }`}
-                  onClick={() => setSelectedConversation(conv)}>
-                  <div className="flex flex-row items-start space-x-3">
-                  {/* Avatar */}
-                  {conv.other_user_profile_picture ? (
-                    <Image
-                      src={conv.other_user_profile_picture}
-                      alt={conv.other_user_name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900 "
-                      unoptimized
-                    />
-                  ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
-                    {conv.other_user_name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .slice(0, 2)
-                      .toUpperCase()}
-                  </div>
-                  )}
-                  
-                  {/* Unread messages count */}
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-xs truncate">{conv.other_user_name}</span>
-                      <small className="text-[10px] text-gray-500 dark:text-gray-400">
-                        {dayjs(conv.created_at).fromNow()}
-                      </small>
-                    </div>
+              {conversations.map((conv) => {
+                const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
+                console.log("Current online user IDs:", Object.keys(onlineUsers));
+                console.log("Checking user:", conv.other_user_id, " → isOnline:", isOnline);
 
-                    {/* Last message preview */}
-                    {(() => {
-                      const urlPattern = /(https?:\/\/[^\s]+)/g;
-                      const fileExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'mp3', 'mov'];
-                      const match = conv.last_message?.match(urlPattern);
-                      const isFileUrl = match && fileExtensions.some(ext => match[0].toLowerCase().endsWith(`.${ext}`));
-
-                      if (!conv.last_message) {
-                        return (
-                          <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">
-                            Chat with {conv.other_user_name}
-                          </p>
-                        );
-                      }
-
-                      if (isFileUrl) {
-                        return (
-                          <div className="flex items-center space-x-1 text-[10px] text-gray-600 dark:text-gray-400 mt-1">
-                            <Paperclip size={12} />
-                            <span>Attachment</span>
+                console.log("ONline Users Objects: ", onlineUsers);
+                console.log('Online UUU:', isOnline);
+                return (
+                  <li
+                    key={conv.id}
+                    className={`cursor-pointer p-2 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                      selectedConversation?.id === conv.id
+                        ? 'bg-gray-200 dark:bg-gray-700 font-semibold'
+                        : ''
+                    }`}
+                    onClick={() => setSelectedConversation(conv)}
+                  >
+                    <div className="flex flex-row items-start space-x-3 relative">
+                      {/* Avatar */}
+                      <div className="relative">
+                        {conv.other_user_profile_picture ? (
+                          <Image
+                            src={conv.other_user_profile_picture}
+                            alt={conv.other_user_name}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+                            {conv.other_user_name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
                           </div>
-                        );
-                      }
+                        )}
 
-                      return (
-                        <p className="text-[10px] text-gray-600 dark:text-gray-400 truncate mt-1">
-                          {conv.last_message.length > 50
-                            ? conv.last_message.slice(0, 50) + '...'
-                            : conv.last_message}
-                        </p>
-                      );
-                    })()}
+                        {/* Online status dot */}
+                        <span
+                          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                            isOnline ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
+                          title={isOnline ? 'Online' : 'Offline'}
+                        />
+                      </div>
 
-                    
-                  </div>
-                </div>
-                </li>
-              ))}
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-xs truncate">{conv.other_user_name}</span>
+                          <small className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {dayjs(conv.created_at).fromNow()}
+                          </small>
+                        </div>
+
+                        {/* Last message preview */}
+                        {(() => {
+                          const urlPattern = /(https?:\/\/[^\s]+)/g;
+                          const fileExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp4', 'mp3', 'mov'];
+                          const match = conv.last_message?.match(urlPattern);
+                          const isFileUrl = match && fileExtensions.some(ext => match[0].toLowerCase().endsWith(`.${ext}`));
+
+                          if (!conv.last_message) {
+                            return (
+                              <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">
+                                Chat with {conv.other_user_name}
+                              </p>
+                            );
+                          }
+
+                          if (isFileUrl) {
+                            return (
+                              <div className="flex items-center space-x-1 text-[10px] text-gray-600 dark:text-gray-400 mt-1">
+                                <Paperclip size={12} />
+                                <span>Attachment</span>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <p className="text-[10px] text-gray-600 dark:text-gray-400 truncate mt-1">
+                              {conv.last_message.length > 50
+                                ? conv.last_message.slice(0, 50) + '...'
+                                : conv.last_message}
+                            </p>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+
             </ul>
           </aside>
 
