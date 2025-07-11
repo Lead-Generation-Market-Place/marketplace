@@ -303,7 +303,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                   <button
                     key={conv.id}
                     onClick={() => setSelectedConversation(conv)}
-                    className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200
+                    className={`flex-shrink-0 w-12 h-12 rounded-full transition-colors duration-200
                      `}
                     aria-label={`Conversation with ${conv.other_user_name}`}
                   >
@@ -314,7 +314,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                           alt={conv.other_user_name}
                           width={40}
                           height={40}
-                          className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                          className={`w-10 h-10 rounded-full border object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
                               ${
                                   conv.other_user_id &&
                                   conv.other_user_id in onlineUsers
@@ -324,7 +324,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                           unoptimized
                         />
                       ):(
-                        <div className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                        <div className={`w-10 h-10 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
                           ${
                               conv.other_user_id &&
                               conv.other_user_id in onlineUsers
@@ -343,7 +343,7 @@ export default function InboxClient({ userId }: { userId: string }) {
 
                       {/* Online status dot */}
                       <span
-                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                        className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 ${
                           isOnline ? 'bg-green-500' : 'bg-gray-400'
                         }`}
                         title={isOnline ? 'Online' : 'Offline'}
@@ -381,7 +381,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                             alt={conv.other_user_name}
                             width={40}
                             height={40}
-                            className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                            className={`w-10 h-10 rounded-full border object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
                                 ${
                                     conv.other_user_id &&
                                     conv.other_user_id in onlineUsers
@@ -391,7 +391,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                             unoptimized
                           />
                         ) : (
-                          <div className={`w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
+                          <div className={`w-10 h-10 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
                                 ${
                                     conv.other_user_id &&
                                     conv.other_user_id in onlineUsers
@@ -483,7 +483,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                       width={40}
                       height={40}
                       unoptimized
-                      className={`w-8 h-8 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                      className={`w-8 h-8 rounded-full border object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
                         ${
                         selectedConversation.other_user_id &&
                         selectedConversation.other_user_id in onlineUsers
@@ -492,7 +492,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                       } `}
                     />
                   ) : (
-                    <div className={`w-8 h-8 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                    <div className={`w-8 h-8 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
                     ${
                       selectedConversation.other_user_id &&
                       selectedConversation.other_user_id in onlineUsers
@@ -510,7 +510,7 @@ export default function InboxClient({ userId }: { userId: string }) {
 
                   {/* Online status dot */}
                   <span
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                    className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${
                       selectedConversation.other_user_id &&
                       selectedConversation.other_user_id in onlineUsers
                         ? 'bg-green-500'
@@ -568,7 +568,8 @@ export default function InboxClient({ userId }: { userId: string }) {
                       {/* Left Side: Avatar (only for other user) */}
                       {!isMine && (
                         <div className="mr-2">
-                          <Image
+                          {selectedConversation.other_user_profile_picture ? (
+                            <Image
                             src={selectedConversation.other_user_profile_picture || '/default-avatar.png'}
                             alt={selectedConversation.other_user_name || 'User'}
                             width={32}
@@ -576,6 +577,16 @@ export default function InboxClient({ userId }: { userId: string }) {
                             unoptimized
                             className="w-6 h-6 rounded-full object-cover shadow border border-gray-300 dark:border-gray-700"
                           />
+                          ):(
+                            <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-xs">
+                              {selectedConversation.other_user_name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -769,7 +780,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                 }`}
                 title="Send message"
               >
-                {uploading ? 'Sending...' : <Send size={20} />}
+                {uploading ? '...' : <Send size={20} />}
               </button>
             </form>
           </div>
