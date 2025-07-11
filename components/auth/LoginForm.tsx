@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import AuthButton from "@/components/auth/AuthButton";
-import { signIn, getUserAndProvider } from "@/actions/auth/auth";
+import { signIn } from "@/actions/auth/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -25,20 +25,8 @@ const LoginForm = () => {
         });
         return;
       }
+      router.push("/home");
 
-      const { provider, error } = await getUserAndProvider();
-
-      if (error) {
-        toast.error(error);
-        router.replace("/");
-        return;
-      }
-
-      if (provider) {
-        router.replace("/professional/profile-setup");
-      } else {
-        router.replace("/home");
-      }
     } catch (error) {
       console.error("Unexpected error during login:", error);
       toast.error("An unexpected error occurred.");

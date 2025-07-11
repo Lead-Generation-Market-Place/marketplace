@@ -13,7 +13,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
     .eq("category_id", categoryId);
 
   if (error || !subcategories) {
-    console.error(error);
     return notFound();
   }
 

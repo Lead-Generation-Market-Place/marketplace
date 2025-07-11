@@ -48,7 +48,7 @@ const BusinessName = () => {
     if (phone) params.set('phone', phone)
     startTransition(() => {
       router.push(
-        `/professional/business-info?${params.toString()}`
+        `/onboarding/business-info?${params.toString()}`
       );
     });
   }

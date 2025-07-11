@@ -1,46 +1,43 @@
 "use client";
-
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  useTransition,
-} from "react";
-import { useRouter } from "next/navigation";
+import React, { useRef, useState, useEffect, useCallback, useTransition, useMemo, } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Circle,
-  StandaloneSearchBox,
-} from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Circle, StandaloneSearchBox, } from "@react-google-maps/api";
 import { Loader2 } from "lucide-react";
 import { saveCoordinates } from "@/actions/locations/saveCoordinates";
 import { Libraries } from "@react-google-maps/api";
-
 const libraries: Libraries = ["places"];
-
 const containerStyle = {
   width: "100%",
   height: "400px",
 };
-
 const TAB_OPTIONS = [
   { label: "Select by Distance", value: "distance" },
   { label: "Advanced", value: "advanced" },
 ];
-
 const milesToMeters = (miles: number) => miles * 1609.34;
-
 const Map = () => {
+  const searchParams = useSearchParams();
+  // Memoize search params to prevent unnecessary recalculations
+  const { businessName, location, email, phone, timezone, services } = useMemo(() => {
+    const servicesParam = searchParams.get("services") || "";
+    return {
+      businessName: searchParams.get("businessName") ?? "",
+      location: searchParams.get("location") ?? "",
+      email: searchParams.get("email") ?? "",
+      phone: searchParams.get("phone") ?? "",
+      timezone: searchParams.get("timezone") ?? "",
+      services: servicesParam
+        .split(",")
+        .map(Number)
+        .filter((n) => !isNaN(n)),
+    };
+  }, []);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
   const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
-
   const [activeTab, setActiveTab] = useState("distance");
   const [radiusMiles, setRadiusMiles] = useState(10);
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
@@ -51,16 +48,13 @@ const Map = () => {
     state?: string;
     zip?: string;
   } | null>(null);
-
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries,
   });
-
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
   }, []);
-
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -73,7 +67,6 @@ const Map = () => {
           setSelectedLocation({ ...userLoc });
         },
         () => {
-          console.warn("Geolocation denied.");
         }
       );
     }
@@ -114,9 +107,17 @@ const Map = () => {
 
     try {
       startTransition(async () => {
-        await saveCoordinates({ ...selectedLocation, radiusMiles });
-        toast.success("Location saved!");
-        router.push("/professional/service_questions");
+        const urldata = new URLSearchParams({
+          businessName,
+          location,
+          email,
+          phone,
+          timezone,
+          services: services.join(","),
+        });
+        console.log("Saving coordinates:", services)
+        await saveCoordinates({ ...selectedLocation, radiusMiles, services });
+        router.push(`/onboarding/service_questions?${urldata.toString()}`);
       });
     } catch (err) {
       toast.error((err as Error).message);
@@ -145,11 +146,10 @@ const Map = () => {
           {TAB_OPTIONS.map((tab) => (
             <li className="me-2" key={tab.value}>
               <button
-                className={`inline-block p-2.5 border-b-2 rounded-t-lg transition-colors duration-200 ${
-                  activeTab === tab.value
-                    ? "text-[#0077B6] border-[#0077B6]"
-                    : "text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300"
-                }`}
+                className={`inline-block p-2.5 border-b-2 rounded-t-lg transition-colors duration-200 ${activeTab === tab.value
+                  ? "text-[#0077B6] border-[#0077B6]"
+                  : "text-gray-500 border-transparent hover:text-gray-600 hover:border-gray-300"
+                  }`}
                 onClick={() => setActiveTab(tab.value)}
               >
                 {tab.label}

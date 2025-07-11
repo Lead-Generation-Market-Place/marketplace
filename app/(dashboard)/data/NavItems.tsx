@@ -16,7 +16,7 @@ export type NavItem = {
 };
 
 export const defaultNavItems: NavItem[] = [
-  { name: "Sign up as a Pro", path: "/professional", icon: <Briefcase size={18} /> },
+  { name: "Sign up as a Pro", path: "/onboarding", icon: <Briefcase size={18} /> },
   { name: "Book Service", path: "/Book_Service", icon: <Calendar size={18} /> },
   { name: "Team", path: "/team", icon: <Users size={18} /> },
   { name: "Inbox", path: "/inbox", icon: <Mail size={18} /> },

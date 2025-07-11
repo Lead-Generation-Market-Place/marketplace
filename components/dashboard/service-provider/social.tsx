@@ -74,7 +74,7 @@ export default function VerifyPage() {
     }
 
     startTransition(() => {
-      router.push(`/professional/onboarding?${params.toString()}`);
+      router.push(`/onboarding/onboarding?${params.toString()}`);
     });
   };
 

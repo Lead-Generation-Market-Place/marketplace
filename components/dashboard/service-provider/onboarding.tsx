@@ -45,7 +45,7 @@ export default function Onboarding() {
       services: queryData.services, // <-- pass services forward
     });
 
-    router.push(`/professional/businessName?${query.toString()}`);
+    router.push(`/onboarding/businessName?${query.toString()}`);
   };
 
   return (

@@ -59,7 +59,7 @@ export default function SelectServices() {
     });
 
     startTransition(() => {
-      router.push(`/professional/service_questions?${params.toString()}`);
+      router.push(`/onboarding/service_questions?${params.toString()}`);
     });
   };
 
@@ -90,7 +90,7 @@ export default function SelectServices() {
               Select your primary service.
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-base mb-5 text-[13px]">
-              Choose from our list of professional services to get started.
+              Choose from our list of onboarding services to get started.
             </p>
 
             <div className="space-y-4">
