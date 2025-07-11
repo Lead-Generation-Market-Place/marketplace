@@ -26,11 +26,11 @@ export default function Onboarding() {
     }).toString();
 
   const handleNext = () => {
-    router.push(`/professional/ask-reviews?${buildQueryString()}`);
+    router.push(`/onboarding/ask-reviews?${buildQueryString()}`);
   };
 
   const handleBack = () => {
-    router.push(`/professional/business-info?${buildQueryString()}`);
+    router.push(`/onboarding/business-info?${buildQueryString()}`);
   };
 
   return (

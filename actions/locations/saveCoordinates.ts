@@ -6,10 +6,12 @@ export async function saveCoordinates({
   lat,
   lng,
   radiusMiles,
+  services
 }: {
   lat: number;
   lng: number;
   radiusMiles?: number;
+  services: number[];
 }) {
   const supabase = await createClient();
 
@@ -17,6 +19,7 @@ export async function saveCoordinates({
   const pointWKT = `SRID=4326;POINT(${lng} ${lat})`;
 
   const { error } = await supabase.from("service_locations").insert({
+    serviceId: services[0],
     lat,
     lng,
     coordinates: pointWKT,

@@ -111,7 +111,7 @@ const SearchServices = () => {
       const query = new URLSearchParams();
       query.append("services", data.services.join(","));
       query.append("location", data.location);
-      router.push(`/professional/social?${query.toString()}`);
+      router.push(`/onboarding/social?${query.toString()}`);
     } catch {
       toast.error("Failed to save services");
     } finally {
@@ -150,11 +150,11 @@ const SearchServices = () => {
         currentStep={currentStep}
         totalSteps={ONBOARDING_STEPS.length}
         steps={ONBOARDING_STEPS}
-        className="mb-8"
+        className="mb-2"
       />
       <div className="py-4 mx-auto p-6 bg-white dark:bg-gray-900 dark:border-gray-700 ">
         <h2 className="text-xl font-semibold text-[#0077B6] dark:text-[#90e0ef] mb-2">Sign up as a Professional</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Connect with top Customers in your area</p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Connect with top Customers in your area</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
@@ -285,7 +285,7 @@ const SearchServices = () => {
         </form>
 
         {/* Support Info */}
-        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-xs text-gray-600 dark:text-gray-300">
             <p className="font-medium text-[#0077B6] dark:text-[#90e0ef]">Need assistance?</p>
             <p className="mt-1">Call us at: <a href="tel:+12028304424" className="text-[#0077B6] hover:underline">+1 (202) 830-4424</a></p>

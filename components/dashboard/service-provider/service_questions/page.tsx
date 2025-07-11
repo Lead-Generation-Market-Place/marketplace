@@ -54,7 +54,7 @@ export default function MultiChoiceServiceForm() {
 
   // Prefetch the next page's data when component mounts
   useEffect(() => {
-    router.prefetch("/professional/preference-geo");
+    router.prefetch("/onboarding/preference-geo");
   }, [router]);
 
   // Optimized question fetching
@@ -132,7 +132,7 @@ export default function MultiChoiceServiceForm() {
       const [submitResult] = await Promise.all([
         SubmitAnswers(payload),
         // Prefetch the next route while submitting
-        router.prefetch("/professional/preference-geo")
+        router.prefetch("/onboarding/preference-geo")
       ]);
 
       if (!submitResult.success) {
@@ -141,7 +141,7 @@ export default function MultiChoiceServiceForm() {
       }
 
       // Navigation will be instant since we prefetched
-      router.push(`/professional/preference-geo?${new URLSearchParams({
+      router.push(`/onboarding/preference-geo?${new URLSearchParams({
         businessName,
         location,
         email,

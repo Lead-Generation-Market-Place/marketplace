@@ -50,11 +50,11 @@ export default function WorkControlCard() {
 
   const handleNext = () => {
     setIsPending(true);
-    router.push(`/professional/daytime?${buildParams()}`);
+    router.push(`/onboarding/daytime?${buildParams()}`);
   };
 
   const handleBack = () => {
-    router.push(`/professional/ask-reviews?${buildParams()}`);
+    router.push(`/onboarding/ask-reviews?${buildParams()}`);
   };
 
   return (

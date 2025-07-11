@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
 import { ImagePlus, Loader2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { businessInfo } from '@/app/(dashboard)/professional/business-info/actions'
+import { businessInfo } from '@/app/(dashboard)/onboarding/business-info/actions'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { ProgressBar } from "@/components/ui/Progressbar";
@@ -204,7 +204,7 @@ const BusinessInfo = () => {
 
 
       startTransition(() => {
-        window.location.href = `/professional/ask-reviews?${params.toString()}`
+        window.location.href = `/onboarding/ask-reviews?${params.toString()}`
       })
     }
     else {

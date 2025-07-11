@@ -152,12 +152,12 @@ export default function AvailabilityForm({
 
         if (services.length > 1) {
           // Multiple services – go to service selection modal
-          router.push(`/professional/primaryServiceModal?${params.toString()}`);
+          router.push(`/onboarding/primaryServiceModal?${params.toString()}`);
         } else {
           // Only one service – include serviceId explicitly
           params.set('services', services[0].toString());
 
-          router.push(`/professional/service_questions?${params.toString()}`);
+          router.push(`/onboarding/service_questions?${params.toString()}`);
         }
       } else {
         toast.error(`Error: ${result.message}`);

@@ -113,7 +113,7 @@ export default function ReviewRequest() {
     if (parsedServices.length > 0) params.set('services', parsedServices.join(',')) // ✅ Pass as CSV
 
     startTransition(() => {
-      router.push(`/professional/preference-intro?${params.toString()}`);
+      router.push(`/onboarding/preference-intro?${params.toString()}`);
     });
   };
 
@@ -124,7 +124,7 @@ export default function ReviewRequest() {
     if (email) params.set('email', email);
     if (phone) params.set('phone', phone);
 
-    router.push(`/professional/business-info?${params.toString()}`);
+    router.push(`/onboarding/business-info?${params.toString()}`);
   };
 
   const reviewLink = typeof window !== 'undefined' && userId
