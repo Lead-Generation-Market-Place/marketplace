@@ -75,7 +75,6 @@ export default function InboxClient({ userId }: { userId: string }) {
   return () => cleanup?.();
 }, [userId]);
 
-console.log("Esmatullah Online Users: ", onlineUsers);
 
 
 
@@ -299,45 +298,60 @@ console.log("Esmatullah Online Users: ", onlineUsers);
           {/* On small devices: horizontal scroll of user avatars */}
           <div className="md:hidden min-h-[60px] flex items-center space-x-4 overflow-x-auto px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
             {conversations.map((conv) => {
-
                 const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => setSelectedConversation(conv)}
+                    className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200
+                     `}
+                    aria-label={`Conversation with ${conv.other_user_name}`}
+                  >
+                    <div className="relative w-full h-full">
+                      {conv.other_user_profile_picture ? (
+                        <Image
+                          src={conv.other_user_profile_picture}
+                          alt={conv.other_user_name}
+                          width={40}
+                          height={40}
+                          className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                              ${
+                                  conv.other_user_id &&
+                                  conv.other_user_id in onlineUsers
+                                    ? 'ring-green-500'
+                                    : 'ring-gray-400'
+                                } `}
+                          unoptimized
+                        />
+                      ):(
+                        <div className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                          ${
+                              conv.other_user_id &&
+                              conv.other_user_id in onlineUsers
+                                ? 'ring-green-500'
+                                : 'ring-gray-400'
+                            } `}>
+                            {conv.other_user_name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
+                      </div>
+                      )}
+                      
 
-                console.log("Current online user IDs:", Object.keys(onlineUsers));
-                console.log("Checking user:", conv.other_user_id, " → isOnline:", isOnline);
-                console.log("ONline Users Objects: ", onlineUsers);
-                console.log('Online UUU:', isOnline);
-              return (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedConversation(conv)}
-                  className={`flex-shrink-0 w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
-                    selectedConversation?.id === conv.id
-                      ? 'border-blue-500'
-                      : 'border-transparent'
-                  }`}
-                  aria-label={`Conversation with ${conv.other_user_name}`}
-                >
-                  <div className="relative w-full h-full">
-                    <div className="w-full h-full rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
-                      {conv.other_user_name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase()}
+                      {/* Online status dot */}
+                      <span
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                          isOnline ? 'bg-green-500' : 'bg-gray-400'
+                        }`}
+                        title={isOnline ? 'Online' : 'Offline'}
+                      />
                     </div>
-
-                    {/* Online status dot */}
-                    <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
-                        isOnline ? 'bg-green-500' : 'bg-gray-400'
-                      }`}
-                      title={isOnline ? 'Online' : 'Offline'}
-                    />
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
 
           </div>
 
@@ -347,12 +361,7 @@ console.log("Esmatullah Online Users: ", onlineUsers);
           
             <ul>
               {conversations.map((conv) => {
-                const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
-                console.log("Current online user IDs:", Object.keys(onlineUsers));
-                console.log("Checking user:", conv.other_user_id, " → isOnline:", isOnline);
-
-                console.log("ONline Users Objects: ", onlineUsers);
-                console.log('Online UUU:', isOnline);
+                const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;  
                 return (
                   <li
                     key={conv.id}
@@ -372,11 +381,23 @@ console.log("Esmatullah Online Users: ", onlineUsers);
                             alt={conv.other_user_name}
                             width={40}
                             height={40}
-                            className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900"
+                            className={`w-10 h-10 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                                ${
+                                    conv.other_user_id &&
+                                    conv.other_user_id in onlineUsers
+                                      ? 'ring-green-500'
+                                      : 'ring-gray-400'
+                                  } `}
                             unoptimized
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
+                          <div className={`w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
+                                ${
+                                    conv.other_user_id &&
+                                    conv.other_user_id in onlineUsers
+                                      ? 'ring-green-500'
+                                      : 'ring-gray-400'
+                                  } `}>
                             {conv.other_user_name
                               .split(' ')
                               .map((n) => n[0])
@@ -449,10 +470,12 @@ console.log("Esmatullah Online Users: ", onlineUsers);
         <section className="flex flex-col flex-1 min-h-0 overflow-hidden relative">
           {/* Header */}
           <header className="shrink-0 px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 z-10">
+            
             {selectedConversation ? (
-              <div className="w-full">
-                <div className="flex items-center space-x-3">
-                  {/* Avatar */}
+            <div className="w-full">
+              <div className="flex items-center space-x-3">
+                {/* Avatar */}
+                <div className="relative">
                   {selectedConversation.other_user_profile_picture ? (
                     <Image
                       src={selectedConversation.other_user_profile_picture}
@@ -460,37 +483,70 @@ console.log("Esmatullah Online Users: ", onlineUsers);
                       width={40}
                       height={40}
                       unoptimized
-                      className="w-8 h-8 rounded-full object-cover ring-2 ring-sky-500 ring-offset-4 ring-offset-slate-50 dark:ring-offset-slate-900 "/>
+                      className={`w-8 h-8 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                        ${
+                        selectedConversation.other_user_id &&
+                        selectedConversation.other_user_id in onlineUsers
+                          ? 'ring-green-500'
+                          : 'ring-gray-400'
+                      } `}
+                    />
                   ) : (
-                  <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm">
-                    {selectedConversation.other_user_name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .slice(0, 2)
-                      .toUpperCase()}
-                  </div>
+                    <div className={`w-8 h-8 rounded-full object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                    ${
+                      selectedConversation.other_user_id &&
+                      selectedConversation.other_user_id in onlineUsers
+                        ? 'ring-green-500'
+                        : 'ring-gray-400'
+                    }`}>
+                      {selectedConversation.other_user_name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
                   )}
-                  {/* Name and Typing/Last Seen */}
-                  <div className="flex flex-col">
-                    <h2 className="text-xs font-semibold leading-tight">
-                      {selectedConversation.other_user_name}
-                    </h2>
-                    {typing === true ? (
-                      <span className="text-[10px] text-sky-500 dark:text-sky-600">
-                        Typing...
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                        Last message {dayjs(selectedConversation.created_at).fromNow()}
-                      </span>
-                    )}
-                  </div>
+
+                  {/* Online status dot */}
+                  <span
+                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${
+                      selectedConversation.other_user_id &&
+                      selectedConversation.other_user_id in onlineUsers
+                        ? 'bg-green-500'
+                        : 'bg-gray-400'
+                    }`}
+                    title={
+                      selectedConversation.other_user_id &&
+                      selectedConversation.other_user_id in onlineUsers
+                        ? 'Online'
+                        : 'Offline'
+                    }
+                  />
+                </div>
+
+                {/* Name and Typing/Last Seen */}
+                <div className="flex flex-col">
+                  <h2 className="text-xs font-semibold leading-tight">
+                    {selectedConversation.other_user_name}
+                  </h2>
+                  {typing ? (
+                    <span className="text-[10px] text-sky-500 dark:text-sky-600">Typing...</span>
+                  ) : (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {selectedConversation.other_user_id &&
+                      selectedConversation.other_user_id in onlineUsers
+                        ? 'Online'
+                        : `Last message ${dayjs(selectedConversation.created_at).fromNow()}`}
+                    </span>
+                  )}
                 </div>
               </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400">Select a conversation</p>
-            )}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400">Select a conversation</p>
+          )}
+
           </header>
           {/* Messages area */}
             
