@@ -117,7 +117,7 @@ const Map = () => {
         });
         console.log("Saving coordinates:", services)
         await saveCoordinates({ ...selectedLocation, radiusMiles, services });
-        router.push(`/onboarding/service_questions?${urldata.toString()}`);
+        router.push(`/onboarding/budget?${urldata.toString()}`);
       });
     } catch (err) {
       toast.error((err as Error).message);
