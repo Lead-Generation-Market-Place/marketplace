@@ -27,51 +27,57 @@ export default function PopularService({ data }: PopularServiceProps) {
   };
 
   return (
-    <div className="py-15 bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className=" bg-white dark:bg-gray-900 transition-colors duration-300">
       <div className="mx-2 sm:mx-4 md:mx-6 lg:mx-8 xl:mx-12 2xl:mx-16">
-        <div className="flex justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors duration-300">
-            Services people love in{" "}
-            <span className="text-sky-500 dark:text-sky-300">Your Area</span>
-          </h2>
-          <Link
-            href="#"
-            className="underline hover:text-sky-500 dark:hover:text-sky-300 text-xs font-500 text-gray-700 dark:text-gray-200 transition-colors duration-300"
-          >
-            All Services
-          </Link>
+       
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <h2 className="text-md lg:text-xl md:text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-300">
+              Services people love in{" "}
+              <span className="text-sky-500 dark:text-sky-300">Your Area</span>
+            </h2>
+            <p className="text-xs py-1 text-gray-600 dark:text-gray-400">
+              We&apos;ve gathered the most popular servies People around you are using.
+            </p>
+          </div>
+          <div className="flex flex-row gap-2 justify-center items-center my-2">
+            <Link
+              href="#"
+              className="active:bg-sky-500 active:text-white px-4 py-1 text-xs bg-gray-200 dark:bg-gray-800 hover:bg-sky-500 hover:text-white rounded border border-gray-200 dark:border-gray-800 dark:hover:bg-sky-700 text-gray-800 dark:text-white transition-colors duration-300">
+              All Services
+            </Link>
+          </div>
+        
+          
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {data.length ? (
-            data.map((service, idx) => (
-              <div
-                key={service.id}
-                className="relative w-full h-48 sm:h-40 md:h-44 lg:h-52 rounded-lg overflow-hidden shadow-md dark:shadow-gray-700 cursor-pointer group"
-                onClick={() => loadQuestion(service)}
-              >
-                {service.imageUrl ? (
-                  <>
-                    <Image
+            data.map((service) => (
+              // service card
+              <div 
+              key={service.id} 
+              onClick={() => loadQuestion(service)}
+              className="transform transition duration-300 hover:scale-110 h-42 w-auto rounded border border-gray-200 dark:border-gray-700 hover:shadow-xl bg-white dark:bg-gray-800 cursor-pointer">
+                  <div className="m-2 h-2/3 rounded-lg">
+                    {service.imageUrl ? (
+                    <>
+                      <Image
                       src={service.imageUrl}
-                      alt={`${service.name} image`}
-                      fill
-                      className="object-cover brightness-50 transition-transform duration-300 group-hover:scale-105"
-                      unoptimized={true}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      priority={idx < 3}
-                    />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white pointer-events-none drop-shadow-lg">
-                      <h3 className="text-xl font-bold drop-shadow-md capitalize">
-                        {service.name}
-                      </h3>
+                      width={224}
+                      height={128}
+                      alt={service.name}
+                      className="object-cover w-full h-full rounded"/>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full bg-gray-200 dark:bg-gray-700">
+                      <p className="text-gray-500 dark:text-gray-300">Loading image...</p>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full bg-gray-200 dark:bg-gray-700">
-                    <p className="text-gray-500 dark:text-gray-300">Loading image...</p>
+                  )}
                   </div>
-                )}
+                  <div className="px-5 flex flex-col pb-2">
+                      <h2 className="font-semibold text-xs capitalize">{service.name}</h2>
+                  </div>
               </div>
             ))
           ) : (

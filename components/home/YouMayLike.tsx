@@ -24,7 +24,7 @@ const YouMayLike = ({ data }: YouMayLikeProps) => {
     <div
       className="
       bg-white dark:bg-gray-900 
-      transition-colors duration-300 pb-15"
+      transition-colors duration-300"
     >
       <div className="mx-2 sm:mx-4 md:mx-6 lg:mx-8 xl:mx-12 2xl:mx-16">
         {/* Title */}
@@ -42,21 +42,21 @@ const YouMayLike = ({ data }: YouMayLikeProps) => {
             {data.length > 0 ? (
               data.map((service, idx) => (
                 <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                  <div>
+                  <div className="">
                     {/* Image */}
                     <div>
                       <Image
                         src={service.imageUrl?? ''}
                         alt={service.name}
-                        className="w-full h-48 object-cover rounded"
+                        className="w-full h-36 object-cover rounded"
                         width={400}
                         height={300}
                         unoptimized={true}
                       />
                     </div>
                     {/* Name */}
-                    <div>
-                      <h1 className="text-lg py-2 font-semibold">{service.name}</h1>
+                    <div className="px-2">
+                      <h1 className="text-sm py-2 font-semibold capitalize">{service.name}</h1>
                     </div>
                   </div>
                 </CarouselItem>
