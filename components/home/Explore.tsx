@@ -33,7 +33,7 @@ const Explore = ({ data }: ExploreProps) => {
   const categoryObj = data.find((cat) => cat.id === selectedCategoryId);
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-10 bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 bg-white dark:bg-gray-900 transition-colors duration-300">
       <h2 className="text-lg sm:text-xl font-semibold py-2 text-gray-900 dark:text-white">
         Explore more projects
       </h2>
@@ -96,7 +96,7 @@ const Explore = ({ data }: ExploreProps) => {
                       key={service.id}
                       className="basis-[90%] sm:basis-1/3 lg:basis-1/3 px-1"
                     >
-                      <div className="flex flex-col justify-start bg-white dark:bg-gray-800 rounded-md overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
+                      <div className="flex flex-col justify-start bg-white dark:bg-gray-800 rounded overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
                         <Image
                           src={service.imageUrl || "/images/image4.jpg"}
                           width={400}
@@ -105,12 +105,13 @@ const Explore = ({ data }: ExploreProps) => {
                           className="w-full h-32 object-cover mb-2"
                           unoptimized
                         />
-                        <div className="p-3 text-start">
-                          <p className="font-semibold text-gray-800 dark:text-gray-100">
+                        <div className="px-2 pb-2 text-start">
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 capitalize">
                             {service.name}
                           </p>
-                          <LocateFixed className="text-sky-500 inline-block mr-1 text-xs" />
-                          <span className="text-sm text-gray-600 dark:text-gray-300">
+                          
+                          <span className="text-xs text-gray-600 dark:text-gray-300">
+                            <LocateFixed className="text-sky-500 inline-block mr-1 w-4 h-4" />
                             See pros near you
                           </span>
                         </div>
@@ -119,6 +120,7 @@ const Explore = ({ data }: ExploreProps) => {
                   ))}
                 </CarouselContent>
                 <CarouselPrevious className="absolute top-1/2 -left-4 sm:-left-6" />
+                <CarouselNext className="absolute top-1/2 -right-4 sm:-right-6" /><CarouselPrevious className="absolute top-1/2 -left-4 sm:-left-6" />
                 <CarouselNext className="absolute top-1/2 -right-4 sm:-right-6" />
               </Carousel>
             ) : (

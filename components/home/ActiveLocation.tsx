@@ -6,11 +6,9 @@ const MapView = dynamic(() => import('./MapView'), { ssr: false });
 
 const ActiveLocation = () => {
   return (
-    <div className="p-4 ">
-      <div className="w-full">
+      <div className="w-full p-4">
         <MapView />
       </div>
-    </div>
   );
 };
 
