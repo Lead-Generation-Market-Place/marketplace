@@ -23,7 +23,7 @@ export const defaultNavItems: NavItem[] = [
 ];
 
 export const serviceProviderNavItems: NavItem[] = [
-  { name: "My Services", path: "/professional/servicesPro", icon: <Layers size={18} /> },
+  { name: "My Services", path: "/professional/services/read", icon: <Layers size={18} /> },
   { name: "Loads", path: "/offers", icon: <Briefcase size={18} /> },
   { name: "Inbox", path: "/inbox", icon: <Mail size={18} /> },
   { name: "Performance", path: "/performance", icon: <Settings size={18} /> },
