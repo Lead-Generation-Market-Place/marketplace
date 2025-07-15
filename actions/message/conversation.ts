@@ -13,46 +13,69 @@ export async function getConversations(userId: string) {
     return [];
   }
 
-  const conversationsWithDetails = await Promise.all(
-    conversations.map(async (conv) => {
-      const otherUserId =
-        conv.customer_id === userId ? conv.professional_id : conv.customer_id;
+const conversationsWithDetails = await Promise.all(
+  conversations.map(async (conv) => {
+    const otherUserId =
+      conv.customer_id === userId ? conv.professional_id : conv.customer_id;
 
-      // Fetch other user's profile
-      const { data: otherUser } = await supabase
-        .from('users_profiles')
-        .select('id, username, profile_picture_url')
-        .eq('id', otherUserId)
-        .single();
+    // Fetch other user's profile
+    const { data: otherUser } = await supabase
+      .from('users_profiles')
+      .select(`
+        id,
+        username,
+        profile_picture_url,
+        service_providers (
+          business_name
+        )
+      `)
+      .eq('id', otherUserId)
+      .single();
+    console.log('Other User:', otherUser);
+    // Fetch latest message
+    const { data: lastMessage } = await supabase
+      .from('messages')
+      .select('message, file_url, read_at, sent_at')
+      .eq('conversation_id', conv.id)
+      .order('sent_at', { ascending: false })
+      .limit(1)
+      .single();
 
-      // Fetch latest message
-      const { data: lastMessage } = await supabase
-        .from('messages')
-        .select('message, file_url, read_at, sent_at')
-        .eq('conversation_id', conv.id)
-        .order('sent_at', { ascending: false })
-        .limit(1)
-        .single();
+    // Clean up the profile picture file name to avoid double slashes
+    const imageFileName = otherUser?.profile_picture_url?.replace(/^\/+/, '');
 
-      // Clean up the profile picture file name to avoid double slashes
-      const imageFileName = otherUser?.profile_picture_url?.replace(/^\/+/, '');
+    // Construct public image URL from Supabase Storage
+    const profileImageUrl = imageFileName
+      ? `https://hdwfpfxyzubfksctezkz.supabase.co/storage/v1/object/public/userprofilepicture/${imageFileName}`
+      : null;
 
-      // Construct public image URL from Supabase Storage
-      const profileImageUrl = imageFileName
-        ? `https://hdwfpfxyzubfksctezkz.supabase.co/storage/v1/object/public/userprofilepicture/${imageFileName}`
-        : null;
+    // Use first service_providers record if available (it's an array)
+    const businessName = (() => {
+      if (!otherUser?.service_providers) return null;
+      if (Array.isArray(otherUser.service_providers)) {
+        return otherUser.service_providers.length > 0
+          ? otherUser.service_providers[0].business_name
+          : null;
+      }
+      return (otherUser.service_providers as { business_name?: string })?.business_name || null;
+    })();
+    const otherUserName = businessName || otherUser?.username || 'Unknown';
 
-      return {
-        ...conv,
-        other_user_name: otherUser?.username || 'Unknown',
-        last_message: lastMessage?.message || lastMessage?.file_url || null,
-        last_read_at: lastMessage?.read_at || null,
-        last_sent_at: lastMessage?.sent_at || null,
-        other_user_id: otherUser?.id || null,
-        other_user_profile_picture: profileImageUrl,
-      };
-    })
-  );
+  return {
+    ...conv,
+    other_user_id: otherUser?.id || null,
+    other_user_name: otherUserName,
+    other_user_profile_picture: profileImageUrl,
+    business_name: businessName,
+    last_message: lastMessage?.message || lastMessage?.file_url || null,
+    last_read_at: lastMessage?.read_at || null,
+    last_sent_at: lastMessage?.sent_at || null,
+  };
+
+  })
+);
+
+
 
   return conversationsWithDetails;
 }

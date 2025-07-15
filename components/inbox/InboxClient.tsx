@@ -294,60 +294,71 @@ export default function InboxClient({ userId }: { userId: string }) {
       </p>
       <div className="flex flex-col md:flex-row h-screen sm:h-screen lg:h-[80vh] gap-4">
         {/* converstion */}
-        <div className="md:flex-3 flex-1 flex flex-col md:flex-row bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden border p-4 border-gray-300 dark:border-gray-700 rounded-md">
+        <div className="md:flex-5 flex-1 flex flex-col md:flex-row bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 max-w-full overflow-x-hidden border p-2 border-gray-300 dark:border-gray-700 rounded-md">
           {/* On small devices: horizontal scroll of user avatars */}
-          <div className="md:hidden min-h-[60px] flex items-center space-x-4 overflow-x-auto px-4 py-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <div className="md:hidden min-h-[100px] flex items-center space-x-4 overflow-x-auto px-4 pb-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
             {conversations.map((conv) => {
-                const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
+                // const isOnline = conv.other_user_id ? Object.hasOwn(onlineUsers, conv.other_user_id) : false;
                 return (
                   <button
                     key={conv.id}
                     onClick={() => setSelectedConversation(conv)}
-                    className={`flex-shrink-0 w-12 h-12 rounded-full transition-colors duration-200
-                     `}
+                    className="flex-shrink-0 w-16 flex flex-col items-center space-y-1"
                     aria-label={`Conversation with ${conv.other_user_name}`}
                   >
-                    <div className="relative w-full h-full">
+                    <div className="relative w-12 h-12">
                       {conv.other_user_profile_picture ? (
                         <Image
                           src={conv.other_user_profile_picture}
                           alt={conv.other_user_name}
-                          width={40}
-                          height={40}
-                          className={`w-10 h-10 rounded-full border object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
-                              ${
-                                  conv.other_user_id &&
-                                  conv.other_user_id in onlineUsers
-                                    ? 'ring-green-500'
-                                    : 'ring-gray-400'
-                                } `}
-                          unoptimized
-                        />
-                      ):(
-                        <div className={`w-10 h-10 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
-                          ${
-                              conv.other_user_id &&
-                              conv.other_user_id in onlineUsers
+                          width={48}
+                          height={48}
+                          className={`w-12 h-12 rounded-full border object-cover ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900
+                            ${
+                              conv.other_user_id && conv.other_user_id in onlineUsers
                                 ? 'ring-green-500'
                                 : 'ring-gray-400'
-                            } `}>
-                            {conv.other_user_name
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .slice(0, 2)
-                              .toUpperCase()}
-                      </div>
+                            }`}
+                          unoptimized
+                        />
+                      ) : (
+                        <div
+                          className={`w-12 h-12 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
+                            ${
+                              conv.other_user_id && conv.other_user_id in onlineUsers
+                                ? 'ring-green-500'
+                                : 'ring-gray-400'
+                            }`}
+                        >
+                          {conv.other_user_name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </div>
                       )}
-                      
 
                       {/* Online status dot */}
                       <span
                         className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 ${
-                          isOnline ? 'bg-green-500' : 'bg-gray-400'
+                          conv.other_user_id && conv.other_user_id in onlineUsers
+                            ? 'bg-green-500'
+                            : 'bg-gray-400'
                         }`}
-                        title={isOnline ? 'Online' : 'Offline'}
+                        title={
+                          conv.other_user_id && conv.other_user_id in onlineUsers
+                            ? 'Online'
+                            : 'Offline'
+                        }
                       />
+                    </div>
+
+                    {/* Name below avatar */}
+                    <div className="w-full text-center">
+                      <small className="text-[10px] truncate block max-w-[60px]">
+                        {conv.other_user_name}
+                      </small>
                     </div>
                   </button>
                 );
@@ -491,6 +502,7 @@ export default function InboxClient({ userId }: { userId: string }) {
                           : 'ring-gray-400'
                       } `}
                     />
+                    
                   ) : (
                     <div className={`w-8 h-8 rounded-full ring-2 ring-offset-2 ring-offset-slate-50 dark:ring-offset-slate-900 bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-gray-800 dark:text-gray-200 font-semibold text-sm
                     ${
@@ -651,9 +663,6 @@ export default function InboxClient({ userId }: { userId: string }) {
                     </div>
                   );
                 })}
-
-
-                  
                 </>
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
@@ -788,15 +797,22 @@ export default function InboxClient({ userId }: { userId: string }) {
         </section>
       </div>
         {/* user profile */}
-        <div className="hidden md:block md:flex-1 flex-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 rounded-md">
+        <div className="hidden md:block md:flex-2 flex-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 rounded-md">
           {selectedConversation?.other_user_id ? (
-            <UserDetails user={{ id: selectedConversation.other_user_id }} />
-          ) : (
-            <div className="text-center font-bold text-xl text-gray-500">
-              <QrCode className="w-full h-40" />
-              Get The App
-            </div>
-          )}
+          <UserDetails
+            user={{ id: selectedConversation.other_user_id }}
+            isOnline={
+              !!selectedConversation.other_user_id &&
+              selectedConversation.other_user_id in onlineUsers
+            }
+          />
+        ) : (
+          <div className="text-center font-bold text-xl text-gray-500">
+            <QrCode className="w-full h-40" />
+            Get The App
+          </div>
+        )}
+
 
           
         </div>
