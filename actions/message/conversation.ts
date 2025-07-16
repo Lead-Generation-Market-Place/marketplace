@@ -31,7 +31,6 @@ const conversationsWithDetails = await Promise.all(
       `)
       .eq('id', otherUserId)
       .single();
-    console.log('Other User:', otherUser);
     // Fetch latest message
     const { data: lastMessage } = await supabase
       .from('messages')

@@ -5,11 +5,10 @@ import dynamic from "next/dynamic";
 import SkeletonCardView from "./SkeletonCardView";
 import SkeletonListView from "./SkeletonListView";
 
-// Lazy load ListView and CardView
+// Lazy load
 const ListView = dynamic(() => import("./ListView"), {
   loading: () => <SkeletonListView />,
 });
-
 const CardView = dynamic(() => import("./CardView"), {
   loading: () => <SkeletonCardView />,
 });
@@ -17,6 +16,7 @@ const CardView = dynamic(() => import("./CardView"), {
 interface SubCategory {
   id: string;
   name: string;
+  icon: string;
 }
 
 interface CategoryContentProps {
@@ -24,7 +24,7 @@ interface CategoryContentProps {
 }
 
 export default function CategoryContent({ subcategories }: CategoryContentProps) {
-  const [selectedSubcategory, setSelectedSubcategory] = useState<{ id: string; name: string } | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<SubCategory | null>(null);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -32,12 +32,15 @@ export default function CategoryContent({ subcategories }: CategoryContentProps)
         <div className="md:col-span-2 p-4">
           <ListView
             subcategories={subcategories}
-            onSelect={(id, name) => setSelectedSubcategory({ id, name })}
+            onSelect={(subcategories) => setSelectedSubcategory(subcategories)}
             selectedId={selectedSubcategory?.id || null}
           />
         </div>
         <div className="md:col-span-3 p-4">
-          <CardView selectedSubcategory={selectedSubcategory} />
+          <CardView
+            subcategories={subcategories}
+            selectedSubcategory={selectedSubcategory}
+          />
         </div>
       </div>
     </div>

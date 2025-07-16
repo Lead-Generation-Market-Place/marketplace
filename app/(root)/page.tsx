@@ -54,7 +54,7 @@ export default async function Page() {
       name,
       service_image_url
     )
-  `);
+  `).limit(4);
   const { data: youMayLikeRaw } = await supabase.from('services').select('*');
   const { data: costEstimates } = await supabase.from('service_providers').select('*');
   const { data: locations } = await supabase.from('state').select('*');
