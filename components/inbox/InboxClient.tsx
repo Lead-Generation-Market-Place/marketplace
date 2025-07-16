@@ -288,7 +288,7 @@ export default function InboxClient({ userId }: { userId: string }) {
   
 
   return (
-    <div className="max-w-screen-xl mx-auto sm:px-6 lg:px-8 overflow-hidden flex flex-col">
+    <div className="max-w-screen-xl mx-auto sm:px-6 lg:px-8 overflow-hidden flex flex-col mb-5">
       <p className="my-3 font-bold">
         <Inbox className='w-6 h-6 inline-block align-middle mr-2'/>Inbox
       </p>
@@ -799,22 +799,19 @@ export default function InboxClient({ userId }: { userId: string }) {
         {/* user profile */}
         <div className="hidden md:block md:flex-2 flex-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 rounded-md">
           {selectedConversation?.other_user_id ? (
-          <UserDetails
-            user={{ id: selectedConversation.other_user_id }}
-            isOnline={
-              !!selectedConversation.other_user_id &&
-              selectedConversation.other_user_id in onlineUsers
-            }
-          />
-        ) : (
-          <div className="text-center font-bold text-xl text-gray-500">
-            <QrCode className="w-full h-40" />
-            Get The App
-          </div>
-        )}
-
-
-          
+            <UserDetails
+              user={{ id: selectedConversation.other_user_id }}
+              isOnline={
+                !!selectedConversation.other_user_id &&
+                selectedConversation.other_user_id in onlineUsers
+              }
+            />
+          ) : (
+            <div className="text-center font-bold text-xl text-gray-500">
+              <QrCode className="w-full h-40" />
+              Get The App
+            </div>
+          )}
         </div>
       </div>
     </div>

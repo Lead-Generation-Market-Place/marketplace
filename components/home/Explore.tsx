@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import Link from "next/link";
 
 interface Service {
   id: string;
@@ -54,6 +55,11 @@ const Explore = ({ data }: ExploreProps) => {
             {cat.name}
           </button>
         ))}
+        <Link
+        href="/more-services"
+        className={`pb-2 transition-colors text-gray-800 dark:text-gray-200 duration-200 hover:text-sky-500 focus:outline-none`}>
+            More
+        </Link>
       </div>
 
       {/* Selected Category */}
@@ -88,9 +94,9 @@ const Explore = ({ data }: ExploreProps) => {
             {categoryObj.services.length > 0 ? (
               <Carousel
                 opts={{ align: "start" }}
-                className="w-full max-w-screen-xl mx-auto relative"
+                className="w-full max-w-screen-xl mx-auto relative "
               >
-                <CarouselContent>
+                <CarouselContent className="flex justify-center">
                   {categoryObj.services.map((service) => (
                     <CarouselItem
                       key={service.id}

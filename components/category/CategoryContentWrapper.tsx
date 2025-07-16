@@ -11,6 +11,7 @@ const CategoryContent = dynamic(() => import("./CategoryContent"), {
 interface SubCategory {
   id: string;
   name: string;
+  icon:string;
 }
 
 export default function CategoryContentWrapper({ subcategories }: { subcategories: SubCategory[] }) {
